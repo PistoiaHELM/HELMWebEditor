@@ -1,0 +1,36 @@
+﻿<!--
+//////////////////////////////////////////////////////////////////////////////////
+//
+// Pistoia
+// Copyright (C) 2016 Pistoia
+// http://www.scilligence.com/
+//
+//////////////////////////////////////////////////////////////////////////////////
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pistoia HELM</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src='../pako/pako.js'></script>
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+    <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Lite.js'></script>
+    <script type="text/javascript" src='../JSDraw/Pistoia.HELM.js'></script>
+    <script type='text/javascript' src='../JSDraw/Service.aspx'></script>
+</head>
+<body>
+
+    <div id="div1"></div>
+    <script type="text/javascript">
+        scil.ready(function () {
+            new scil.helm.MonomerLibApp("div1", { ajaxurl: "../JSDraw/Service.aspx?cmd=" });
+        });
+    </script>
+
+
+    <hr />
+    HELM Web Editor is created by <a href='http://www.scilligence.com/' target="_blank">Scilligence</a><br />
+    Copyright (C) 2016 (<a href="http://www.pistoiaalliance.org/" target="_blank">Pisotia</a>)
+</body>
+</html>

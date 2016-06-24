@@ -1,0 +1,59 @@
+﻿<!--
+//////////////////////////////////////////////////////////////////////////////////
+//
+// Pistoia
+// Copyright (C) 2016 Pistoia
+// http://www.scilligence.com/
+//
+//////////////////////////////////////////////////////////////////////////////////
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pistoia HELM</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src='../pako/pako.js'></script>
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+    <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Lite.js'></script>
+    <script type="text/javascript" src='../JSDraw/Pistoia.HELM.js'></script>
+    <script type='text/javascript' src='../JSDraw/Service.aspx'></script>
+</head>
+<body>
+
+    <div id="div1"></div>
+    <textarea id="data" style="width:800px;height:300px;"></textarea>
+    <script type="text/javascript">
+        var form;
+
+        scil.ready(function () {
+            var fields = {
+                structure: { label: "Structure", helmtoolbar: true, type: "jsdraw", width: 800, height: 400 },
+                helm: { label: "HELM", width: 800 },
+                mw: { label: "MW", unit: "Da" },
+                amount: { label: "Amount", type: "number", units: ["", "g", "mg", "ug"] },
+                notes: { label: "Notes", type: "textarea", width: 800, height: 80 }
+            };
+            
+            form = new scil.Form({ onchange: function (field) { onchange(field); } });
+            form.render("div1", fields, { buttons: { label: "Submit", onclick: function () { submitdata(); } } });
+        });
+
+        function onchange(field) {
+            if (field == form.fields.structure) {
+                form.fields.helm.value = form.fields.structure.jsd.getHelm();
+                form.fields.mw.value = form.fields.structure.jsd.getMolWeight();
+            }
+        }
+
+        function submitdata() {
+            scil.byId("data").value = form.getXml();
+        }
+    </script>
+
+
+    <hr />
+    HELM Web Editor is created by <a href='http://www.scilligence.com/' target="_blank">Scilligence</a><br />
+    Copyright (C) 2016 (<a href="http://www.pistoiaalliance.org/" target="_blank">Pisotia</a>)
+</body>
+</html>
