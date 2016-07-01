@@ -18,6 +18,10 @@ org.helm.webeditor.RuleSet = {
         { id: 5, name: "Replace linker P with sP", note: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.LINKER, 'P', 'sP');return n > 0;}" },
     ],
 
+    loadDB: function(list) {
+        this.rules = list;
+    },
+
     favorites: new scil.Favorite("ruleset"),
 
     addFavorite: function (e) {
@@ -81,9 +85,9 @@ org.helm.webeditor.RuleSet = {
     listOneRule: function (tbody, r, i, apply, fav) {
         var me = this;
         var tr = scil.Utils.createElement(tbody, "tr", null, { background: i % 2 == 1 ? "#eee" : null }, { ruleid: r.id });
-        scil.Utils.createElement(scil.Utils.createElement(tr, "td"), "checkbox", null, { display: (this.kApplyAll ? "" : "none") });
-        scil.Utils.createElement(scil.Utils.createElement(tr, "td"), "img", null, null, { star: (fav ? 1 : null), src: scil.Utils.imgSrc("img/star" + (fav ? "" : "0") + ".png") }, function (e) { me.addFavorite(e); });
-        var td = scil.Utils.createElement(tr, "td");
+        scil.Utils.createElement(scil.Utils.createElement(tr, "td"), "checkbox", null, { display: (this.kApplyAll ? "" : "none"), width: "1%" });
+        scil.Utils.createElement(scil.Utils.createElement(tr, "td"), "img", null, { width: "1%" }, { star: (fav ? 1 : null), src: scil.Utils.imgSrc("img/star" + (fav ? "" : "0") + ".png") }, function (e) { me.addFavorite(e); });
+        var td = scil.Utils.createElement(tr, "td", null, { width: "99%" });
 
         this.listOneRule2(td, r, apply, i);
     },

@@ -53,7 +53,7 @@ org.helm.webeditor = {
             var div = scil.Utils.createElement(null, "div");
             scil.Utils.createElement(div, "img", null, { width: 425, height: 145 }, { src: scil.Utils.imgSrc("img/helm.png") });
 
-            scil.Utils.createElement(div, "div", "Built on <a target=_blank href='http://www.jsdraw.com'>JSDraw.Lite " + JSDraw2.kFileVersion + "</a>", { textAlign: "right", paddingRight: "26px" });
+            scil.Utils.createElement(div, "div", "Built on <a target=_blank href='http://www.jsdraw.com'>JSDraw.Lite " + JSDraw2.kFileVersion + "</a>, by <a target=_blank href='http://www.scillignece.com'>Scilligence</a>", { textAlign: "right", paddingRight: "26px" });
             var tbody = scil.Utils.createTable(div, null, null, { borderTop: "solid 1px gray", width: "100%" });
             var tr = scil.Utils.createElement(tbody, "tr");
             scil.Utils.createElement(tr, "td", this.kVersion);

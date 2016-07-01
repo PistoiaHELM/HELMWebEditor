@@ -170,16 +170,16 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.onShowTab(td, null, true);
     },
 
-    //reloadTabs: function () {
-    //    var list = this.tabs.tr.childNodes;
-    //    for (var i = 0; i < list.length; ++i) {
-    //        var td = list[i];
-    //        scil.Utils.removeAll(td.clientarea);
-    //        td._childrencreated = false;
-    //    }
+    reloadTabs: function () {
+        var list = this.tabs.tr.childNodes;
+        for (var i = 0; i < list.length; ++i) {
+            var td = list[i];
+            scil.Utils.removeAll(td.clientarea);
+            td._childrencreated = false;
+        }
 
-    //    this.onShowTab(this.tabs.currenttab);
-    //},
+        this.onShowTab(this.tabs.currenttab);
+    },
 
     //onShowRNATab: function (td) {
     //    if (td == null)

@@ -67,6 +67,27 @@ org.helm.webeditor.Monomers = {
         this.loadMonomers(doc);
     },
 
+    loadDB: function (list) {
+        this.clear();
+
+        for (var i = 0; i < list.length; ++i) {
+            var x = list[i];
+            var m = { id: x.symbol, n: x.name, na: x.natualanalog, type: x.polymertype, mt: x.monomertype };
+
+            m.at = {};
+            var rs = 0;
+            for (var r = 1; r <= 5; ++r) {
+                if (m["r" + r]) {
+                    m.at["R" + r] = m["r" + r];
+                    ++rs;
+                }
+            }
+            m.rs = rs;
+
+            this.addOneMonomer(m);
+        }
+    },
+
     loadMonomers: function(doc, callback) {
         var list = doc.getElementsByTagName("Monomer");
         if (list == null || list.length == 0)

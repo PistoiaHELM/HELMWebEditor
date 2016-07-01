@@ -1,0 +1,42 @@
+
+<!--
+//////////////////////////////////////////////////////////////////////////////////
+//
+// JSDraw
+// Copyright (C) 2010-2016 Scilligence Corporation
+// http://www.scilligence.com/
+//
+//////////////////////////////////////////////////////////////////////////////////
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>HELM Web Editor</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src='http://elncloud.com/helm/pako/pako.js'></script>
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+    <script type="text/javascript" src='http://elncloud.com/helm/JSDraw/Scilligence.JSDraw2.Lite.js'></script>
+    <script type="text/javascript" src='http://elncloud.com/helm/JSDraw/Pistoia.HELM.js'></script>
+
+    <script type='text/javascript' src='service/ajaxtool/get?cmd=helm.monomer.downloadjson'></script>
+    <script type='text/javascript' src='service/ajaxtool/get?cmd=helm.rule.downloadjson'></script>
+</head>
+<body style="padding:0;margin:0;">
+   
+
+    <div id="div1"></div>
+    <script type="text/javascript">
+        JSDraw2.defaultoptions = {skin: "w8"};
+        JSDrawServices={url:'service/ajaxtool/post'};
+        scil.ready(function () {
+            new scil.helm.App("div1");
+        });
+    </script>
+
+
+    <hr />
+    (HELM Module is co-developed with <a href="http://www.pistoiaalliance.org/" target="_blank"> Pisotia</a>)<br />
+    Copyright Scilligence, 2016 (<a href='http://www.scilligence.com/'>http://www.scilligence.com/</a>)
+</body>
+</html>

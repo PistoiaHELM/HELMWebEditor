@@ -40,8 +40,8 @@ org.helm.webeditor.Interface = {
     },
 
     molEquals: function (m1, m2) {
-        var mol1 = this.createMol(m1);
-        var mol2 = this.createMol(m2);
+        var mol1 = m1.mol != null ? m1.mol : (m1.mol = this.createMol(scil.helm.Monomers.getMolfile(m1)));
+        var mol2 = m2.mol != null ? m2.mol : (m2.mol = this.createMol(scil.helm.Monomers.getMolfile(m2)));
         return mol2.fullstructureMatch(mol1);
     },
 
