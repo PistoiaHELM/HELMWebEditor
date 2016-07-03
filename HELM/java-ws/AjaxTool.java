@@ -64,7 +64,7 @@ public class AjaxTool {
     //@Consumes(MediaType.MULTIPART_FORM_DATA)
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED, MediaType.TEXT_HTML, 
         MediaType.TEXT_PLAIN, MediaType.MULTIPART_FORM_DATA})
-    @Produces({"text/plain", "text/html"})
+    @Produces({"text/plain", "text/html", "application/unknown"})
     @Path("/post")
     public Response CmdPost(@Context HttpServletRequest request) {
         Map<String, String> args = getFormParameters(request);
@@ -161,15 +161,23 @@ public class AjaxTool {
                 }
                 
             case "openjsd":
-                ret = new JSONObject();
-                String contents = getValue(request.getPart("file"));
-                ret.put("base64", Database.EncodeBase64(contents));
-                String s = "<html><head></head><body><textarea>" + wrapAjaxResult(ret) + "</textarea></body></html>";
-                return Response.status(Response.Status.OK).entity(s).type("text/html").build();
+                {
+                    ret = new JSONObject();
+                    String contents = getValue(request.getPart("file"));
+                    ret.put("base64", Database.EncodeBase64(contents));
+                    String s = "<html><head></head><body><textarea>" + wrapAjaxResult(ret) + "</textarea></body></html>";
+                    return Response.status(Response.Status.OK).entity(s).type("text/html").build();
+                }
             case "savefile":
-                
-                break;
-                
+                {
+                    String filename = items.get("filename");
+                    String contents = items.get("contents");
+                    return Response
+                        .ok(contents, "application/unknown")
+                        .header("content-disposition","attachment;filename=" + filename)
+                        .build();
+                }
+            
             default:
                 return Response.status(Response.Status.OK).entity(wrapAjaxError("Unknown cmd: " + cmd)).build();
         }
