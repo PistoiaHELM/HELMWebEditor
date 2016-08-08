@@ -100,40 +100,42 @@ org.helm.webeditor.Interface = {
                 { c: "helm_find", t: "Find", label: "Find", tooltips: "Fine/Replace" }
         ];
 
-        if (options == null || !options.showmonomerexplorer)
-            sub.push({ c: "helm_mex", t: "Monomers", label: "Monomers", tooltips: "Monomer Explorer" });
-        sub.push({ c: "helm_import", t: "Import Sequence", label: "Import", tooltips: "Import Sequence" });
+        var main = { c: "helm_nucleotide", t: "Nucleotide", label: "Nucleotide", sub: sub, hidden: true };
+        buttons.push(main);
 
-        var main = { c: "helm_nucleotide", t: "Nucleotide", label: "Nucleotide" };
-        if (flat) {
-            buttons.push(main);
-            for (var i = 0; i < sub.length; ++i)
-                buttons.push(sub[i]);
-        }
-        else {
-            main.sub = sub;
-            buttons.push(main);
-        }
+        buttons.push({ c: "open", t: "Load", label: "Load" });
+        buttons.push({ c: "save", t: "Save", label: "Save" });
+        buttons.push({ c: "|" });
     },
 
     getHelmToolbar: function (buttons, filesubmenus, selecttools, options) {
-        buttons.push({ c: "new", t: "New", label: "New", sub: filesubmenus });
-        buttons.push({ c: "|" });
-
         this.addToolbar(buttons, true, null, options);
 
-        buttons.push({ c: "|" });
         buttons.push({ c: "undo", t: "Undo", label: "Undo" });
         buttons.push({ c: "redo", t: "Redo", label: "Redo" });
         buttons.push({ c: "|" });
         buttons.push({ c: "eraser", t: "Eraser", label: "Eraser" });
         buttons.push({ c: "|" });
-        buttons.push({ c: "select", t: "Box Selection", label: "Box", sub: selecttools });
-        buttons.push({ c: "moveview", t: "Move/View", label: "Move" });
-        buttons.push({ c: "zoombox", t: "Zoom Box", label: "Zoom" });
+        buttons.push({ c: "select", t: "Box Selection", label: "Select", sub: selecttools });
         buttons.push({ c: "|" });
-        buttons.push({ c: "center", t: "Move to center", label: "Center" });
         buttons.push({ c: "zoomin", t: "Zoom in", label: "Zoom" });
         buttons.push({ c: "zoomout", t: "Zoom out", label: "Zoom" });
+        buttons.push({ c: "|" });
+        buttons.push({ c: "center", t: "Move to center", label: "Center" });
+        buttons.push({ c: "moveview", t: "Move/View", label: "Move" });
+    },
+
+    onContextMenu: function (ed, e, viewonly) {
+        if (ed.options.helmtoolbar)
+            return null;
+
+        var items = [];
+
+        items.push({ caption: "Copy Molfile V2000", key: "copymolfile2000" });
+        items.push({ caption: "Copy Molfile V3000", key: "copymolfile3000" });
+        //items.push({ caption: "Paste Mol File", key: "pastemolfile" });
+        items.push({ caption: "Copy SMILES", key: "copysmiles" });
+
+        return items;
     }
 };

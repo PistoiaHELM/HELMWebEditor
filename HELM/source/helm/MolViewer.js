@@ -9,8 +9,23 @@
 org.helm.webeditor.MolViewer = {
     dlg: null,
     jsd: null,
+    molscale: 1,
 
     show: function (e, type, m, code) {
+        this.clearTimer();
+        var me = this;
+        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code); }, 500);
+    },
+
+    clearTimer: function() {
+        if (this.tm != null) {
+            clearTimeout(this.tm);
+            this.tm = null;
+        }
+    },
+
+    show2: function (xy, type, m, code) {
+        this.tm = null;
         if (m == null)
             return;
 
@@ -24,13 +39,13 @@ org.helm.webeditor.MolViewer = {
                 m = { n: m, m: this.assemblyMol(s) };
             }
 
-            this.dlg.show2({ title: code + ": " + m.n, modal: false, immediately: true });
+            this.dlg.show2({ title: "<div style='font-size:80%'>" + (/*code + ": " + */m.n) + "</div>", modal: false, immediately: true });
 
             this.jsd.setMolfile(org.helm.webeditor.monomers.getMolfile(m));
         }
 
         var scroll = scil.Utils.scrollOffset();
-        this.dlg.moveTo(e.clientX + scroll.x + 30, e.clientY + scroll.y + 30);
+        this.dlg.moveTo(xy.x + scroll.x + 10, xy.y + scroll.y + 10);
     },
 
     assemblyMol: function(s) {
@@ -52,6 +67,23 @@ org.helm.webeditor.MolViewer = {
         this.mergeMol(m1, "R3", m3, "R1");
 
         return m1.getMolfile();
+    },
+
+    capRGroup: function (m, r, mon) {
+        var cap = mon == null || mon.at == null ? null : mon.at[r];
+        if (cap == "OH")
+            cap = "O";
+        else if (cap != "H" && cap != "X")
+            return false;
+
+        for (var i = 0; i < m.bonds.length; ++i) {
+            var b = m.bonds[i];
+            if (b.a1.alias == r || b.a2.alias == r) {
+                m.setAtomType(b.a1.alias == r ? b.a1 : b.a2, cap);
+                return true;
+            }
+        }
+        return false;
     },
 
     mergeMol: function (m, r1, src, r2) {
@@ -110,13 +142,18 @@ org.helm.webeditor.MolViewer = {
         if (this.dlg != null)
             return;
 
-        var fields = { jsd: { type: "jsdraw", width: 200, height: 150, viewonly: true } };
+        var fields = { jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true } };
         this.dlg = scil.Form.createDlgForm("", fields, null, { hidelabel: true, modal: false, noclose: true });
         this.jsd = this.dlg.form.fields.jsd.jsd;
         this.dlg.hide(true);
+
+        this.dlg.dialog.style.backgroundColor = "#fff";
+        this.dlg.dialog.titleElement.style.borderBottom = "solid 1px #ddd";
+        this.dlg.dialog.titleElement.style.textAlign = "center";
     },
 
     hide: function () {
+        this.clearTimer();
         if (this.dlg != null && this.dlg.isVisible()) {
             this.dlg.hide(true);
         }

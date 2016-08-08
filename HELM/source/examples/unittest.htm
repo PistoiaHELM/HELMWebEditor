@@ -1,8 +1,8 @@
 ﻿<!--
 //////////////////////////////////////////////////////////////////////////////////
 //
-// Pistoia
-// Copyright (C) 2016 Pistoia
+// JSDraw
+// Copyright (C) 2010-2016 Scilligence Corporation
 // http://www.scilligence.com/
 //
 //////////////////////////////////////////////////////////////////////////////////
@@ -10,7 +10,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Pistoia HELM</title>
+    <title>JSDraw - A Javascript Chemical Structure Editor/Viewer</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script type="text/javascript" src='../pako/pako.js'></script>
@@ -22,10 +22,20 @@
 
     <h2>JSDraw/HELM Editor Unit Test</h2>
 
+    <div id="placeholder" style="border: solid 1px gray;"></div>
+
+    <script type="text/javascript">
+
+        var jsd = null;
+        scil.ready(function () {
+            jsd = new JSDraw2.Editor("placeholder", { skin: "w8", viewonly: true, width: 900, height: 450, data: "RNA1{R(A)P.R(G)[sP].R(T)}$$$$", dataformat: "helm" });
+        });
+
+    </script>
 
 
     <hr />
-    HELM Web Editor is created by <a href='http://www.scilligence.com/' target="_blank">Scilligence</a><br />
-    Copyright (C) 2016 (<a href="http://www.pistoiaalliance.org/" target="_blank">Pisotia</a>)
+    (HELM Module is co-developed with <a href="http://www.pistoiaalliance.org/" target="_blank"> Pisotia</a>)<br />
+    Copyright Scilligence, 2016 (<a href='http://www.scilligence.com/'>http://www.scilligence.com/</a>)
 </body>
 </html>

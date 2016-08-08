@@ -18,14 +18,18 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var me = this;
 
         var d = dojo.window.getBox();
+        if (this.options.topmargin > 0)
+            d.h -= this.options.topmargin;
+
         var leftwidth = 300;
         var rightwidth = d.w - 300 - 50;
         var topheight = d.h * 0.7;
         var bottomheight = d.h - topheight - 130;
 
         var tree = {
-            caption: "Palette",
+            caption: this.options.topmargin > 0 ? null : "Palette",
             marginBottom: "2px",
+            marginTop: this.options.topmargin > 0 ? "17px" : null,
             onrender: function (div) { me.createPalette(div, leftwidth - 10, d.h - 80 - (me.options.mexfilter != false ? 30 : 0) - (me.options.mexfind ? 60 : 0)); }
         };
         this.page = new scil.Page(parent, tree, { resizable: true, leftwidth: leftwidth });
@@ -44,12 +48,18 @@ org.helm.webeditor.App = scil.extend(scil._base, {
 
         this.handle = this.page.addResizeHandle(function (delta) { return me.onresize(delta); }, 8);
 
+        this.sequencebuttons = [
+            { label: "Format", type: "select", items: ["", "RNA", "Peptide"], key: "format" },
+            { src: scil.Utils.imgSrc("img/moveup.gif"), label: "Apply", title: "Apply Sequence", onclick: function () { me.updateCanvas("sequence", false); } },
+            { src: scil.Utils.imgSrc("img/add.gif"), label: "Append", title: "Append Sequence", onclick: function () { me.updateCanvas("sequence", true); } }
+        ];
+
         this.tabs = this.page.addTabs({ marginBottom: "2px", onShowTab: function () { me.updateProperties(); } });
         this.tabs.addForm({
             caption: "Sequence",
             type: "custom",
             tabkey: "sequence",            
-            buttons: this.options.sequenceviewonly ? null : [{ src: scil.Utils.imgSrc("img/moveup.gif"), label: "Apply", title: "Apply Sequence", onclick: function () { me.updateCanvas("sequence"); } }],
+            buttons: this.options.sequenceviewonly ? null : this.sequencebuttons,
             oncreate: function (div) { me.createSequence(div, rightwidth, bottomheight); }
         });
 
@@ -57,7 +67,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             caption: "HELM",
             type: "custom",
             tabkey: "notation",
-            buttons: this.options.sequenceviewonly ? null : [{ src: scil.Utils.imgSrc("img/moveup.gif"), label: "Apply", title: "Apply HELM Notation", onclick: function () { me.updateCanvas("notation"); } }],
+            buttons: this.options.sequenceviewonly ? null : [
+                { src: scil.Utils.imgSrc("img/moveup.gif"), label: "Apply", title: "Apply HELM Notation", onclick: function () { me.updateCanvas("notation", false); } },
+                { src: scil.Utils.imgSrc("img/add.gif"), label: "Append", title: "Append HELM Notation", onclick: function () { me.updateCanvas("notation", true); } }
+            ],
             oncreate: function (div) { me.createNotation(div, rightwidth, bottomheight); }
         });
 
@@ -66,6 +79,13 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             type: "custom",
             tabkey: "properties",
             oncreate: function (div) { me.createProperties(div, rightwidth, bottomheight); }
+        });
+
+        this.tabs.addForm({
+            caption: "Structure View",
+            type: "custom",
+            tabkey: "structureview",
+            oncreate: function (div) { me.createStructureView(div, rightwidth, bottomheight); }
         });
     },
 
@@ -92,6 +112,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
                 this.sequence.style.height = (bottom - delta) + "px";
                 this.notation.style.height = (bottom - delta) + "px";
                 this.properties.parent.style.height = (bottom - delta) + "px";
+                this.structureview.resize(0, bottom - delta);
                 return true;
             }
         }
@@ -102,6 +123,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
                 this.sequence.style.height = (top + delta) + "px";
                 this.notation.style.height = (top + delta) + "px";
                 this.properties.parent.style.height = (top + delta) + "px";
+                this.structureview.resize(0, top + delta);
                 this.canvas.resize(0, bottom - delta);
                 return true;
             }
@@ -120,7 +142,11 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         div.style.border = "solid 1px #eee";
 
         var me = this;
-        var args = { skin: "w8", showtoolbar: this.options.canvastoolbar != false, helmtoolbar: true, showmonomerexplorer: true, inktools: false, width: width, height: height, ondatachange: function () { me.updateProperties(); } };
+        var args = {
+            skin: "w8", showabout: this.options.showabout, showtoolbar: this.options.canvastoolbar != false, helmtoolbar: true, showmonomerexplorer: true,
+            inktools: false, width: width, height: height, ondatachange: function () { me.updateProperties(); },
+            onselectionchanged: function () { me.onselectionchanged(); }
+        };
 
         this.canvas = org.helm.webeditor.Interface.createCanvas(div, args);
         this.canvas.helm.monomerexplorer = this.mex;
@@ -157,6 +183,11 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.properties.render(d, fields, { immediately: true });
     },
 
+    createStructureView: function (div, width, height) {
+        var d = scil.Utils.createElement(div, "div", null, { width: width, height: height });
+        this.structureview = new JSDraw2.Editor(d, { viewonly: true })
+    },
+
     resize: function () {
         var d = dojo.window.getBox();
         var width = d.w;
@@ -165,10 +196,32 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var top = d.t;
     },
 
-    updateCanvas: function (key) {
+    updateCanvas: function (key, append) {
+        var format = null;
+        if (this.sequencebuttons != null)
+            format = this.getValueByKey(this.sequencebuttons, "format");
+
         var plugin = this.canvas.helm;
-        var s = key == "sequence" ? this.sequence.value : this.notation.value;
-        plugin.setSequence(s, null, plugin.getDefaultNodeType(org.helm.webeditor.HELM.SUGAR), plugin.getDefaultNodeType(org.helm.webeditor.HELM.LINKER));
+        var s = null;
+        if (key == "sequence") {
+            s = scil.Utils.trim(this.sequence.value);
+            // fasta
+            s = s.replace(/[\n][>|;].*[\r]?[\n]/ig, '').replace(/^[>|;].*[\r]?[\n]/i, '');
+            // other space
+            s = s.replace(/[ \t\r\n]+/g, '')
+        }
+        else {
+            s = this.notation.value;
+        }
+        plugin.setSequence(s, format, plugin.getDefaultNodeType(org.helm.webeditor.HELM.SUGAR), plugin.getDefaultNodeType(org.helm.webeditor.HELM.LINKER), append);
+    },
+
+    getValueByKey: function (list, key) {
+        for (var i = 0; i < list.length; ++i) {
+            if (list[i].key == key)
+                return list[i].b.value;
+        }
+        return null;
     },
 
     updateProperties: function () {
@@ -184,6 +237,17 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             case "properties":
                 this.calculateProperties();
                 break;
+                //case "structureview":
+                //    this.updateStructureView();
+                //    break;
+        }
+    },
+
+    onselectionchanged: function() {
+        switch (this.tabs.tabs.currentTabKey()) {
+            case "structureview":
+                this.updateStructureView();
+                break;
         }
     },
 
@@ -195,5 +259,48 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         data.mw = this.canvas.getMolWeight();
         data.mf = this.canvas.getFormula(true);
         this.properties.setData(data);
+    },
+
+    getSelectedAsMol: function (m) {
+        var ret = new JSDraw2.Mol();
+        for (var i = 0; i < m.atoms.length; ++i) {
+            if (m.atoms[i].selected)
+                ret.atoms.push(m.atoms[i]);
+        }
+
+        var atoms = ret.atoms;
+        for (var i = 0; i < m.bonds.length; ++i) {
+            var b = m.bonds[i];
+            if (b.selected && b.a1.selected && b.a2.selected)
+                ret.bonds.push(b);
+        }
+
+        return ret;
+    },
+
+    updateStructureView: function () {
+        if (this.structureview == null)
+            return;
+
+        var selected = this.getSelectedAsMol(this.canvas.m);
+
+        var m = null;
+        var chains = org.helm.webeditor.Chain.getChains(selected);
+        if (chains == null || chains.length == 0) {
+            if (selected != null && selected.atoms.length == 1) {
+                // only a base selected
+                var a = selected.atoms[0];
+                var mon = org.helm.webeditor.Monomers.getMonomer(a);
+                m = org.helm.webeditor.Interface.createMol(org.helm.webeditor.monomers.getMolfile(mon));
+            }
+        }
+        else {
+            m = chains[0].expand(this.canvas.helm);
+        }
+
+        if (m == null)
+            this.structureview.clear(true);
+        else
+            this.structureview.setMolfile(m.getMolfile());
     }
 });

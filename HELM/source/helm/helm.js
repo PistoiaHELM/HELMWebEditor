@@ -3,6 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
+// 2.0.0-2016-08-07
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -16,7 +17,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0 Alpah",
+    kVersion: "2.0.0",
     atomscale: 2,
     bondscale: 1.6,
 

@@ -14,6 +14,51 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         this.bases = [];
     },
 
+    expand: function (plugin) {
+        var m1 = null;
+        var m2 = null;
+        var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
+        for (var i = 0; i < n; ++i) {
+            var a = this.atoms[i];
+            var b = this.bases[i];
+
+            var mon = org.helm.webeditor.Monomers.getMonomer(a);
+            var m2 = org.helm.webeditor.Interface.createMol(org.helm.webeditor.monomers.getMolfile(mon));
+
+            if (b != null) {
+                var mb = org.helm.webeditor.Monomers.getMonomer(b);
+                var m3 = org.helm.webeditor.Interface.createMol(org.helm.webeditor.monomers.getMolfile(mb));
+                org.helm.webeditor.MolViewer.mergeMol(m2, "R3", m3, "R1");
+            }
+
+            if (m1 == null) {
+                m1 = m2;
+            }
+            else {
+                var r1, r2;
+                var bond = this.bonds[i - 1];
+                if (bond.a2 == a) {
+                    r2 = bond.r2;
+                    r1 = bond.r1;
+                }
+                else {
+                    r2 = bond.r1;
+                    r1 = bond.r2;
+                }
+
+                if (plugin != null) {
+                    if (i == 1 && plugin.hasSpareR(this.atoms[0], r2))
+                        org.helm.webeditor.MolViewer.capRGroup(m1, "R" + r2, org.helm.webeditor.Monomers.getMonomer(this.atoms[0]));
+                    if (i == n - 1 && plugin.hasSpareR(a, r1))
+                        org.helm.webeditor.MolViewer.capRGroup(m2, "R" + r1, mon);
+                }
+                org.helm.webeditor.MolViewer.mergeMol(m1, "R" + r1, m2, "R" + r2);
+            }
+        }
+
+        return m1;
+    },
+
     isCircle: function () {
         return this.atoms.length >=3 && this.atoms[0] == this.atoms[this.atoms.length - 1];
     },

@@ -1,0 +1,48 @@
+﻿<!--
+//////////////////////////////////////////////////////////////////////////////////
+//
+// HELM Editor
+// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
+// http://www.scilligence.com/
+//
+//////////////////////////////////////////////////////////////////////////////////
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSDraw - A Javascript Chemical Structure Editor/Viewer</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src='../pako/pako.js'></script>
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+    <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Lite.js'></script>
+    <script type="text/javascript" src='../JSDraw/Pistoia.HELM.js'></script>
+
+    <!-- Load Monomer Library -->
+    <!--
+    <script type='text/javascript' src='../HELMToolkitWS/Service/?cmd=helm.monomer.downloadjson'></script>
+    <script type='text/javascript' src='../HELMToolkitWS/Service/?cmd=helm.rules.downloadjson'></script>
+    -->
+    <!-- Static Library -->
+    <script type='text/javascript' src='../JSDraw/helm/MonomerLib.js'></script>
+
+</head>
+  <body style="font-family:Arial; margin: 0">
+
+    <div id="toolbar"></div>
+
+    <!-- HELM App -->
+    <div id="div1" style="margin: 5px; margin-top: 15px"></div>
+    <script type="text/javascript">
+      scil.ready(function () {
+      new scil.helm.AppToolbar("toolbar", "../JSDraw/helm/img/",
+      [{ icon: "canvas-1.png", label: "Canvas" }, { icon: "monomers-2.png", label: "Monomer Library", url: "MonomerLibApp.htm" }, { icon: "settings-2.png", label: "Ruleset", url: "RuleSetApp.htm" }]
+      );
+
+      org.helm.webeditor.MolViewer.molscale = 0.8;
+      var app = new scil.helm.App("div1", { showabout: false, mexfontsize: "90%", mexrnapinontab: true, topmargin: 20, mexmonomerstab: true, sequenceviewonly: false, mexfavoritefirst: true, mexfilter: true });
+      });
+    </script>
+
+</body>
+</html>

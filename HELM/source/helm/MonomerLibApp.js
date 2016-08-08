@@ -46,19 +46,20 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         var me = this;
         this.buttons = [
             "-",
-            { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomer XML Library (With Duplicate Check)", onclick: function () { me.uploadFile(); } },
+            { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomer XML Library", onclick: function () { me.uploadFile(); } },
             "-",
-            { type: "input", key: "symbol", label: "Symbol", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
-            { type: "select", key: "polymertype", items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
-            { type: "select", key: "monomertype", items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), label: "Monomer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
-            { type: "select", key: "status", items: org.helm.webeditor.MonomerLibApp.getStatuses(), label: "Status", styles: { width: 100 }, onchange: function () { me.refresh(); } },
-            { type: "select", key: "countperpage", label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
+            { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
+            { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
+            { type: "select", key: "monomertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), label: "Monomer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
+            { type: "select", key: "status", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getStatuses(), label: "Status", styles: { width: 100 }, onchange: function () { me.refresh(); } },
+            { type: "select", key: "countperpage", labelstyle: { fontSize: "90%" }, label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
         ];
 
         this.monomers = this.page.addForm({
             caption: "Monomer List",
             key: "id",
             object: "helm.monomer",
+            imagewidth: 30,
             buttons: this.buttons,
             onbeforerefresh: function (args) { me.onbeforerefresh(args); },
             onbeforesave: function (data, args, form) { data.molfile = form.fields.molfile.jsd.getMolfile(); },
@@ -120,7 +121,7 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
             monomertype: { label: "Monomer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), width: 100 },
             author: { label: "Author", width: 100 },
             status: { label: "Status", type: "select", items: org.helm.webeditor.MonomerLibApp.getStatuses(), width: 100 },
-            molfile: { label: "Structure", type: "jsdraw", width: 800, height: 200 },
+            molfile: { label: "Structure", type: "jsdraw", width: 800, height: 300 },
             r1: { label: "R1", type: "select", items: ["", "H", "OH", "X"] },
             r2: { label: "R2", type: "select", items: ["", "H", "OH", "X"] },
             r3: { label: "R3", type: "select", items: ["", "H", "OH", "X"] }

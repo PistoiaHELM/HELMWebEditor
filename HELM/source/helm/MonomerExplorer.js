@@ -18,14 +18,14 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
         //this.lastselect = {};
         this.selected = {};
-        this.selected[org.helm.webeditor.HELM.BASE] = "A";
-        this.selected[org.helm.webeditor.HELM.LINKER] = "P";
-        this.selected[org.helm.webeditor.HELM.SUGAR] = "R";
+        this.selected[org.helm.webeditor.HELM.BASE] = org.helm.webeditor.Monomers.bases["A"] == null ? "a" : "A";
+        this.selected[org.helm.webeditor.HELM.LINKER] = org.helm.webeditor.Monomers.linkers["P"] == null ? "p" : "P";
+        this.selected[org.helm.webeditor.HELM.SUGAR] = org.helm.webeditor.Monomers.sugars["R"] == null ? "r" : "R";
         this.selected[org.helm.webeditor.HELM.AA] = "A";
         this.selected[org.helm.webeditor.HELM.CHEM] = "R";
 
         var me = this;
-        this.div = scil.Utils.createElement(parent, "div");
+        this.div = scil.Utils.createElement(parent, "div", null, { fontSize: this.options.mexfontsize == null ? "90%" : this.options.mexfontsize });
         if (this.options.mexfind) {
             var d = scil.Utils.createElement(this.div, "div", null, { background: "#eee", borderBottom: "solid 1px gray", padding: "4px 0 4px 0" });
             var tbody = scil.Utils.createTable(d, 0, 0);
@@ -44,7 +44,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             var d = scil.Utils.createElement(this.div, "div", null, { background: "#eee", borderBottom: "solid 1px gray", padding: "4px 0 4px 0" });
             var tbody = scil.Utils.createTable(d, 0, 0);
             var tr = scil.Utils.createElement(tbody, "tr");
-            scil.Utils.createElement(tr, "td", JSDraw2.Language.res("Filter") + ":");
+            scil.Utils.createElement(tr, "td", JSDraw2.Language.res("Filter") + ":", { paddingLeft: "5px" });
             this.filterInput = scil.Utils.createElement(scil.Utils.createElement(tr, "td"), "input");
             scil.connect(this.filterInput, "onkeyup", function (e) { me.filter(e); });
         }
@@ -58,15 +58,17 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
         var width = this.options.width != null ? this.options.width : 300;
         var height = this.options.height != null ? this.options.height : 400;
-        this.tabs = new scil.Tabs(scil.Utils.createElement(this.div, "div", null, { paddingTop: "5px" }), {
+        this.tabs = new scil.Tabs(scil.Utils.createElement(this.div, "div", null, { padding: "5px" }), {
             onShowTab: function (td) { me.onShowTab(td, height); },
-            tabpadding: this.options.mexmonomerstab ? "10px" : "5px 2px 5px 2px",
+            tabpadding: this.options.mexmonomerstab ? "10px" : "5px 2px 1px 2px",
             tabs: tabs,
             marginBottom: 0
         });
 
         this.dnd = this.createDnD(this.div);
         scil.connect(document.body, "onmousemove", function (e) { me.showMol(e); });
+
+        org.helm.webeditor.MonomerExplorer.loadNucleotides();
     },
 
     addMonomerTabs: function(tabs) {
@@ -123,11 +125,18 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         else {
             for (var i = 0; i < list.length; ++i) {
                 var d = list[i];
-                if (d.getAttribute("helm") == null)
+                var type = d.getAttribute("helm");
+                if (scil.Utils.isNullOrEmpty(type))
                     continue;
 
                 var name = scil.Utils.getInnerText(d);
-                if (name.toLowerCase().indexOf(s) >= 0)
+                var f = name.toLowerCase().indexOf(s) >= 0;
+                if (!f) {
+                    var m = org.helm.webeditor.Monomers.getMonomer(type, name);
+                    var fullname = m == null ? null : m.n;
+                    f = fullname == null ? null : fullname.toLowerCase().indexOf(s) >= 0;
+                }
+                if (f)
                     d.style.display = "table";
                 else
                     d.style.display = "none";
@@ -180,37 +189,6 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
         this.onShowTab(this.tabs.currenttab);
     },
-
-    //onShowRNATab: function (td) {
-    //    if (td == null)
-    //        return;
-
-    //    var key = td.getAttribute("key");
-    //    if (key == "favorite" && org.helm.webeditor.MonomerExplorer.favoritechanged)
-    //        td._childrencreated = false;
-    //    if (this.plugin != null && this.plugin.jsd != null)
-    //        this.plugin.jsd.doCmd("helm_" + key);
-
-    //    if (td._childrencreated)
-    //        return;
-    //    td._childrencreated = true;
-
-    //    var div = td.clientarea;
-    //    div.style.overflowY = "scroll";
-    //    scil.Utils.removeAll(div);
-
-    //    if (key == org.helm.webeditor.MonomerExplorer.kNucleotide) {
-    //        var dict = org.helm.webeditor.MonomerExplorer.loadNucleotides();
-    //        var list = scil.Utils.getDictKeys(dict);
-    //        this.createMonomerGroup4(div, key, list);
-    //    }
-    //    else if (key == "base")
-    //        this.createMonomerGroup4(div, org.helm.webeditor.HELM.BASE, null, null, this.options.mexgroupanalogs != false);
-    //    else if (key == "sugar")
-    //        this.createMonomerGroup4(div, org.helm.webeditor.HELM.SUGAR, null);
-    //    else if (key == "linker")
-    //        this.createMonomerGroup4(div, org.helm.webeditor.HELM.LINKER, null, true);
-    //},
 
     onShowTab: function (td, height, forcerecreate) {
         if (td == null)
@@ -276,11 +254,20 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.rules = org.helm.webeditor.RuleSet.listRules(d, function (script) { me.plugin.applyRule(script); }, function (scripts) { me.plugin.applyRules(scripts); });
         }
         else if (key == "monomers") {
+            var d = scil.Utils.createElement(div, "div", null, { paddingTop: "5px" });
+
+            var ht = height - 30;
+            if (this.options.canvastoolbar == false) {
+                var b = scil.Utils.createElement(d, "div", "<img src='" + scil.Utils.imgSrc("helm/arrow.png") + "' style='vertical-align:middle'>Mouse Pointer", { cursor: "pointer", padding: "2px", border: "solid 1px gray", margin: "5px" });
+                scil.connect(b, "onclick", function () { me.plugin.jsd.doCmd("lasso"); });
+                ht -= 23;
+            }
+
             var tabs = [];
             this.addMonomerTabs(tabs);
-            this.monomerstabs = new scil.Tabs(scil.Utils.createElement(div, "div", null, { paddingTop: "5px" }), {
-                onShowTab: function (td) { me.onShowTab(td, height - 30); },
-                tabpadding: "5px 2px 5px 2px",
+            this.monomerstabs = new scil.Tabs(d, {
+                onShowTab: function (td) { me.onShowTab(td, ht); },
+                tabpadding: "5px 2px 1px 2px",
                 tabs: tabs,
                 marginBottom: 0
             });
@@ -309,8 +296,8 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                     na = "N-Term";
             }
             if (scil.Utils.isNullOrEmpty(na))
-                na = "*";
-            else if (ret[na] == null)
+                na = "X";
+            if (ret[na] == null)
                 ret[na] = [];
             ret[na].push(m);
         }
@@ -383,11 +370,16 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
         if (group == "RNA") {
             var half = "<div title='Nucleotide (Combined)' style='font-size: 80%;padding-left:20px;background-repeat:no-repeat;background-position:left center;background-image:";
+
+            var base = org.helm.webeditor.Monomers.bases["A"] == null ? "a" : "A";
+            var linker = org.helm.webeditor.Monomers.linkers["P"] == null ? "p" : "P";
+            var sugar = org.helm.webeditor.Monomers.sugars["R"] == null ? "r" : "R";
+
             var tabs = [
-                    { caption: half + scil.Utils.imgSrc("img/helm_nucleotide.gif", true) + "'>R(A)P</div>", tabkey: "nucleotide" },
-                    { caption: half + scil.Utils.imgSrc("img/helm_base.gif", true) + "'>A</div>", tabkey: "base" },
-                    { caption: half + scil.Utils.imgSrc("img/helm_sugar.gif", true) + "'>R</div>", tabkey: "sugar" },
-                    { caption: half + scil.Utils.imgSrc("img/helm_linker.gif", true) + "'>P</div>", tabkey: "linker" }
+                    { caption: half + scil.Utils.imgSrc("img/helm_nucleotide.gif", true) + "'>R(A)P</div>", tabkey: "nucleotide", onmenu: this.options.mexrnapinontab ? function (e) { me.onPinMenu(e); } : null },
+                    { caption: half + scil.Utils.imgSrc("img/helm_base.gif", true) + "'>" + base + "</div>", tabkey: "base" },
+                    { caption: half + scil.Utils.imgSrc("img/helm_sugar.gif", true) + "'>" + sugar + "</div>", tabkey: "sugar" },
+                    { caption: half + scil.Utils.imgSrc("img/helm_linker.gif", true) + "'>" + linker + "</div>", tabkey: "linker" }
                 ];
             this.rnatabs = new scil.Tabs(scil.Utils.createElement(d, "div", null, { paddingTop: "5px" }), {
                 onShowTab: function (td) { me.onShowTab(td); }, //function (td) { me.onShowRNATab(td); },
@@ -410,6 +402,15 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             //var list = this.getMonomerList(null, org.helm.webeditor.HELM.AA);
             //this._listMonomers(d, list, org.helm.webeditor.HELM.AA, true);
         }
+    },
+
+    onPinMenu: function(e) {
+        if (this.pinmenu == null) {
+            var me = this;
+            var items = [{ caption: "Pin This Nucleotide" }];
+            this.pinmenu = new scil.ContextMenu(items, function () { me.addNucleotide(); });
+        }
+        this.pinmenu.show(e.clientX, e.clientY);
     },
 
     createMonomerGroup4: function (div, type, list, addnull, groupbyanalog) {
@@ -447,7 +448,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             }
         }
         else {
-            if (type == "nucleotide") {
+            if (type == "nucleotide" && !this.options.mexrnapinontab) {
                 var me = this;
                 var d = this.createMonomerDiv(div, scil.Utils.imgTag("pin.png"), null, null, false);
                 d.setAttribute("title", "Pin This Nucleotide");
@@ -540,7 +541,12 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             style = scil.apply(scil.clone(this.kStyle), style);
 
         if (this.options.mexusecolor != false) {
-            var color = style.backgroundColor = org.helm.webeditor.Monomers.getColor2(type, name);
+            var color;
+            var custom = org.helm.webeditor.MonomerExplorer.customnucleotides;
+            if (type == "nucleotide" && custom != null && custom[name] != null)
+                color = { backgroundcolor: "#afa" };
+            else
+                color = style.backgroundColor = org.helm.webeditor.Monomers.getColor2(type, name);
             style.backgroundColor = color == null ? null : color.backgroundcolor;
         }
 
@@ -827,11 +833,11 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
     favorites: new scil.Favorite("monomers", function (name, f, type) { org.helm.webeditor.MonomerExplorer.onAddFavorite(name, f, type); }),
 
     nucleotides: {
-        A: "R(A)P",
-        C: "R(C)P",
-        G: "R(G)P",
-        T: "R(T)P",
-        U: "R(U)P"
+        A: "r(A)p",
+        C: "r(C)p",
+        G: "r(G)p",
+        T: "r(T)p",
+        U: "r(U)p"
     },
 
     onAddFavorite: function (name, f, type) {
@@ -873,10 +879,22 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         if (this._nucleotidesloaded)
             return this.nucleotides;
 
+        if (this.nucleotides == null)
+            this.nucleotides = [];
+
         this._nucleotidesloaded = true;
         var s = scil.Utils.readCookie("scil_helm_nucleotides");
         this.customnucleotides = scil.Utils.eval(s);
-        scil.apply(this.nucleotides, this.customnucleotides);
+        if (this.customnucleotides != null && this.customnucleotides.length == null) {
+            var list = {};
+            for (var k in this.customnucleotides) {
+                if (this.nucleotides[k] == null) {
+                    list[k] = this.customnucleotides[k];
+                    this.nucleotides[k] = this.customnucleotides[k];
+                }
+            }
+            this.customnucleotides = list;
+        }
         return this.nucleotides;
     },
 

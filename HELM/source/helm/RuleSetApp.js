@@ -35,7 +35,7 @@ org.helm.webeditor.RuleSetApp = scil.extend(scil._base, {
         var me = this;
         this.buttons = [
             "-",
-            { type: "select", key: "countperpage", label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
+            { type: "select", key: "countperpage", labelstyle: { fontSize: "90%" }, label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
         ];
 
         var fields = org.helm.webeditor.RuleSetApp.getFields();

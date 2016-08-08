@@ -1,8 +1,8 @@
 ﻿<!--
 //////////////////////////////////////////////////////////////////////////////////
 //
-// Pistoia
-// Copyright (C) 2016 Pistoia
+// HELM Editor
+// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // http://www.scilligence.com/
 //
 //////////////////////////////////////////////////////////////////////////////////
@@ -10,27 +10,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Pistoia HELM</title>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>HELM Editor</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <script type="text/javascript" src='../pako/pako.js'></script>
     <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
     <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Lite.js'></script>
     <script type="text/javascript" src='../JSDraw/Pistoia.HELM.js'></script>
-    <script type='text/javascript' src='../JSDraw/Service.aspx'></script>
 </head>
-<body>
+  <body style="font-family:Arial; margin: 0">
 
-    <div id="div1"></div>
+    <div id="toolbar"></div>
+
+    <div id="div1" style="margin: 5px; margin-top: 15px"></div>
     <script type="text/javascript">
-        scil.ready(function () {
-            new scil.helm.RuleSetApp("div1", { ajaxurl: "../JSDraw/Service.aspx?cmd=" });
-        });
+      scil.ready(function () {
+      new scil.helm.AppToolbar("toolbar", "../JSDraw/helm/img/",
+      [{ icon: "canvas-2.png", label: "Canvas", url: "App.htm" }, { icon: "monomers-2.png", label: "Monomer Library", url: "MonomerLibApp.htm" }, { icon: "settings-1.png", label: "Ruleset" }]
+      );
+
+      new scil.helm.RuleSetApp("div1", { ajaxurl: "../HELMToolkitWS/Service/?cmd=" });
+      });
     </script>
 
 
     <hr />
-    HELM Web Editor is created by <a href='http://www.scilligence.com/' target="_blank">Scilligence</a><br />
-    Copyright (C) 2016 (<a href="http://www.pistoiaalliance.org/" target="_blank">Pisotia</a>)
-</body>
+      <div style="text-align:center;">
+          Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)<br />
+          (Developed by <a href='http://www.scilligence.com/'>Scilligence</a>, using <a href='http://www.jsdraw.com'>JSDraw</a>)
+      </div>
+  </body>
 </html>

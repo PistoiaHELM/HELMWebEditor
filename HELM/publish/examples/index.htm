@@ -1,0 +1,109 @@
+﻿<!--
+//////////////////////////////////////////////////////////////////////////////////
+//
+// JSDraw
+// Copyright (C) 2010-2016 Scilligence Corporation
+// http://www.scilligence.com/
+//
+//////////////////////////////////////////////////////////////////////////////////
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSDraw - A Javascript Chemical Structure Editor/Viewer</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src='../pako/pako.js'></script>
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+    <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Pro.js'></script>
+    <script type='text/javascript' src='../JSDraw/Service.aspx'></script>
+</head>
+<body>
+
+    <h2 style="margin-bottom:0">JSDraw/HELM Editor</h2>
+    <div style="color:red">(Alpha Build 5.0.0.2016-05-31)</div>
+
+
+    <H4>Demo</H4>
+    <ul>
+        <li><a href="App.htm">HELM Editor App</a></li>
+        <li><a href="MonomerLibApp.htm">Monomer Library Manager</a></li>
+        <li><a href="RuleSetApp.htm">Ruleset Manager</a></li>
+        <li><a href="Form.htm">Web Form using HELM Editor</a></li>
+        <li><a href="Viewonly.htm">HELM Editor in Viewonly mode</a></li>
+    </ul>
+
+    <h4>Quick Start</h4>
+    JSDraw/HELM Editor is built on 100% Javascript, depending on two Javascript libraries: 
+    <a href="https://dojotoolkit.org" target="_blank">dojo toolkit</a> and 
+    <a href="https://nodeca.github.io/pako/" target="_blank">pako.js</a>    
+    <ol>
+        <li>
+            Load Pako.js (optional)<br />
+            <pre style="border: solid 1px gray; padding: 10px;">&lt;script type="text/javascript" src='../pako.js'&gt;&lt;/script&gt;</pre>
+        </li>
+        <li>
+            Load Dojo<br />
+            <pre style="border: solid 1px gray; padding: 10px;">&lt;script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"&gt;&lt;/script&gt;</pre>
+        </li>
+        <li>
+            Load JSDraw.Lite<br />
+            <pre style="border: solid 1px gray; padding: 10px;">&lt;script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Lite.js'&gt;&lt;/script&gt;</pre>
+        </li>
+        <li>
+            Load Pistoia.HELM.js<br />
+            <pre style="border: solid 1px gray; padding: 10px;">&lt;script type="text/javascript" src='../JSDraw/Pistoia.HELM.js'&gt;&lt;/script&gt;</pre>
+        </li>
+        <li>
+            Load JSDraw/WebService (optional)<br />
+            <pre style="border: solid 1px gray; padding: 10px;">&lt;script type='text/javascript' src='../JSDraw/Service.aspx'&gt;&lt;/script&gt;</pre>
+        </li>
+        <li>
+            Place a DIV as the placeholder<br />
+            <pre style="border: solid 1px gray; padding: 10px;">&lt;div id="placeholder"&gt;&lt;/div&gt;</pre>
+        </li>
+        <li>
+            Initilize the editor in scil.ready()<br />
+            <pre style="border: solid 1px gray; padding: 10px;">
+&lt;script type="text/javascript"&gt;
+    var jsd = null;
+    scil.ready(function () {
+        var ed = new scil.helm.Editor("placeholder", { showmonomerexplorer: true, helmtoolbar: true, skin: "w8", width: 900, height: 450, ondatachange: ondatachange });
+        jsd = ed.canvas;
+    });
+&lt;/script&gt;</pre>
+        </li>
+    </ol>
+
+    Here is a full example
+    <pre style="border: solid 1px gray; padding: 10px;">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;JSDraw - A Javascript Chemical Structure Editor/Viewer&lt;/title&gt;
+    &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8" /&gt;
+    &lt;script type="text/javascript" src='../pako.js'&gt;&lt;/script&gt;
+    &lt;script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Lite.js'&gt;&lt;/script&gt;
+    &lt;script type="text/javascript" src='../JSDraw/Pistoia.HELM.js'&gt;&lt;/script&gt;
+    &lt;script type='text/javascript' src='../JSDraw/Service.aspx'&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h2&gt;JSDraw/HELM Editor&lt;/h2&gt;
+    &lt;div id="placeholder"&gt;&lt;/div&gt;
+    &lt;script type="text/javascript"&gt;
+        var jsd = null;
+        scil.ready(function () {
+            var ed = new scil.helm.Editor("placeholder", { showmonomerexplorer: true, helmtoolbar: true, skin: "w8", width: 900, height: 450 });
+            jsd = ed.canvas;
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+    <hr />
+    (HELM Module is co-developed with PISTOIA)<br />
+    Copyright Scilligence, 2016 (<a href='http://www.scilligence.com/'>http://www.scilligence.com/</a>)
+</body>
+</html>

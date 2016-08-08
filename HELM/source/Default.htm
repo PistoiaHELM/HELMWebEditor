@@ -13,8 +13,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <title>Pistoia HELM</title>
 
-    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
-    <script src="./JSDraw/Scilligence.JSDraw2.Lite.js"></script>
+    <script type='text/javascript' src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+    <script type='text/javascript' src="./JSDraw/Scilligence.JSDraw2.Lite.js"></script>
 
     <script type='text/javascript' src='helm/helm.js'></script>
     <script type='text/javascript' src='helm/Interface.js'></script>
@@ -29,28 +29,30 @@
     <script type='text/javascript' src='helm/Formula.js'></script>
     <script type='text/javascript' src='helm/Editor.js'></script>
     <script type='text/javascript' src='helm/App.js'></script>
+    <script type='text/javascript' src='helm/AppToolbar.js'></script>
     <script type='text/javascript' src='helm/MonomerLibApp.js'></script>
     <script type='text/javascript' src='helm/RuleSet.js'></script>
     <script type='text/javascript' src='helm/RuleSetApp.js'></script>
 
-    <script type='text/javascript' src='JSDraw/Service.aspx'></script>
+    <script type='text/javascript' src='helm/MonomerLib.js'></script>
 
 </head>
-<body style='margin:0; padding:0'>
-    
+  <body style="font-family:Arial; margin: 0">
 
-<!-- HELM App -->
+    <div id="toolbar"></div>
 
-    <script type='text/javascript' src='./JSDraw/Service.aspx?cmd=helm.monomer.downloadjson'></script>
-    <div id="div1"></div>
+    <!-- HELM App -->
+    <div id="div1" style="margin: 5px; margin-top: 15px"></div>
     <script type="text/javascript">
         scil.ready(function () {
-            new scil.helm.App("div1", { alwaysdrawnucleotide: false,  mexshowrnaselection:false, mexuseshape: true, mexgroupanalogs: true, sequenceviewonly: false, mexrules: true, mexfavoritefirst: true, mexusecolor: true, mexuseshape: false, mexfilter: true });
+//            new scil.helm.AppToolbar("toolbar", "../JSDraw/helm/img/",
+//                [{ icon: "canvas-1.png", label: "Canvas" }, { icon: "monomers-2.png", label: "Monomer Library", url: "MonomerLibApp.htm" }, { icon: "settings-2.png", label: "Ruleset", url: "RuleSetApp.htm"}]
+//            );
+
+            org.helm.webeditor.MolViewer.molscale = 0.8;
+            var app = new scil.helm.App("div1", { showabout: false, mexfontsize: "90%", mexrnapinontab: true, topmargin: 20, mexmonomerstab: true, sequenceviewonly: false, mexfavoritefirst: true, mexfilter: true });
         });
     </script>
-
-
-
 
 
 

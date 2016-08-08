@@ -95,11 +95,11 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             return c;
 
         if (a == org.helm.webeditor.HELM.BASE)
-            return "A";
+            return org.helm.webeditor.Monomers.bases["A"] == null ? "a" : "A";
         else if (a == org.helm.webeditor.HELM.SUGAR)
-            return "R";
+            return org.helm.webeditor.Monomers.linkers["R"] == null ? "r" : "R";
         else if (a == org.helm.webeditor.HELM.LINKER)
-            return "P";
+            return org.helm.webeditor.Monomers.linkers["P"] == null ? "p" : "P";
         else if (a == org.helm.webeditor.HELM.AA)
             return "A";
         else if (a == org.helm.webeditor.HELM.CHEM)
@@ -538,19 +538,22 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             };
 
             var me = this;
-            this.inputSeqDlg = scil.Form.createDlgForm("Import Sequence", fields, { label: "Import", onclick: function () { me.importSequence(); } })
+            this.inputSeqDlg = scil.Form.createDlgForm("Import Sequence", fields, [
+                { label: "Import", onclick: function () { me.importSequence(false); } },
+                { label: "Append", onclick: function () { me.importSequence(true); } }
+            ]);
         }
 
         this.inputSeqDlg.show2({ owner: this.jsd });
     },
 
-    importSequence: function () {
+    importSequence: function (append) {
         var data = this.inputSeqDlg.form.getData();
-        if (this.setSequence(data.sequence, data.type))
+        if (this.setSequence(data.sequence, data.type, null, null, append))
             this.inputSeqDlg.hide();
     },
 
-    setSequence: function(seq, format, sugar, linker) {
+    setSequence: function(seq, format, sugar, linker, append) {
         var seq = scil.Utils.trim(seq);
         if (/^[a-z]+$/.test(seq))
             seq = seq.toUpperCase();
@@ -573,6 +576,16 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             this.jsd.pushundo(cloned);
 
             this.clean();
+
+            if (append) {
+                var m = cloned.mol.clone();
+                var rect = m.rect();
+                var r2 = this.jsd.m.rect();
+                this.jsd.m.offset(rect.center().x - r2.center().x, rect.bottom() + this.jsd.bondlength * 4 - r2.bottom());
+                m.mergeMol(this.jsd.m);
+                this.jsd.m = m;
+            }
+
             this.jsd.fitToWindow();
             this.jsd.refresh(true);
         }

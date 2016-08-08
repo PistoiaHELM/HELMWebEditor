@@ -16,11 +16,13 @@ org.helm.webeditor.MonomerColors = {
     },
 
     linkers: {
-        P: "#9aa5e1"
+        P: "#9aa5e1",
+        p: "#9aa5e1"
     },
 
     sugars: {
-        R: "#7a85c1"
+        R: "#7a85c1",
+        r: "#7a85c1"
     },
 
     aas: {

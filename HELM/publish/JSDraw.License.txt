@@ -1,0 +1,9 @@
+/***********************************************************************************************************************
+ * HELM Web Editor requires JSDraw version 5.0 or higher from Scilligence. 
+ * A copy of the required library (Scilligence.JSDraw.Lite.js) is included for your convenience. 
+ * Scilligence has graciously agreed to provide a royalty-free license for the utilization of JSDraw.Lite directly 
+ * through the HELM Web Editor (specifically for operations pertaining to the chemical representation 
+ * of HELM monomers and macromolecules.) Please contact support@scilligence.com to obtain this license. 
+ * Utilization of the JSDraw.Lite library outside of the aforementioned scope and beyond a trial basis requires the 
+ * procurement of a regular JSDraw license.
+ ************************************************************************************************************************/
