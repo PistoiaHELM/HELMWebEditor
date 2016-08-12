@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 org.helm.webeditor.IO = {
-    getHelm: function (m) {
+    getHelm: function (m, highlightselection) {
         var branches = {};
         var chains = org.helm.webeditor.Chain.getChains(m, branches);
 
@@ -17,7 +17,7 @@ org.helm.webeditor.IO = {
         var ret = { chainid: { RNA: 0, PEPTIDE: 0, CHEM: 0 }, sequences: {}, connections: [], chains: {} };
         for (var i = 0; i < chains.length; ++i) {
             var chain = chains[i];
-            chain.getHelm(ret);
+            chain.getHelm(ret, highlightselection);
         }
 
         for (var i = 0; i < branches.atoms.length; ++i) {
@@ -28,7 +28,7 @@ org.helm.webeditor.IO = {
             }
 
             var id = "CHEM" + (++ret.chainid.CHEM);
-            ret.sequences[id] = this.getCode(a);
+            ret.sequences[id] = this.getCode(a, highlightselection);
             ret.chains[id] = [a];
             a._aaid = 1;
         }
@@ -52,7 +52,7 @@ org.helm.webeditor.IO = {
         return s == "$" ? "" : (s + "$$$");
     },
 
-    getSequence: function(m) {
+    getSequence: function(m, highlightselection) {
         var branches = {};
         var chains = org.helm.webeditor.Chain.getChains(m, branches);
         if (chains == null)
@@ -60,7 +60,7 @@ org.helm.webeditor.IO = {
 
         var s = "";
         for (var i = 0; i < chains.length; ++i) {
-            var s2 = chains[i].getSequence();
+            var s2 = chains[i].getSequence(highlightselection);
             if (scil.Utils.isNullOrEmpty(s2))
                 continue;
             if (s != "")
@@ -130,10 +130,12 @@ org.helm.webeditor.IO = {
         return ret;
     },
 
-    getCode: function (a) {
+    getCode: function (a, highlightselection) {
         var s = typeof(a) == "string" ? a : a.elem;
         if (s.length > 1)
-            return "[" + s + "]";
+            s = "[" + s + "]";
+        if (highlightselection && a.selected)
+            s = "<span style='background:blue;color:white;'>" + s + "</span>";
         return s;
     },
 

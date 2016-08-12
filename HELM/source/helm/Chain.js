@@ -192,7 +192,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return org.helm.webeditor.Interface.createRect(x1, y1, x2 - x1, y2 - y1);
     },
 
-    getSequence: function (ret) {
+    getSequence: function (highlightselection) {
         var s = "";
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
         var lastbt = null;
@@ -207,7 +207,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                         if (s.length > 0 && s.substr(s.length - 1) != "-")
                             s += "-";
                     }
-                    s += scil.Utils.isNullOrEmpty(mon.na) ? "?" : mon.na;
+                    var c = scil.Utils.isNullOrEmpty(mon.na) ? "?" : mon.na;
+                    if (highlightselection && a.selected)
+                        c = "<span style='background:blue;color:white;'>" + c + "</span>";
+                    s += c;
                 }
             }
             else if (bt == org.helm.webeditor.HELM.SUGAR) {
@@ -218,7 +221,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                         if (s.length > 0 && s.substr(s.length - 1) != "-")
                             s += "-";
                     }
-                    s += scil.Utils.isNullOrEmpty(mon.na) ? "?" : mon.na;
+                    var c = scil.Utils.isNullOrEmpty(mon.na) ? "?" : mon.na;
+                    if (highlightselection && b.selected)
+                        c = "<span style='background:blue;color:white;'>" + c + "</span>";
+                    s += c;
                 }
             }
             lastbt = bt;
@@ -227,7 +233,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return s;
     },
 
-    getHelm: function (ret) {
+    getHelm: function (ret, highlightselection) {
         var sequence = "";
         var aaid = 0;
         var firstseqid = null;
@@ -282,11 +288,11 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             chn.push(a);
             if (aaid > 1 && !(i > 0 && a.biotype() == org.helm.webeditor.HELM.LINKER && this.atoms[i - 1].biotype() == org.helm.webeditor.HELM.SUGAR))
                 sequence += ".";
-            sequence += org.helm.webeditor.IO.getCode(a);
+            sequence += org.helm.webeditor.IO.getCode(a, highlightselection);
 
             if (this.bases[i] != null) {
                 var b = this.bases[i];
-                sequence += "(" + org.helm.webeditor.IO.getCode(b) + ")";
+                sequence += "(" + org.helm.webeditor.IO.getCode(b, highlightselection) + ")";
                 b._aaid = ++aaid;
             }
         }

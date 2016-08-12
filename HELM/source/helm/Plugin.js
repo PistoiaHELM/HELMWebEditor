@@ -467,12 +467,12 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         }
     },
 
-    getHelm: function () {
-        return org.helm.webeditor.IO.getHelm(this.jsd.m);
+    getHelm: function (highlightselection) {
+        return org.helm.webeditor.IO.getHelm(this.jsd.m, highlightselection);
     },
 
-    getSequence: function () {
-        return org.helm.webeditor.IO.getSequence(this.jsd.m);
+    getSequence: function (highlightselection) {
+        return org.helm.webeditor.IO.getSequence(this.jsd.m, highlightselection);
     },
 
     getXHelm: function () {

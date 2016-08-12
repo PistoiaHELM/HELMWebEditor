@@ -160,16 +160,16 @@ org.helm.webeditor.App = scil.extend(scil._base, {
 
     createSequence: function (div, width, height) {
         var atts = {};
-        if (this.options.sequenceviewonly)
-            atts.readOnly = "readonly";
-        this.sequence = scil.Utils.createElement(div, "textarea", null, { width: width, height: height }, atts);
+        if (!this.options.sequenceviewonly)
+            atts.contenteditable = "true";
+        this.sequence = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll" }, atts);
     },
 
     createNotation: function (div, width, height) {
         var atts = {};
-        if (this.options.sequenceviewonly)
-            atts.readOnly = "readonly";
-        this.notation = scil.Utils.createElement(div, "textarea", null, { width: width, height: height }, atts);
+        if (!this.options.sequenceviewonly)
+            atts.contenteditable = "true";
+        this.notation = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll" }, atts);
     },
 
     createProperties: function (div, width, height) {
@@ -204,14 +204,14 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var plugin = this.canvas.helm;
         var s = null;
         if (key == "sequence") {
-            s = scil.Utils.trim(this.sequence.value);
+            s = scil.Utils.trim(scil.Utils.getInnerText(this.sequence));
             // fasta
             s = s.replace(/[\n][>|;].*[\r]?[\n]/ig, '').replace(/^[>|;].*[\r]?[\n]/i, '');
             // other space
             s = s.replace(/[ \t\r\n]+/g, '')
         }
         else {
-            s = this.notation.value;
+            s = scil.Utils.getInnerText(this.notation);
         }
         plugin.setSequence(s, format, plugin.getDefaultNodeType(org.helm.webeditor.HELM.SUGAR), plugin.getDefaultNodeType(org.helm.webeditor.HELM.LINKER), append);
     },
@@ -227,12 +227,13 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     updateProperties: function () {
         switch (this.tabs.tabs.currentTabKey()) {
             case "sequence":
-                if (this.sequence != null)
-                    this.sequence.value = this.canvas.getSequence();
+                if (this.sequence != null) {
+                    this.sequence.innerHTML = this.canvas.getSequence(true);
+                }
                 break;
             case "notation":
                 if (this.notation != null)
-                    this.notation.value = this.canvas.getHelm();
+                    this.notation.innerHTML = this.canvas.getHelm();
                 break;
             case "properties":
                 this.calculateProperties();
@@ -245,6 +246,15 @@ org.helm.webeditor.App = scil.extend(scil._base, {
 
     onselectionchanged: function() {
         switch (this.tabs.tabs.currentTabKey()) {
+            case "sequence":
+                if (this.sequence != null) {
+                    this.sequence.innerHTML = this.canvas.getSequence(true);
+                }
+                break;
+            case "notation":
+                if (this.notation != null)
+                    this.notation.innerHTML = this.canvas.getHelm(true);
+                break;
             case "structureview":
                 this.updateStructureView();
                 break;
