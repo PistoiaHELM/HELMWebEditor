@@ -581,7 +581,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                 var m = cloned.mol.clone();
                 var rect = m.rect();
                 var r2 = this.jsd.m.rect();
-                this.jsd.m.offset(rect.center().x - r2.center().x, rect.bottom() + this.jsd.bondlength * 4 - r2.bottom());
+                if (r2 != null && rect != null)
+                    this.jsd.m.offset(rect.center().x - r2.center().x, rect.bottom() + this.jsd.bondlength * 4 - r2.bottom());
                 m.mergeMol(this.jsd.m);
                 this.jsd.m = m;
             }

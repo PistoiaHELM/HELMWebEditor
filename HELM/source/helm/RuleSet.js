@@ -13,9 +13,7 @@ org.helm.webeditor.RuleSet = {
     rules: [
         { id: 1, name: "Replace base A with U", note: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'U');return n > 0;}" },
         { id: 2, name: "Replace base A with G", note: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'G');return n > 0;}" },
-        { id: 3, name: "Replace base A with T", note: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'T');return n > 0;}" },
-        { id: 4, name: "Replace sugar R with aR", note: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.SUGAR, 'R', 'aR');return n > 0;}" },
-        { id: 5, name: "Replace linker P with sP", note: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.LINKER, 'P', 'sP');return n > 0;}" },
+        { id: 3, name: "Replace base A with T", note: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'T');return n > 0;}" }
     ],
 
     loadDB: function(list) {
@@ -86,26 +84,28 @@ org.helm.webeditor.RuleSet = {
         var me = this;
         var tr = scil.Utils.createElement(tbody, "tr", null, { background: i % 2 == 1 ? "#eee" : null }, { ruleid: r.id });
         scil.Utils.createElement(scil.Utils.createElement(tr, "td"), "checkbox", null, { display: (this.kApplyAll ? "" : "none"), width: "1%" });
-        scil.Utils.createElement(scil.Utils.createElement(tr, "td"), "img", null, { width: "1%" }, { star: (fav ? 1 : null), src: scil.Utils.imgSrc("img/star" + (fav ? "" : "0") + ".png") }, function (e) { me.addFavorite(e); });
-        var td = scil.Utils.createElement(tr, "td", null, { width: "99%" });
 
+        var td = scil.Utils.createElement(tr, "td");
+        scil.Utils.createElement(td, "img", null, { /*width: "1%"*/ }, { star: (fav ? 1 : null), src: scil.Utils.imgSrc("img/star" + (fav ? "" : "0") + ".png") }, function (e) { me.addFavorite(e); });
+
+        td = scil.Utils.createElement(tr, "td", null, { width: "99%" });
         this.listOneRule2(td, r, apply, i);
     },
 
-    listOneRule2: function (td, r, fun, i) {
-        var s = r.name;
+    listOneRule2: function (td, rule, fun, i) {
+        var s = rule.name;
         if (scil.Utils.isNullOrEmpty(s))
-            s = r.note;
+            s = rule.note;
         if (s.length > 50)
             s = s.substr(0, 47) + "...";
 
         var tbody = scil.Utils.createTable(td, 0, 0, { width: "100%" });
         var tr = scil.Utils.createElement(tbody, "tr");
-        scil.Utils.createElement(tr, "td", "[" + r.id + "] " + s, { padding: "3px 0 3px 0" }, { title: r.note });
+        scil.Utils.createElement(tr, "td", "[" + rule.id + "] " + s, { padding: "3px 0 3px 0" }, { title: rule.note });
         var button = scil.Utils.createElement(scil.Utils.createElement(tr, "td", null, { textAlign: "right" }), "button", "Apply", { display: "none" });
 
         var me = this;
-        scil.connect(button, "onclick", function () { fun(me.rules[i].script); });
+        scil.connect(button, "onclick", function () { fun(rule.script); });
         scil.connect(td, "onmouseover", function (e) { button.style.display = ""; });
         scil.connect(td, "onmouseout", function (e) { button.style.display = "none"; });
     },

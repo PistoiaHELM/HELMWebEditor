@@ -1,6 +1,6 @@
 ﻿//
 // JSDraw.Lite for HELM
-// Version 5.0.1.2016-08-11
+// Version 5.0.1.2016-08-22
 //
 // JSDraw™ 5.0.1 is built on Dojo 1.10.4 (http://www.dojotoolkit.org/)
 //

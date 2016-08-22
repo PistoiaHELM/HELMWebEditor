@@ -130,12 +130,13 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                     continue;
 
                 var name = scil.Utils.getInnerText(d);
-                var f = name.toLowerCase().indexOf(s) >= 0;
+                var f = scil.Utils.startswith(name.toLowerCase(), s);//name.toLowerCase().indexOf(s) >= 0;
                 if (!f) {
                     var m = org.helm.webeditor.Monomers.getMonomer(type, name);
                     var fullname = m == null ? null : m.n;
-                    f = fullname == null ? null : fullname.toLowerCase().indexOf(s) >= 0;
+                    f = fullname == null ? false : scil.Utils.startswith(fullname.toLowerCase(), s); //fullname.toLowerCase().indexOf(s) >= 0;
                 }
+
                 if (f)
                     d.style.display = "table";
                 else
@@ -524,7 +525,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
     },
 
     recreateFavorites: function (d) {
-        this.createMonomerGroupFav(d, "Nucletide", org.helm.webeditor.MonomerExplorer.kNucleotide);
+        this.createMonomerGroupFav(d, "Nucleotide", org.helm.webeditor.MonomerExplorer.kNucleotide);
         this.createMonomerGroupFav(d, "Base", org.helm.webeditor.HELM.BASE);
         this.createMonomerGroupFav(d, "Sugar", org.helm.webeditor.HELM.SUGAR);
         this.createMonomerGroupFav(d, "Linker", org.helm.webeditor.HELM.LINKER);

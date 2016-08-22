@@ -227,20 +227,19 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     updateProperties: function () {
         switch (this.tabs.tabs.currentTabKey()) {
             case "sequence":
-                if (this.sequence != null) {
+                if (this.sequence != null)
                     this.sequence.innerHTML = this.canvas.getSequence(true);
-                }
                 break;
             case "notation":
                 if (this.notation != null)
-                    this.notation.innerHTML = this.canvas.getHelm();
+                    this.notation.innerHTML = this.canvas.getHelm(true);
                 break;
             case "properties":
                 this.calculateProperties();
                 break;
-                //case "structureview":
-                //    this.updateStructureView();
-                //    break;
+            case "structureview":
+                this.updateStructureView();
+                break;
         }
     },
 
