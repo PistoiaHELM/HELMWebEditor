@@ -102,7 +102,7 @@ org.helm.webeditor.RuleSet = {
         var tbody = scil.Utils.createTable(td, 0, 0, { width: "100%" });
         var tr = scil.Utils.createElement(tbody, "tr");
         scil.Utils.createElement(tr, "td", "[" + rule.id + "] " + s, { padding: "3px 0 3px 0" }, { title: rule.note });
-        var button = scil.Utils.createElement(scil.Utils.createElement(tr, "td", null, { textAlign: "right" }), "button", "Apply", { display: "none" });
+        var button = scil.Utils.createElement(scil.Utils.createElement(tr, "td", null, { textAlign: "right" }), "button", JSDraw2.Language.res("Apply"), { display: "none" });
 
         var me = this;
         scil.connect(button, "onclick", function () { fun(rule.script); });

@@ -73,18 +73,32 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             var biotype = a.biotype();
             if (biotype == org.helm.webeditor.HELM.AA) {
                 a.bio.id = ++aaid;
+                if (aaid == 1) {
+                    a.bio.annotation = "n";
+                }
+                else {
+                    a.bio.annotation = null;
+                }
                 baseid = 0;
             }
             else if (biotype == org.helm.webeditor.HELM.SUGAR || biotype == org.helm.webeditor.HELM.LINKER) {
-                if (biotype == org.helm.webeditor.HELM.SUGAR && this.bases[i] != null)
+                if (biotype == org.helm.webeditor.HELM.SUGAR && this.bases[i] != null) {
                     this.bases[i].bio.id = ++baseid;
+                    if (baseid == 1) {
+                        if (a.bio.annotation != "5'ss" && a.bio.annotation != "5'as")
+                            a.bio.annotation = "5'";
+                    }
+                    else {
+                        a.bio.annotation = null;
+                    }
+                }
                 aaid = 0;
             }
             else {
                 aaid = 0;
                 baseid = 0;
             }
-        }
+        } 
     },
 
     setFlag: function(f) {
@@ -209,7 +223,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                     }
                     var c = scil.Utils.isNullOrEmpty(mon.na) ? "?" : mon.na;
                     if (highlightselection && a.selected)
-                        c = "<span style='background:blue;color:white;'>" + c + "</span>";
+                        c = "<span style='background:#bbf;'>" + c + "</span>";
                     s += c;
                 }
             }
@@ -223,7 +237,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                     }
                     var c = scil.Utils.isNullOrEmpty(mon.na) ? "?" : mon.na;
                     if (highlightselection && b.selected)
-                        c = "<span style='background:blue;color:white;'>" + c + "</span>";
+                        c = "<span style='background:#bbf;'>" + c + "</span>";
                     s += c;
                 }
             }
@@ -245,6 +259,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             var a = this.atoms[i];
 
             var bt = a.biotype();
+
             if (bt == org.helm.webeditor.HELM.LINKER || bt == org.helm.webeditor.HELM.SUGAR)
                 bt = org.helm.webeditor.HELM.BASE;
             if (bt != lastbt || bt == org.helm.webeditor.HELM.CHEM) {
@@ -256,6 +271,13 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 else if (bt == org.helm.webeditor.HELM.CHEM)
                     seqid = "CHEM";
                 seqid = seqid + (++ret.chainid[seqid]);
+
+                if (i == 0 && a.biotype() == org.helm.webeditor.HELM.SUGAR) {
+                    if (a.bio.annotation == "5'ss")
+                        ret.annotations.push(seqid + "{ss}");
+                    else if (a.bio.annotation == "5'as")
+                        ret.annotations.push(seqid + "{as}");
+                }
 
                 if (i > 0) {
                     var b = this.bonds[i - 1];
@@ -292,7 +314,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
 
             if (this.bases[i] != null) {
                 var b = this.bases[i];
-                sequence += "(" + org.helm.webeditor.IO.getCode(b, highlightselection) + ")";
+                sequence += org.helm.webeditor.IO.getCode(b, highlightselection, true);
                 b._aaid = ++aaid;
             }
         }
@@ -312,7 +334,6 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 conn = b.a2._aaid + ":R" + b.r2 + "-" + b.a1._aaid + ":R" + b.r1;
             ret.connections.push(firstseqid + "," + lastseqid + "," + conn);
         }
-
     },
 
     getAtomByAAID: function (aaid) {

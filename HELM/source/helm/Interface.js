@@ -85,8 +85,14 @@ org.helm.webeditor.Interface = {
         JSDraw2.Drawer.drawLabel(surface, p, a.elem, c.textcolor, fontsize * (a.elem.length > 1 ? 2 / a.elem.length : 1.0), null, null, null, false);
 
         if (a.bio.id > 0) {
-            p.offset(-fontsize * 1.2, -fontsize * 1.2);
-            JSDraw2.Drawer.drawLabel(surface, p, a.bio.id, "green", fontsize, null, null, null, false);
+            var p1 = p.clone();
+            p1.offset(-fontsize * 1.2, -fontsize * 1.2);
+            JSDraw2.Drawer.drawLabel(surface, p1, a.bio.id, "green", fontsize, null, null, null, false);
+        }
+        if (!scil.Utils.isNullOrEmpty(a.bio.annotation)) {
+            var p1 = p.clone();
+            p1.offset(-fontsize * 2, -fontsize * 1.5);
+            JSDraw2.Drawer.drawLabel(surface, p1, a.bio.annotation, "orange", fontsize, null, null, null, false);
         }
     },
 
@@ -117,6 +123,8 @@ org.helm.webeditor.Interface = {
         buttons.push({ c: "eraser", t: "Eraser", label: "Eraser" });
         buttons.push({ c: "|" });
         buttons.push({ c: "select", t: "Box Selection", label: "Select", sub: selecttools });
+        buttons.push({ c: "|" });
+        buttons.push({ c: "helm_find", t: "Find/Replace", label: "Find/Replace" });
         buttons.push({ c: "|" });
         buttons.push({ c: "zoomin", t: "Zoom in", label: "Zoom" });
         buttons.push({ c: "zoomout", t: "Zoom out", label: "Zoom" });

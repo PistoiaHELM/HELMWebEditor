@@ -14,7 +14,7 @@ org.helm.webeditor.IO = {
         for (var i = 0; i < m.atoms.length; ++i)
             m.atoms[i]._aaid = null;
 
-        var ret = { chainid: { RNA: 0, PEPTIDE: 0, CHEM: 0 }, sequences: {}, connections: [], chains: {} };
+        var ret = { chainid: { RNA: 0, PEPTIDE: 0, CHEM: 0 }, sequences: {}, connections: [], chains: {}, annotations: [] };
         for (var i = 0; i < chains.length; ++i) {
             var chain = chains[i];
             chain.getHelm(ret, highlightselection);
@@ -45,11 +45,22 @@ org.helm.webeditor.IO = {
         var s = "";
         for (var k in ret.sequences)
             s += (s == "" ? "" : "|") + k + "{" + ret.sequences[k] + "}";
+
+        if (s == "")
+            return s;
+
         s += "$";
         for (var i = 0; i < ret.connections.length; ++i)
             s += (i > 0 ? "|" : "") + ret.connections[i];
 
-        return s == "$" ? "" : (s + "$$$");
+        s += "$$";
+
+        //RNA1{R(C)P.R(A)P.R(T)}$$$RNA1{ss}$
+        for (var i = 0; i < ret.annotations.length; ++i)
+            s += (i > 0 ? "|" : "") + ret.annotations[i];
+
+        s += "$";
+        return s;
     },
 
     getSequence: function(m, highlightselection) {
@@ -130,12 +141,14 @@ org.helm.webeditor.IO = {
         return ret;
     },
 
-    getCode: function (a, highlightselection) {
+    getCode: function (a, highlightselection, bracket) {
         var s = typeof(a) == "string" ? a : a.elem;
         if (s.length > 1)
             s = "[" + s + "]";
+        if (bracket)
+            s = "(" + s + ")";
         if (highlightselection && a.selected)
-            s = "<span style='background:blue;color:white;'>" + s + "</span>";
+            s = "<span style='background:#bbf;'>" + s + "</span>";
         return s;
     },
 
@@ -199,6 +212,7 @@ org.helm.webeditor.IO = {
 
             var chain = new org.helm.webeditor.Chain(sid);
             chains[sid] = chain;
+            chain.type = type;
 
             s = s.substr(p + 1);
             p = s.indexOf('}');
@@ -220,10 +234,12 @@ org.helm.webeditor.IO = {
         }
 
         // connection
+        var remained = null;
         p = conn.indexOf("$");
-        if (p > 0) {
+        if (p >= 0) {
             s = conn.substr(0, p);
-            var ss = s.split('|');
+            remained = conn.substr(p + 1);
+            var ss = s == "" ? [] : s.split('|');
 
             // RNA1,RNA1,1:R1-21:R2
             for (var i = 0; i < ss.length; ++i) {
@@ -254,6 +270,34 @@ org.helm.webeditor.IO = {
 
                 //chain.bonds.push(plugin.addBond(atom1, atom2, r1, r2));
                 plugin.addBond(atom1, atom2, r1, r2);
+            }
+        }
+
+        // ???
+        p = remained == null ? -1 : remained.indexOf("$");
+        if (p >= 0) {
+            s = remained.substr(0, p);
+            remained = remained.substr(p + 1);
+        }
+
+        // annotation
+        p = remained == null ? -1 : remained.indexOf("$");
+        if (p >= 0) {
+            s = remained.substr(0, p);
+            remained = remained.substr(p + 1);
+
+            var ss = s == "" ? [] : s.split("|");
+            for (var i = 0; i < ss.length; ++i) {
+                var s = ss[i];
+                p = s.indexOf("{");
+                var chn = s.substr(0, p);
+                s = s.substr(p);
+                if (s == "{ss}" || s == "{as}")
+                {
+                    var chain = chains[chn];
+                    if (chain != null && chain.type == "RNA")
+                        chain.atoms[0].bio.annotation = "5'" + s.substr(1, s.length - 2);
+                }
             }
         }
 

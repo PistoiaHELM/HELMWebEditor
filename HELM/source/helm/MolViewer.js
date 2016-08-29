@@ -42,6 +42,14 @@ org.helm.webeditor.MolViewer = {
             this.dlg.show2({ title: "<div style='font-size:80%'>" + (/*code + ": " + */m.n) + "</div>", modal: false, immediately: true });
 
             this.jsd.setMolfile(org.helm.webeditor.monomers.getMolfile(m));
+
+            var s = "<table cellspacing=0 cellpadding=0 style='font-size:80%'>";
+            if (m.at != null) {
+                for (var k in m.at)
+                    s += "<tr><td>" + k + "=</td><td>&nbsp;" + m.at[k] + "</td></tr>";
+            } 
+            s += "</table>";
+            this.rs.innerHTML = s;
         }
 
         var scroll = scil.Utils.scrollOffset();
@@ -142,9 +150,10 @@ org.helm.webeditor.MolViewer = {
         if (this.dlg != null)
             return;
 
-        var fields = { jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true } };
+        var fields = { jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true }, rs: { type: "html", viewonly: true, style: {borderTop: "solid 1px gray"} } };
         this.dlg = scil.Form.createDlgForm("", fields, null, { hidelabel: true, modal: false, noclose: true });
         this.jsd = this.dlg.form.fields.jsd.jsd;
+        this.rs = this.dlg.form.fields.rs;
         this.dlg.hide(true);
 
         this.dlg.dialog.style.backgroundColor = "#fff";
