@@ -694,8 +694,9 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         var div = this.getMonomerDiv(e);
        if (div != null) {
            var d = scil.Utils.getOffset(div, true);
-           var dx = e.clientX - d.x + div.parentNode.scrollLeft;
-           var dy = e.clientY - d.y + div.parentNode.scrollTop;
+           var scroll = scil.Utils.getParent(div.parentNode, "div");
+           var dx = e.clientX - d.x + scroll.scrollLeft;
+           var dy = e.clientY - d.y + scroll.scrollTop;
            if (dx >= 0 && dx < 16 && dy >= 0 && dy < 16) {
                // favorite
                this.changeFavorite(div);

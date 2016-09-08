@@ -211,7 +211,7 @@ public class AjaxTool {
     
     void LoadMonomers() {
         if (monomers == null) {
-            String[] cols = {"id","symbol","name","natualanalog","molfile","smiles","polymertype","monomertype","r1","r2","r3","r4","r5","author","createddate"};
+            String[] cols = {"id","symbol","name","naturalanalog","molfile","smiles","polymertype","monomertype","r1","r2","r3","r4","r5","author","createddate"};
             monomers = new Database("c:\\temp\\monomers.txt", cols);
         }
     }

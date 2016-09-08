@@ -9,11 +9,29 @@
 
 org.helm.webeditor.Monomers = {    
     clear: function () {
-        this.surgars = {};
+        this.sugars = {};
         this.linkers = {};
         this.bases = {};
         this.aas = {};
         this.chems = {};
+    },
+
+    saveTextDB: function(url) {
+        var cols = ["id", "symbol", "name", "naturalanalog", "molfile", "smiles", "polymertype", "monomertype", "r1", "r2", "r3", "r4", "r5", "author", "createddate"];
+        var s = "";
+        var n = { n: 0 };
+        s += this.saveMonomersAsText(this.aas, "PEPTIDE", "Undefined", cols, n);
+        s += this.saveMonomersAsText(this.sugars, "RNA", "Backbone", cols, n);
+        s += this.saveMonomersAsText(this.linkers, "RNA", "Backbone", cols, n);
+        s += this.saveMonomersAsText(this.bases, "RNA", "Branch", cols, n);
+        s += this.saveMonomersAsText(this.chems, "CHEM", "Undefined", cols, n);
+
+        s = n.n + "\n" + s;
+        if (url == null)
+            return s;
+
+        var args = { client: "jsdraw", wrapper: "none", filename: "monomers.txt", directsave: 1, contents: s };
+        scil.Utils.post(url, args, "_blank");
     },
 
     saveMonomerDB: function(url) {
@@ -44,6 +62,16 @@ org.helm.webeditor.Monomers = {
         scil.Utils.post(url, args, "_blank");
     },
 
+    saveMonomersAsText: function (set, type, mt, cols, n) {
+        var ret = "";
+        for (var id in set) {
+            var s = this.writeOneAsText({ id: ++n.n, symbol: id, monomertype: mt, polymertype: type, name: set[id].n, naturalanalog: set[id].na, m: set[id] }, cols);
+            ret += JSDraw2.Base64.encode(s) + "\n";
+        }
+
+        return ret;
+    },
+
     saveMonomers: function (set, type, mt) {
         var s = "";
         for (var id in set)
@@ -72,13 +100,13 @@ org.helm.webeditor.Monomers = {
 
         for (var i = 0; i < list.length; ++i) {
             var x = list[i];
-            var m = { id: x.symbol, n: x.name, na: x.natualanalog, type: x.polymertype, mt: x.monomertype };
+            var m = { id: x.symbol, n: x.name, na: x.naturalanalog, type: x.polymertype, mt: x.monomertype };
 
             m.at = {};
             var rs = 0;
             for (var r = 1; r <= 5; ++r) {
-                if (m["r" + r]) {
-                    m.at["R" + r] = m["r" + r];
+                if (x["r" + r]) {
+                    m.at["R" + r] = x["r" + r];
                     ++rs;
                 }
             }
@@ -258,7 +286,7 @@ org.helm.webeditor.Monomers = {
             if (m.mt == "Branch")
                 return org.helm.webeditor.HELM.BASE;
             if (m.mt == "Backbone") {
-                if (m.na == "P")
+                if (m.na == "P" || m.na == "p")
                     return org.helm.webeditor.HELM.LINKER;
                 else
                     return org.helm.webeditor.HELM.SUGAR;
@@ -277,6 +305,27 @@ org.helm.webeditor.Monomers = {
 
         set[m.id] = m;
         return true;
+    },
+
+    writeOneAsText: function (m, cols) {
+        var molfile = m.m.mz;
+        if (scil.Utils.isNullOrEmpty(molfile) && m.m.m != null)
+            molfile = org.helm.webeditor.IO.compressGz(m.m.m); // compress molfile
+
+        m.molfile = molfile;
+        if (m.m.at != null) {
+            for (var x in m.m.at)
+                m[x.toLowerCase()] = m.m.at[x];
+        }
+
+        var s = "";
+        for (var i = 0; i < cols.length; ++i) {
+            if (i > 0)
+                s += "|";
+            var k = cols[i];
+            s += m[k] == null ? "" : m[k];
+        }
+        return s;
     },
 
     writeOne: function (m) {

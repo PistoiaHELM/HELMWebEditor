@@ -176,8 +176,9 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var d = scil.Utils.createElement(div, "div", null, { width: width, overflow: "scroll", height: height });
 
         var fields = {
-            mw: { label: "MW", type: "number", unit: "Da" },
-            mf: { label: "MF" }
+            mw: { label: "Molecular Weight", type: "number", unit: "Da" },
+            mf: { label: "Molecular Formula" },
+            ec: { label: "Extinction Coefficient" }
         };
         this.properties = new scil.Form({ viewonly: true });
         this.properties.render(d, fields, { immediately: true });
@@ -265,9 +266,21 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             return;
 
         var data = {};
-        data.mw = this.canvas.getMolWeight();
-        data.mf = this.canvas.getFormula(true);
         this.properties.setData(data);
+        if (this.options.calculatorurl != null) {
+            var me = this;
+            scil.Utils.jsonp(this.options.calculatorurl, function (ret) {
+                data.mw = ret.MolecularWeight;
+                data.mf = ret.MolecularFormula;
+                data.ec = ret.ExtinctionCoefficient;
+                me.properties.setData(data);
+            }, { HELMNotation: this.canvas.getHelm() });
+        }
+        else {
+            data.mw = this.canvas.getMolWeight();
+            data.mf = this.canvas.getFormula(true);
+            this.properties.setData(data);
+        }
     },
 
     getSelectedAsMol: function (m) {
