@@ -1,0 +1,34 @@
+<!--
+//////////////////////////////////////////////////////////////////////////////////
+This is a demo on how to launch HELM Web Editor with connection to HELM 
+Monomer/Rule Service running on http://localhost:8080
+//////////////////////////////////////////////////////////////////////////////////
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>HELM Web Editor</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src='../pako/pako.js'></script>
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+    <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Lite.js'></script>
+    <script type="text/javascript" src='../JSDraw/Pistoia.HELM.js'></script>
+
+    <script type='text/javascript' src='http://localhost:8080/WebService/service/ajaxtool/get?cmd=helm.monomer.downloadjson'></script>
+    <script type='text/javascript' src='http://localhost:8080/WebService/service/ajaxtool/get?cmd=helm.rule.downloadjson'></script>
+   
+</head>
+<body style="padding:0;margin:0;">
+   
+
+    <div id="div1"></div>
+    <script type="text/javascript">
+        //JSDraw2.defaultoptions = {skin: "w8"};
+        scil.ready(function () {
+            new org.helm.webeditor.App("div1");
+        });
+    </script>
+
+</body>
+</html>
