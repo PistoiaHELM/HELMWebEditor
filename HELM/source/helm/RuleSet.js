@@ -22,6 +22,28 @@ org.helm.webeditor.RuleSet = {
 
     favorites: new scil.Favorite("ruleset"),
 
+    saveTextDB: function (url) {
+        var cols = ["id", "name", "note", "script", "author"];
+
+        var n = 0;
+        var ret = "";
+        for (var i = 0; i < this.rules.length; ++i) {
+            var r = this.rules[i];
+            var s = "";
+            for (var k = 0; k < cols.length; ++k)
+                s += (k > 0 ? "|" : "") + r[cols[k]];
+            ret += JSDraw2.Base64.encode(s) + "\n";
+            ++n;
+        }
+
+        ret = n + "\n" + ret;
+        if (url == null)
+            return ret;
+
+        var args = { client: "jsdraw", wrapper: "none", filename: "rules.txt", directsave: 1, contents: ret };
+        scil.Utils.post(url, args, "_blank");
+    },
+
     addFavorite: function (e) {
         var img = e.srcElement || e.target;
         var tr = scil.Utils.getParent(img, "TR");

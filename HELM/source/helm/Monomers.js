@@ -100,7 +100,7 @@ org.helm.webeditor.Monomers = {
 
         for (var i = 0; i < list.length; ++i) {
             var x = list[i];
-            var m = { id: x.symbol, n: x.name, na: x.naturalanalog, type: x.polymertype, mt: x.monomertype };
+            var m = { id: x.symbol, n: x.name, na: x.naturalanalog, type: x.polymertype, mt: x.monomertype, m: x.molfile };
 
             m.at = {};
             var rs = 0;
@@ -310,7 +310,7 @@ org.helm.webeditor.Monomers = {
     writeOneAsText: function (m, cols) {
         var molfile = m.m.mz;
         if (scil.Utils.isNullOrEmpty(molfile) && m.m.m != null)
-            molfile = org.helm.webeditor.IO.compressGz(m.m.m); // compress molfile
+            molfile = m.m.m;
 
         m.molfile = molfile;
         if (m.m.at != null) {
