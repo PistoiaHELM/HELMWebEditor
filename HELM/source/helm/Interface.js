@@ -102,8 +102,7 @@ org.helm.webeditor.Interface = {
                 { c: "helm_sugar", t: "Sugar", label: "Sugar" },
                 { c: "helm_linker", t: "Linker", label: "Linker" },
                 { c: "helm_aa", t: "Peptide", label: "Peptide" },
-                { c: "helm_chem", t: "Chemistry", label: "Chemistry" },
-                { c: "helm_find", t: "Find", label: "Find", tooltips: "Fine/Replace" }
+                { c: "helm_chem", t: "Chemistry", label: "Chemistry" }
         ];
 
         var main = { c: "helm_nucleotide", t: "Nucleotide", label: "Nucleotide", sub: sub, hidden: true };
@@ -125,6 +124,7 @@ org.helm.webeditor.Interface = {
         buttons.push({ c: "select", t: "Box Selection", label: "Select", sub: selecttools });
         buttons.push({ c: "|" });
         buttons.push({ c: "helm_find", t: "Find/Replace", label: "Find/Replace" });
+        buttons.push({ c: "helm_layout", t: "Layout", label: "Layout" });
         buttons.push({ c: "|" });
         buttons.push({ c: "zoomin", t: "Zoom in", label: "Zoom" });
         buttons.push({ c: "zoomout", t: "Zoom out", label: "Zoom" });
@@ -134,10 +134,18 @@ org.helm.webeditor.Interface = {
     },
 
     onContextMenu: function (ed, e, viewonly) {
-        if (ed.options.helmtoolbar)
-            return null;
-
         var items = [];
+
+        if (ed.options.helmtoolbar) {
+            var a = JSDraw2.Atom.cast(ed.curObject);
+            if (a != null && a.biotype() == scil.helm.HELM.SUGAR && a.bio.annotation != null) {
+                items.push({ caption: "Set as Sense", key: "helm_set_sense" });
+                items.push({ caption: "Set as Antisense", key: "helm_set_antisense" });
+                items.push({ caption: "Clear Annotation", key: "helm_set_clear" });
+                return items;
+            }
+            return null;
+        }
 
         items.push({ caption: "Copy Molfile V2000", key: "copymolfile2000" });
         items.push({ caption: "Copy Molfile V3000", key: "copymolfile3000" });

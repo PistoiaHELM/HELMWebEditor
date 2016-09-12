@@ -593,8 +593,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         return true;
     },
 
-    clean: function(a) {
+    clean: function (a, redraw) {
+        if (redraw)
+            this.jsd.pushundo();
+
         org.helm.webeditor.Layout.clean(this.jsd.m, this.jsd.bondlength, a);
+        if (redraw) {
+            this.jsd.moveCenter();
+            this.jsd.refresh(true);
+        }
     },
 
     resetIDs: function() {

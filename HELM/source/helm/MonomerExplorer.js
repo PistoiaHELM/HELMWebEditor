@@ -648,9 +648,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             var m = set[s];
             org.helm.webeditor.MolViewer.show(e, type, m, s);
         }
-        else
-        {
-            org.helm.webeditor.MolViewer.hide();
+        else {
+            var src = e.srcElement || e.target;
+            if (!scil.Utils.isChildOf(src, this.plugin.jsd.div))
+                org.helm.webeditor.MolViewer.hide();
         }
     },
 

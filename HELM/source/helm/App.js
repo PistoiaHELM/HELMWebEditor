@@ -145,7 +145,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var args = {
             skin: "w8", showabout: this.options.showabout, showtoolbar: this.options.canvastoolbar != false, helmtoolbar: true, showmonomerexplorer: true,
             inktools: false, width: width, height: height, ondatachange: function () { me.updateProperties(); },
-            onselectionchanged: function () { me.onselectionchanged(); }
+            onselectionchanged: function () { me.onselectionchanged(); },
+            onselectcurrent: function (e, obj, ed) { me.onselectcurrent(e, obj, ed); }
         };
 
         this.canvas = org.helm.webeditor.Interface.createCanvas(div, args);
@@ -156,6 +157,19 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             var src = e.target || e.srcElement;
             return scil.Utils.hasAnsestor(src, me.canvas.helm.monomerexplorer.div);
         };
+    },
+
+    onselectcurrent: function (e, obj, ed) {
+        var a = JSDraw2.Atom.cast(obj);
+        if (a == null || ed.start != null) {
+            org.helm.webeditor.MolViewer.hide();
+            return;
+        }
+        var type = a == null ? null : a.biotype();
+        var set = org.helm.webeditor.Monomers.getMonomerSet(type);
+        var s = a == null ? null : a.elem;
+        var m = set == null ? null : set[s];
+        org.helm.webeditor.MolViewer.show(e, type, m, s);
     },
 
     createSequence: function (div, width, height) {
