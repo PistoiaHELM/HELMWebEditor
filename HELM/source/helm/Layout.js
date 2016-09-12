@@ -23,6 +23,7 @@ org.helm.webeditor.Layout = {
             chain.resetIDs();
         }
 
+        this.layoutCrossChainBonds(m, chains, bondlength);
         //this.layoutBranches(m);
     },
 
@@ -30,6 +31,48 @@ org.helm.webeditor.Layout = {
         var chains = org.helm.webeditor.Chain._getChains(m);
         for (var i = 0; i < chains.length; ++i)
             chains[i].resetIDs();
+    },
+
+    layoutCrossChainBonds: function (m, chains, bondlength) {
+        m.clearFlag();
+        for (var i = 0; i < chains.length; ++i) {
+            var chain = chains[i];
+            for (var k = 0; k < chain.atoms.length; ++k)
+                chain.atoms[k].flag = i;
+        }
+
+        var fixed = {};
+
+        for (var i = 0; i < m.bonds.length; ++i) {
+            var b = m.bonds[i];
+            if (b.a1.flag != null && b.a2.flag != null && b.a1.flag != b.a2.flag) {
+                var a1, a2;
+                if (fixed[b.a1.flag] && fixed[b.a2.flag]) {
+                    continue;
+                }
+                else if (fixed[b.a1.flag]) {
+                    a1 = b.a1;
+                    a2 = b.a2;
+                }
+                else if (fixed[b.a2.flag]) {
+                    a1 = b.a2;
+                    a2 = b.a1;
+                }
+                else if (b.a1.flag > b.a2.flag) {
+                    a1 = b.a2;
+                    a2 = b.a1;
+                }
+                else {
+                    a1 = b.a1;
+                    a2 = b.a2;
+                }
+                var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
+                chains[a2.flag].move(delta);
+
+                fixed[a1.flag] = true;
+                fixed[a2.flag] = true;
+            }
+        }
     },
 
     layoutBranches: function (m) {

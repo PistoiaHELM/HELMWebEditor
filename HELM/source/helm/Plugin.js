@@ -282,31 +282,36 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
     finishConnect: function (extendchain, b, a, a1, a2, frag, delta) {
         var cleaned = false;
-        if (b != null && !extendchain) {
-            if (frag != null) {
-                var p = a1.p.clone().offset(delta, 0);
-                if (a == null)
-                    a = a1;
+        if (b != null && b.r1 > 2 && b.r2 > 2) {
+            this.clean();
+        }
+        else {
+            if (b != null && !extendchain) {
+                if (frag != null) {
+                    var p = a1.p.clone().offset(delta, 0);
+                    if (a == null)
+                        a = a1;
 
-                if (a != a1) {
-                    a.p = p.clone();
-                    p.offset(delta, 0);
-                }
+                    if (a != a1) {
+                        a.p = p.clone();
+                        p.offset(delta, 0);
+                    }
 
-                if (frag.containsAtom(a1)) {
-                    this.clean(a1);
-                    cleaned = true;
-                }
-                else {
-                    frag.offset(p.x - a2.p.x, p.y - a2.p.y);
+                    if (frag.containsAtom(a1)) {
+                        this.clean(a1);
+                        cleaned = true;
+                    }
+                    else {
+                        frag.offset(p.x - a2.p.x, p.y - a2.p.y);
+                    }
                 }
             }
-        }
 
-        if (!cleaned) {
-            var chain = org.helm.webeditor.Chain.getChain(this.jsd.m, a1);
-            if (chain != null)
-                chain.resetIDs();
+            if (!cleaned) {
+                var chain = org.helm.webeditor.Chain.getChain(this.jsd.m, a1);
+                if (chain != null)
+                    chain.resetIDs();
+            }
         }
 
         this.jsd.refresh(extendchain || b != null);
