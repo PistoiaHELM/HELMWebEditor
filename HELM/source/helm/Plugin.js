@@ -94,17 +94,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         if (c != null)
             return c;
 
-        if (a == org.helm.webeditor.HELM.BASE)
-            return org.helm.webeditor.Monomers.bases["A"] == null ? "a" : "A";
-        else if (a == org.helm.webeditor.HELM.SUGAR)
-            return org.helm.webeditor.Monomers.linkers["R"] == null ? "r" : "R";
-        else if (a == org.helm.webeditor.HELM.LINKER)
-            return org.helm.webeditor.Monomers.linkers["P"] == null ? "p" : "P";
-        else if (a == org.helm.webeditor.HELM.AA)
-            return "A";
-        else if (a == org.helm.webeditor.HELM.CHEM)
-            return "R";
-        return "X";
+        return org.helm.webeditor.Monomers.getDefaultMonomer(a);
     },
 
     setNodeType: function (a, biotype, elem) {

@@ -7,13 +7,44 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-org.helm.webeditor.Monomers = {    
+org.helm.webeditor.Monomers = {
+    defaultmonomers: { HELM_BASE: null, HELM_SUGAR: null, HELM_LINKER: null, HELM_AA: null, HELM_CHEM: null },
+
     clear: function () {
         this.sugars = {};
         this.linkers = {};
         this.bases = {};
         this.aas = {};
         this.chems = {};
+    },
+
+    getDefaultMonomer: function (monomertype) {
+        var r = this.defaultmonomers[monomertype];
+        if (r != null)
+            return r;
+
+        if (monomertype == org.helm.webeditor.HELM.BASE)
+            return this._getFirstKey(org.helm.webeditor.Monomers.bases, "a", "A");
+        else if (monomertype == org.helm.webeditor.HELM.SUGAR)
+            return this._getFirstKey(org.helm.webeditor.Monomers.linkers, "r", "R");
+        else if (monomertype == org.helm.webeditor.HELM.LINKER)
+            return this._getFirstKey(org.helm.webeditor.Monomers.linkers, "p", "P");
+        else if (monomertype == org.helm.webeditor.HELM.AA)
+            return this._getFirstKey(org.helm.webeditor.Monomers.aas, "A");
+        else if (monomertype == org.helm.webeditor.HELM.CHEM)
+            return this._getFirstKey(org.helm.webeditor.Monomers.chems, "R");
+        return "?";
+    },
+
+    _getFirstKey: function(set, key1, key2) {
+        if (key1 != null && set[key1] != null)
+            return key1;
+        if (key2 != null && set[key2] != null)
+            return key2;
+
+        for (var k in set)
+            return k;
+        return "?";
     },
 
     saveTextDB: function(url) {

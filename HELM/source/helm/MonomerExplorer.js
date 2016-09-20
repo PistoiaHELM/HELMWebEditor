@@ -18,11 +18,11 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
         //this.lastselect = {};
         this.selected = {};
-        this.selected[org.helm.webeditor.HELM.BASE] = org.helm.webeditor.Monomers.bases["A"] == null ? "a" : "A";
-        this.selected[org.helm.webeditor.HELM.LINKER] = org.helm.webeditor.Monomers.linkers["P"] == null ? "p" : "P";
-        this.selected[org.helm.webeditor.HELM.SUGAR] = org.helm.webeditor.Monomers.sugars["R"] == null ? "r" : "R";
-        this.selected[org.helm.webeditor.HELM.AA] = "A";
-        this.selected[org.helm.webeditor.HELM.CHEM] = "R";
+        this.selected[org.helm.webeditor.HELM.BASE] = org.helm.webeditor.Monomers.getDefaultMonomer(org.helm.webeditor.HELM.BASE);
+        this.selected[org.helm.webeditor.HELM.LINKER] = org.helm.webeditor.Monomers.getDefaultMonomer(org.helm.webeditor.HELM.LINKER);
+        this.selected[org.helm.webeditor.HELM.SUGAR] = org.helm.webeditor.Monomers.getDefaultMonomer(org.helm.webeditor.HELM.SUGAR);
+        this.selected[org.helm.webeditor.HELM.AA] = org.helm.webeditor.Monomers.getDefaultMonomer(org.helm.webeditor.HELM.AA);
+        this.selected[org.helm.webeditor.HELM.CHEM] = org.helm.webeditor.Monomers.getDefaultMonomer(org.helm.webeditor.HELM.CHEM);
 
         var me = this;
         this.div = scil.Utils.createElement(parent, "div", null, { fontSize: this.options.mexfontsize == null ? "90%" : this.options.mexfontsize });

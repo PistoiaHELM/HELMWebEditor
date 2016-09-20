@@ -14,9 +14,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.init(parent);
     },
 
-    init: function (parent) {
-        var me = this;
-
+    calculateSizes: function () {
         var d = dojo.window.getBox();
         if (this.options.topmargin > 0)
             d.h -= this.options.topmargin;
@@ -26,13 +24,28 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var topheight = d.h * 0.7;
         var bottomheight = d.h - topheight - 130;
 
+        var ret = { height: 0, topheight: 0, bottomheight: 0, leftwidth: 0, rightwidth: 0 };
+        ret.height = d.h - 90 - (this.options.mexfilter != false ? 30 : 0) - (this.options.mexfind ? 60 : 0);
+        ret.leftwidth = 300;
+        ret.rightwidth = d.w - 300 - 50;
+        ret.topheight = d.h * 0.7;
+        ret.bottomheight = d.h - topheight - 130;
+
+        return ret;
+    },
+
+    init: function (parent) {
+        var me = this;
+
+        var sizes = this.calculateSizes();
+
         var tree = {
             caption: this.options.topmargin > 0 ? null : "Palette",
             marginBottom: "2px",
             marginTop: this.options.topmargin > 0 ? "17px" : null,
-            onrender: function (div) { me.createPalette(div, leftwidth - 10, d.h - 80 - (me.options.mexfilter != false ? 30 : 0) - (me.options.mexfind ? 60 : 0)); }
+            onrender: function (div) { me.treediv = div; me.createPalette(div, sizes.leftwidth - 10, sizes.height); }
         };
-        this.page = new scil.Page(parent, tree, { resizable: true, leftwidth: leftwidth });
+        this.page = new scil.Page(parent, tree, { resizable: true, leftwidth: sizes.leftwidth });
         scil.Utils.unselectable(this.page.explorer.left);
 
         var control = this.page.addDiv();
@@ -43,7 +56,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             //caption: "Canvas",
             type: "custom",
             marginBottom: "2px",
-            oncreate: function (div) { me.createCanvas(div, rightwidth, topheight); }
+            oncreate: function (div) { me.createCanvas(div, sizes.rightwidth, sizes.topheight); }
         });
 
         this.handle = this.page.addResizeHandle(function (delta) { return me.onresize(delta); }, 8);
@@ -58,9 +71,9 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.tabs.addForm({
             caption: "Sequence",
             type: "custom",
-            tabkey: "sequence",            
+            tabkey: "sequence",
             buttons: this.options.sequenceviewonly ? null : this.sequencebuttons,
-            oncreate: function (div) { me.createSequence(div, rightwidth, bottomheight); }
+            oncreate: function (div) { me.createSequence(div, sizes.rightwidth, sizes.bottomheight); }
         });
 
         this.tabs.addForm({
@@ -71,22 +84,27 @@ org.helm.webeditor.App = scil.extend(scil._base, {
                 { src: scil.Utils.imgSrc("img/moveup.gif"), label: "Apply", title: "Apply HELM Notation", onclick: function () { me.updateCanvas("notation", false); } },
                 { src: scil.Utils.imgSrc("img/add.gif"), label: "Append", title: "Append HELM Notation", onclick: function () { me.updateCanvas("notation", true); } }
             ],
-            oncreate: function (div) { me.createNotation(div, rightwidth, bottomheight); }
+            oncreate: function (div) { me.createNotation(div, sizes.rightwidth, sizes.bottomheight); }
         });
 
         this.tabs.addForm({
             caption: "Properties",
             type: "custom",
             tabkey: "properties",
-            oncreate: function (div) { me.createProperties(div, rightwidth, bottomheight); }
+            oncreate: function (div) { me.createProperties(div, sizes.rightwidth, sizes.bottomheight); }
         });
 
         this.tabs.addForm({
             caption: "Structure View",
             type: "custom",
             tabkey: "structureview",
-            oncreate: function (div) { me.createStructureView(div, rightwidth, bottomheight); }
+            oncreate: function (div) { me.createStructureView(div, sizes.rightwidth, sizes.bottomheight); }
         });
+    },
+
+    resizeWindow: function () {
+        var sizes = this.calculateSizes();
+        this.mex.tabs.resizeClientarea(0, sizes.height);
     },
 
     swapCanvasSequence: function () {

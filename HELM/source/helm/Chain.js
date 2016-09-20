@@ -142,8 +142,12 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
   
     move: function (delta) {
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
-        for (var i = 0; i < n; ++i)
+        for (var i = 0; i < n; ++i) {
             this.atoms[i].p.offset2(delta);
+            var a = this.bases[i];
+            if (a != null)
+                a.p.offset2(delta);
+        }
     },
   
     layoutBases: function () {
