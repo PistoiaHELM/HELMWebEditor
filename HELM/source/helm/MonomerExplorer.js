@@ -6,6 +6,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/**
+* MonomerExplorer class
+* @class org.helm.webeditor.MonomerExplorer
+*/
 org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
     constructor: function (parent, plugin, options) {
         this.plugin = plugin;
@@ -87,7 +91,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
     filter: function (e) {
         var key = this.tabs.currentTabKey();
         if (key == "rule") {
-            org.helm.webeditor.RuleSetApp.filterRules(this.rules, this.filterInput.value);
+            org.helm.webeditor.RuleSet.filterRules(this.rules, this.filterInput.value, this.rules_category.value);
         }
         else {
             this.filterGroup(this.tabs.dom, this.filterInput.value);
@@ -251,6 +255,13 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.createMonomerGroup4(div, org.helm.webeditor.HELM.LINKER, null, true);
         }
         else if (key == "rule") {
+            var toolbar = scil.Utils.createElement(div, "div", null, {background: "#ccc"});
+            scil.Utils.createElement(toolbar, "span", "Category:");
+            this.rules_category = scil.Utils.createElement(toolbar, "select");
+            scil.Utils.listOptions(this.rules_category, org.helm.webeditor.RuleSetApp.categories);
+            var me = this;
+            scil.connect(this.rules_category, "onchange", function () { org.helm.webeditor.RuleSet.filterRules(me.rules, me.filterInput.value, me.rules_category.value) });
+
             var d = scil.Utils.createElement(div, "div", null, { width: "100%", height: height, overflowY: "scroll" });
             this.rules = org.helm.webeditor.RuleSet.listRules(d, function (script) { me.plugin.applyRule(script); }, function (scripts) { me.plugin.applyRules(scripts); });
         }
@@ -273,6 +284,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                 marginBottom: 0
             });
         }
+    },
+
+    listRules: function() {
+
     },
 
     getMonomerDictGroupByAnalog: function (type) {

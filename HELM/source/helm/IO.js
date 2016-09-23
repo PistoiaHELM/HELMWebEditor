@@ -6,6 +6,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/**
+* IO class
+* @class org.helm.webeditor.IO
+*/
 org.helm.webeditor.IO = {
     getHelm: function (m, highlightselection) {
         var branches = {};

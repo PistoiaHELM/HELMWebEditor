@@ -6,6 +6,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/**
+* Layout class
+* @class org.helm.webeditor.Layout
+*/
 org.helm.webeditor.Layout = {
     clean: function (m, bondlength, a) {
         //m.clearFlag();

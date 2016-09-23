@@ -6,19 +6,41 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-/**********************************************************
-create table HELMRules
-(
-id bigint not null identity(1, 1) primary key,
-Name nvarchar(256) not null,
-Script nvarchar(max),
-Note nvarchar(max),
-Author nvarchar(256),
-CreatedDate DateTime default getdate()
-);
-**********************************************************/
-
+/**
+* RuleSetApp class
+* @class org.helm.webeditor.RuleSetApp
+* Recommended database schema:
+* <pre>
+* **********************************************************
+* create table HELMRules
+* (
+* id bigint not null identity(1, 1) primary key,
+* Category nvarchar(256),
+* Name nvarchar(512) not null,
+* Script nvarchar(max),
+* Description nvarchar(max),
+* Author nvarchar(256),
+* CreatedDate DateTime default getdate()
+* );
+* **********************************************************
+* </pre>
+**/
 org.helm.webeditor.RuleSetApp = scil.extend(scil._base, {
+    /**
+    * @constructor RuleSetApp
+    * @param {DOM} parent - The parent element to host the Ruleset Manager
+    * @bio {dict} options - options on how to render the App
+    * <pre>
+    * ajaxurl: {string} The service url for the ajax
+    * <b>Example:</b>
+    *     <div id="div1" style="margin: 5px; margin-top: 15px"></div>
+    *     <script type="text/javascript">
+    *       scil.ready(function () {
+    *         new org.helm.webeditor.RuleSetApp("div1", { ajaxurl: "../service/ajaxtool/post?cmd=" });
+    *       });
+    *     </script>
+    * </pre>
+    **/
     constructor: function (parent, options) {
         if (typeof (parent) == "string")
             parent = scil.byId(parent);
@@ -35,6 +57,7 @@ org.helm.webeditor.RuleSetApp = scil.extend(scil._base, {
         var me = this;
         this.buttons = [
             "-",
+            { type: "select", key: "category", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.RuleSetApp.categories, label: "Category", styles: { width: 100 }, onchange: function () { me.refresh(); } },
             { type: "select", key: "countperpage", labelstyle: { fontSize: "90%" }, label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
         ];
 
@@ -52,14 +75,15 @@ org.helm.webeditor.RuleSetApp = scil.extend(scil._base, {
             onbeforesave: function (data, args, form) { data.test = null; },
             columns: {
                 id: { label: "ID", width: 50, iskey: true },
+                category: { label: "Category", width: 60 },
                 name: { label: "Name", width: 100 },
-                note: { label: "Note", width: 200 },
+                description: { label: "Description", width: 200 },
                 author: { label: "Author", width: 100 },
                 createddate: { label: "Created Date", type: "date", width: 100 }
             },
             formcaption: "Rule",
             fields: fields,
-            defaultvalues: { script: "function(plugin) {\n\n}" }
+            defaultvalues: { script: "function(plugin) {\n\n}\n\n//function(plugin) { \n//    scil.Utils.ajax('http://SERVER/youerservice', function(ret) {\n//        plugin.setHelm(ret.new_helm);\n//    });\n//} " }
         });
 
         this.page.addForm({
@@ -77,7 +101,7 @@ org.helm.webeditor.RuleSetApp = scil.extend(scil._base, {
     },
 
     onbeforerefresh: function (args) {
-        args.countperpage = org.helm.webeditor.MonomerLibApp.getValueByKey(this.buttons, "countperpage");
+        args.countperpage = scil.Form.getButtonValuesByKey(this.buttons, ["category", "countperpage"]);
     },
 
     testapplying: function (field, form) {
@@ -104,11 +128,15 @@ org.helm.webeditor.RuleSetApp = scil.extend(scil._base, {
 });
 
 scil.apply(org.helm.webeditor.RuleSetApp, {
-    getFields: function() {
+    categories: ["", "General"],
+
+    getFields: function () {
         return {
             id: { label: "ID", viewonly: true },
+            category: { label: "Category", width: 200, type: "select", items: this.categories },
             name: { label: "Name", width: 800 },
-            note: { label: "Note", type: "textarea", width: 800, height: 40 },
+            description: { label: "Description", type: "textarea", width: 800, height: 40 },
+            author: { label: "Author", width: 100 },
             script: { label: "Javascript", type: "textarea", width: 800, height: 160 }
         }
     }

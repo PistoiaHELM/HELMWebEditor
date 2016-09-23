@@ -6,6 +6,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/**
+* Formula class
+* @class org.helm.webeditor.Formula
+*/
 org.helm.webeditor.Formula = {
     getMF: function(m, html) {
         var stats = this.getAtomStats(m);

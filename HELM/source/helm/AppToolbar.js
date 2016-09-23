@@ -7,6 +7,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
+/**
+* AppToolbar class
+* @class org.helm.webeditor.AppToolbar
+*/
 org.helm.webeditor.AppToolbar = scil.extend(scil._base, {
     constructor: function (parent, imgpath, buttons) {
         if (typeof(parent) == "string")

@@ -6,10 +6,64 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/**
+* HELM Editor App class
+* @class org.helm.webeditor.App
+*/
 org.helm.webeditor.App = scil.extend(scil._base, {
+    /**
+    @property {MonomerExplorer} mex - Monomer Explorer
+    **/
+    /**
+    @property {JSDraw2.Editor} canvas - Drawing Canvas
+    **/
+    /**
+    @property {DIV} notation - HELM Notation
+    **/
+    /**
+    @property {DIV} sequence - Biological Sequence
+    **/
+    /**
+    @property {scil.Form} properties - HELM Property Table
+    **/
+    /**
+    @property {JSDraw2.Editor} structureview - Structure Viewer
+    **/
+
+    /**
+    * @constructor App
+    * @param {DOM} parent - The parent element to host the Editor App
+    * @bio {dict} options - options on how to render the App
+    * <pre>
+    * mexfontsize: {string} Monomer Explorer font size, e.g. "90%"
+    * mexrnapinontab: {bool} show RNA pin icon on its tab on Monomer Explorer
+    * mexmonomerstab: {bool} show Monomers tab on Monomer Explorer
+    * mexfavoritefirst: {bool} display favorite items first on Monomer Explorer
+    * mexfilter: {bool} display Filter box on Monomer Explorer
+    * sequenceviewonly: {bool} show Sequence View in viewonly mode
+    * showabout: {bool} show about button
+    * topmargin: {number} top margin
+    *
+    * <b>Example:</b>
+    *    &lt;div id="div1" style="margin: 5px; margin-top: 15px"&gt;&lt;/div&gt;
+    *    &lt;script type="text/javascript"&gt;
+    *     scil.ready(function () {
+    *         var app = new scil.helm.App("div1", { showabout: false, mexfontsize: "90%", mexrnapinontab: true, 
+    *             topmargin: 20, mexmonomerstab: true, sequenceviewonly: false, mexfavoritefirst: true, mexfilter: true });
+    *     });
+    *    &lt;/script&gt;
+    * </pre>
+    **/
     constructor: function (parent, options) {
         if (typeof (parent) == "string")
             parent = scil.byId(parent);
+        this.mex = null;
+        this.canvas = null;
+        this.sequence = null;
+        this.notation = null;
+        this.properties = null;
+        this.structureview = null;
+
         this.options = options == null ? {} : options;
         this.init(parent);
     },

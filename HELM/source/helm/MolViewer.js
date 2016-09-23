@@ -6,6 +6,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/**
+* MolViewer class
+* @class org.helm.webeditor.MolViewer
+*/
 org.helm.webeditor.MolViewer = {
     dlg: null,
     jsd: null,

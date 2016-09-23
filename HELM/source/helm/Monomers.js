@@ -7,6 +7,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
+/**
+* Monomers class
+* @class org.helm.webeditor.Monomers
+*/
 org.helm.webeditor.Monomers = {
     defaultmonomers: { HELM_BASE: null, HELM_SUGAR: null, HELM_LINKER: null, HELM_AA: null, HELM_CHEM: null },
 

@@ -6,65 +6,149 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/**
+* Interface class
+* @class org.helm.webeditor.Interface
+*/
 org.helm.webeditor.Interface = {
-    createCanvas: function(div, args) {
+    /**
+    * Create the canvas
+    * @function createCanvas
+    * @param {DOM} div
+    * @param {dict} args - check <a href='http://www.scilligence.com/sdk/jsdraw/logical/scilligence/JSDraw2/Editor.html'>JSDraw SDK</a>
+    */
+    createCanvas: function (div, args) {
         return new JSDraw2.Editor(div, args);
     },
 
-    createMol: function(molfile) {
+    /**
+    * Create a molecule object
+    * @function createMol
+    * @param {string} molfile
+    */
+    createMol: function (molfile) {
         var m = new JSDraw2.Mol();
         m.setMolfile(molfile);
         return m;
     },
 
+    /**
+    * Create a point
+    * @function createPoint
+    * @param {number} x
+    * @param {number} y
+    */
     createPoint: function (x, y) {
         return new JSDraw2.Point(x, y);
     },
 
+    /**
+    * Create a rectangle object
+    * @function createRect
+    * @param {number} l - left
+    * @param {number} t - top
+    * @param {number} w - width
+    * @param {number} h - height
+    */
     createRect: function (l, t, w, h) {
         return new JSDraw2.Rect(l, t, w, h);
     },
 
+    /**
+    * Create an atom
+    * @function createAtom
+    * @param {JSDraw2.Mol} m
+    * @param {JSDraw2.Point} p - the coordinate
+    */
     createAtom: function (m, p) {
         return m.addAtom(new JSDraw2.Atom(p));
     },
 
+    /**
+    * Create a bond between two atoms
+    * @function createBond
+    * @param {JSDraw2.Mol} m
+    * @param {JSDraw2.Atom} a1
+    * @param {JSDraw2.Atom} a2
+    */
     createBond: function (m, a1, a2) {
         return m.addBond(new JSDraw2.Bond(a1, a2, JSDraw2.BONDTYPES.SINGLE));
     },
 
-    getAtomStats: function(m, atoms) {
+    /**
+    * Get atom counts
+    * @function getAtomStats
+    * @param {JSDraw2.Mol} m
+    * @param {array} atoms
+    */
+    getAtomStats: function (m, atoms) {
         var mol = { atoms: atoms, bonds: m.bonds };
         var ret = JSDraw2.FormulaParser.getAtomStats(m);
         return ret == null ? null : ret.elements;
     },
 
+    /**
+    * Test if two molecules are equal
+    * @function molEquals
+    * @param {JSDraw2.Mol} m1
+    * @param {JSDraw2.Mol} m2
+    */
     molEquals: function (m1, m2) {
         var mol1 = m1.mol != null ? m1.mol : (m1.mol = this.createMol(scil.helm.Monomers.getMolfile(m1)));
         var mol2 = m2.mol != null ? m2.mol : (m2.mol = this.createMol(scil.helm.Monomers.getMolfile(m2)));
         return mol2.fullstructureMatch(mol1);
     },
 
-    molStats: function(molfile) {
+    /**
+    * count atoms and bonds to calculate MF and MW
+    * @function molStats
+    * @param {string} molfile
+    */
+    molStats: function (molfile) {
         var mol = this.createMol(molfile);
         mol.calcHCount();
         return JSDraw2.FormulaParser.getAtomStats(mol).elements;
     },
 
-    getElementMass: function(e) {
+    /**
+    * Get element mass
+    * @function getElementMass
+    * @param {string} e - element name
+    */
+    getElementMass: function (e) {
         return JSDraw2.PT[e].m;
     },
 
-    getCurrentAtom: function(jsd) {
+    /**
+    * Get the current object
+    * @function getCurrentAtom
+    * @param {JSDraw2.Editor} jsd - JSDraw Editor
+    */
+    getCurrentAtom: function (jsd) {
         return JSDraw2.Atom.cast(jsd.curObject)
     },
 
-    scaleCanvas: function(jsd) {
+    /**
+    * Scale the canvas
+    * @function scaleCanvas
+    * @param {JSDraw2.Editor} jsd - JSDraw Editor
+    */
+    scaleCanvas: function (jsd) {
         var scale = JSDraw2.Editor.BONDLENGTH / jsd.bondlength;
         if (JSDraw2.Editor.BONDLENGTH / jsd.bondlength > 1)
             jsd.scale(JSDraw2.Editor.BONDLENGTH / jsd.bondlength);
     },
 
+    /**
+    * called by the canvas to draw a monomer
+    * @function drawMonomer
+    * @param {SVG} surface
+    * @param {JSDraw2.Atom} a - monomer object
+    * @param {JSDraw2.Point} p - coordinate
+    * @param {number} fontsize
+    * @param {number} linewidth
+    * @param {string} color
+    */
     drawMonomer: function (surface, a, p, fontsize, linewidth, color) {
         color = null;
         var biotype = a.biotype();
@@ -113,6 +197,14 @@ org.helm.webeditor.Interface = {
         buttons.push({ c: "|" });
     },
 
+    /**
+    * called when the canvas is creating toolbar
+    * @function getHelmToolbar
+    * @param {array} buttons
+    * @param {array} filesubmenus
+    * @param {array} selecttools
+    * @param {dict} options
+    */
     getHelmToolbar: function (buttons, filesubmenus, selecttools, options) {
         this.addToolbar(buttons, true, null, options);
 
@@ -133,6 +225,13 @@ org.helm.webeditor.Interface = {
         buttons.push({ c: "moveview", t: "Move/View", label: "Move" });
     },
 
+    /**
+    * called when the canvas is trying to display context menu
+    * @function onContextMenu
+    * @param {JSDraw2.Editor} ed - JSDraw Editor
+    * @param {Event} e - Javascript event
+    * @param {bool} viewonly - indicate if this is viewonly mode
+    */
     onContextMenu: function (ed, e, viewonly) {
         var items = [];
 

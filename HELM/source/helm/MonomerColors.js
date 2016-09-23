@@ -6,6 +6,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/**
+* MonomerColors class
+* @class org.helm.webeditor.MonomerColors
+*/
 org.helm.webeditor.MonomerColors = {
     bases: {
         A: "#A0A0FF",

@@ -6,30 +6,51 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
-/**********************************************************
-create table HELMMonomers
-(
-id bigint not null identity(1, 1) primary key,
-Symbol varchar(256) not null,
-Name varchar(256) not null,
-NaturalAnalog varchar(256),
-SMILES varchar(max),
-PolymerType varchar(256) not null,
-MonomerType varchar(256),
-Status varchar(256),
-Molfile varchar(max),
-Hashcode varchar(128),
-R1 varchar(256),
-R2 varchar(256),
-R3 varchar(256),
-R4 varchar(256),
-R5 varchar(256),
-Author nvarchar(256),
-CreatedDate DateTime default getdate()
-);
-**********************************************************/
-
+/**
+* MonomerLibApp class
+* @class org.helm.webeditor.MonomerLibApp
+* Recommended database schema:
+* <pre>
+* **********************************************************
+* create table HELMMonomers
+* (
+* id bigint not null identity(1, 1) primary key,
+* Symbol varchar(256) not null,
+* Name varchar(256) not null,
+* NaturalAnalog varchar(256),
+* SMILES varchar(max),
+* PolymerType varchar(256) not null,
+* MonomerType varchar(256),
+* Status varchar(256),
+* Molfile varchar(max),
+* Hashcode varchar(128),
+* R1 varchar(256),
+* R2 varchar(256),
+* R3 varchar(256),
+* R4 varchar(256),
+* R5 varchar(256),
+* Author nvarchar(256),
+* CreatedDate DateTime default getdate()
+* );
+* **********************************************************
+* </pre>
+**/
 org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
+    /**
+    * @constructor MonomerLibApp
+    * @param {DOM} parent - The parent element to host Monomer Manager
+    * @bio {dict} options - options on how to render the App
+    * <pre>
+    * ajaxurl: {string} The service url for the ajax
+    * <b>Example:</b>
+    *     <div id="div1" style="margin: 5px; margin-top: 15px"></div>
+    *     <script type="text/javascript">
+    *       scil.ready(function () {
+    *         new org.helm.webeditor.MonomerLibApp("div1", { ajaxurl: "../service/ajaxtool/post?cmd=" });
+    *       });
+    *     </script>
+    * </pre>
+    **/
     constructor: function (parent, options) {
         if (typeof (parent) == "string")
             parent = scil.byId(parent);
@@ -96,12 +117,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
     },
 
     onbeforerefresh: function (args) {
-        args.countperpage = org.helm.webeditor.MonomerLibApp.getValueByKey(this.buttons, "countperpage");
-        args.status = org.helm.webeditor.MonomerLibApp.getValueByKey(this.buttons, "status");
-        args.polymertype = org.helm.webeditor.MonomerLibApp.getValueByKey(this.buttons, "polymertype");
-        args.monomertype = org.helm.webeditor.MonomerLibApp.getValueByKey(this.buttons, "monomertype");
-        args.status = org.helm.webeditor.MonomerLibApp.getValueByKey(this.buttons, "status");
-        args.symbol = org.helm.webeditor.MonomerLibApp.getValueByKey(this.buttons, "symbol");
+        args.countperpage = scil.Form.getButtonValuesByKey(this.buttons, ["status", "polymertype", "monomertype", "status", "symbol", "countperpage"]);
     },
 
     uploadFile: function (duplicatecheck) {

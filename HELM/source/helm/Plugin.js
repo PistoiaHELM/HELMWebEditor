@@ -6,16 +6,42 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/**
+* HELM Editor Plugin class
+* @class org.helm.webeditor.Plugin
+*/
 org.helm.webeditor.Plugin = scil.extend(scil._base, {
+    /**
+    @property {MonomerExplorer} monomerexplorer - Monomer Explorer
+    **/
+    /**
+    @property {JSDraw2.Editor} jsd - Drawing Canvas
+    **/
+
+    /**
+    * @constructor Plugin
+    * @param {JSDraw2.Editor} jsd - The JSDraw canvas
+    **/
     constructor: function (jsd) {
         this.jsd = jsd;
         this.monomerexplorer = null;
     },
 
+    /**
+    * Get the molecule formula
+    * @function getMF
+    * @param {bool} html - indicate if html format is needed
+    * @returns the molecular formula as a string
+    */
     getMF: function (html) {
         return org.helm.webeditor.Formula.getMF(this.jsd.m, html);
     },
 
+    /**
+    * Get the molecule weight
+    * @function getMW
+    * @returns the molecular weight as a number
+    */
     getMW: function () {
         return org.helm.webeditor.Formula.getMW(this.jsd.m);
     },
@@ -113,6 +139,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             this.monomerexplorer.dnd.cancel();
     },
 
+    /**
+    * Replace monomers
+    * @function replaceMonomer
+    * @param {enum} monomertype - org.helm.webeditor.HELM.BASE/SUGAR/LINKER/AA/CHEM
+    * @param {string} find - the monomer name to be found
+    * @param {string} replacedwith - the monomer name to be replaced with
+    * @param {bool} selectedonly - indicate if seaching the selected part only
+    * @returns the count replaced
+    */
     replaceMonomer: function (monomertype, find, replacedwith, selectedonly) {
         var n = 0;
         var atoms = this.jsd.m.atoms;
@@ -128,6 +163,11 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         return n;
     },
 
+    /**
+    * Apply a rule
+    * @function applyRule
+    * @param {function} rulefun - a rule function to be called: function(plugin) {}
+    */
     applyRule: function (rulefun) {
         org.helm.webeditor.RuleSet.applyRule(this, rulefun);
     },
@@ -462,19 +502,42 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Get HELM
+    * @function getHelm
+    * @param {bool} highlightselection - internal use only, using null always
+    * @returns the HELM as string
+    */
     getHelm: function (highlightselection) {
         return org.helm.webeditor.IO.getHelm(this.jsd.m, highlightselection);
     },
 
+    /**
+    * Get sequence of natuaral analogue
+    * @function getSequence
+    * @param {bool} highlightselection - internal use only, using null always
+    * @returns the sequence as a string
+    */
     getSequence: function (highlightselection) {
         return org.helm.webeditor.IO.getSequence(this.jsd.m, highlightselection);
     },
 
+    /**
+    * Get XHELM
+    * @function getXHelm
+    * @returns XHELM as a string
+    */
     getXHelm: function () {
         return org.helm.webeditor.IO.getXHelm(this.jsd.m);
     },
 
-    setHelm: function(s, renamedmonomers) {
+    /**
+    * Set HELM
+    * @function getSequence
+    * @param {string} s - The HELM string
+    * @param {string} renamedmonomers - internal use only, using null always
+    */
+    setHelm: function (s, renamedmonomers) {
         this.jsd.clear();
 
         var n = 0;
@@ -494,6 +557,11 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Set XHELM 
+    * @function setXHelm
+    * @param {string} s - the xhelm string
+    */
     setXHelm: function (s) {
         var doc = typeof (s) == "string" ? scil.Utils.parseXml(s) : s;
         if (doc == null)
@@ -524,7 +592,10 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         return ret != null && ret.length == 1;
     },
 
-
+    /**
+    * Show Importing Sequence dialog
+    * @function showImportDlg
+    */
     showImportDlg: function () {
         if (this.inputSeqDlg == null) {
             var fields = {
@@ -548,7 +619,16 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             this.inputSeqDlg.hide();
     },
 
-    setSequence: function(seq, format, sugar, linker, append) {
+    /**
+    * Set a sequence (natural analogue sequence, HELM,)
+    * @function setSequence
+    * @param {string} seq - the input sequence
+    * @param {string} format - input format: HELM, RNA, Peptide, or null
+    * @param {string} sugar - the sugar for RNA
+    * @param {string} linker - the linker for RNA
+    * @param {bool} append - set the sequence in appending mode or overwriting mode
+    */
+    setSequence: function (seq, format, sugar, linker, append) {
         var seq = scil.Utils.trim(seq);
         if (/^[a-z]+$/.test(seq))
             seq = seq.toUpperCase();
@@ -588,6 +668,12 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         return true;
     },
 
+    /**
+    * Clean the layout
+    * @function clean
+    * @param {JSDraw2.Atom} a - the start monomer.  Use null to clean all
+    * @param {bool} redraw - indicate if redrawing the structure after cleaning
+    */
     clean: function (a, redraw) {
         if (redraw)
             this.jsd.pushundo();
@@ -599,7 +685,11 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         }
     },
 
-    resetIDs: function() {
+    /**
+    * Reset monomer IDs 
+    * @function resetIDs
+    */
+    resetIDs: function () {
         org.helm.webeditor.Layout.resetIDs(this.jsd.m);
     },
 

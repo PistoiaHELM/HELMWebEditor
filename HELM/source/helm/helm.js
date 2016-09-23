@@ -11,6 +11,23 @@
 // https://github.com/PistoiaHELM/HELMEditor/blob/master/resources/conf/DefaultMonomerCategorizationTemplate.xml
 // 
 
+/**
+@project HELM Web Editor
+@version 2.0.0
+@description HELM Web Editor built on JSDraw.Lite
+*/
+
+/**
+* HELM namespace
+* @namespace org.helm.webeditor
+*/
+
+/**
+* HELM Version
+* @property org.helm.webeditor.version
+*/
+
+
 if (typeof (org) == "undefined")
     org = {};
 if (org.helm == null)

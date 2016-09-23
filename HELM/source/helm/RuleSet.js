@@ -7,13 +7,17 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
+/**
+* RuleSet class
+* @class org.helm.webeditor.RuleSet
+*/
 org.helm.webeditor.RuleSet = {
     kApplyAll: false,
 
     rules: [
-        { id: 1, name: "Replace base A with U", note: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'U');return n > 0;}" },
-        { id: 2, name: "Replace base A with G", note: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'G');return n > 0;}" },
-        { id: 3, name: "Replace base A with T", note: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'T');return n > 0;}" }
+        { id: 1, category: "Demo", name: "Replace base A with U", description: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'U');return n > 0;}" },
+        { id: 2, category: "Demo", name: "Replace base A with G", description: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'G');return n > 0;}" },
+        { id: 3, category: "Test", name: "Replace base A with T", description: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'T');return n > 0;}" }
     ],
 
     loadDB: function(list) {
@@ -23,7 +27,7 @@ org.helm.webeditor.RuleSet = {
     favorites: new scil.Favorite("ruleset"),
 
     saveTextDB: function (url) {
-        var cols = ["id", "name", "note", "script", "author"];
+        var cols = ["id", "name", "description", "script", "author", "category", "createddate"];
 
         var n = 0;
         var ret = "";
@@ -62,13 +66,13 @@ org.helm.webeditor.RuleSet = {
         this.favorites.add(id, f);
     },
 
-    filterRules: function(tbody, s) {
+    filterRules: function(tbody, s, category) {
         s = scil.Utils.trim(s).toLowerCase();
         var list = tbody.childNodes;
         for (var i = 0; i < this.rules.length; ++i) {
-            var name = this.rules[i].name;
+            var r = this.rules[i];
             var tr = list[i + 1];
-            if (s == "" || name.toLowerCase().indexOf(s) >= 0)
+            if ((s == "" || r.name.toLowerCase().indexOf(s) >= 0) && (scil.Utils.isNullOrEmpty(category) || category == r.category))
                 tr.style.display = "";
             else
                 tr.style.display = "none";
@@ -117,13 +121,13 @@ org.helm.webeditor.RuleSet = {
     listOneRule2: function (td, rule, fun, i) {
         var s = rule.name;
         if (scil.Utils.isNullOrEmpty(s))
-            s = rule.note;
+            s = rule.description;
         if (s.length > 50)
             s = s.substr(0, 47) + "...";
 
         var tbody = scil.Utils.createTable(td, 0, 0, { width: "100%" });
         var tr = scil.Utils.createElement(tbody, "tr");
-        scil.Utils.createElement(tr, "td", "[" + rule.id + "] " + s, { padding: "3px 0 3px 0" }, { title: rule.note });
+        scil.Utils.createElement(tr, "td", "[" + rule.id + "] " + s, { padding: "3px 0 3px 0" }, { title: rule.description });
         var button = scil.Utils.createElement(scil.Utils.createElement(tr, "td", null, { textAlign: "right" }), "button", JSDraw2.Language.res("Apply"), { display: "none" });
 
         var me = this;

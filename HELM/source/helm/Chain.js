@@ -6,6 +6,10 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 
+/**
+* Chain class
+* @class org.helm.webeditor.Chain
+*/
 org.helm.webeditor.Chain = scil.extend(scil._base, {
     constructor: function (id) {
         this.id = id;
