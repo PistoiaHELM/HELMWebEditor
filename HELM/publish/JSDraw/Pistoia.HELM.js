@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0",
+    kVersion: "2.0.0.2016-09-27",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -79,7 +79,7 @@ org.helm.webeditor = {
             scil.Utils.createElement(scil.Utils.createElement(tbody, "tr"), "td", "&nbsp;");
             var btn = scil.Utils.createElement(scil.Utils.createElement(div, "div", null, { textAlign: "center" }), "button", "OK", { width: scil.Utils.buttonWidth + "px" });
 
-            me.about = new JSDraw2.Dialog("About HELM Web Editor", div);
+            me.about = new JSDraw2.Dialog("About JSDraw", div);
             scil.connect(btn, "onclick", function (e) { me.about.hide(); e.preventDefault(); });
         }
         this.about.show();
@@ -267,7 +267,7 @@ org.helm.webeditor.Interface = {
         }
         if (!scil.Utils.isNullOrEmpty(a.bio.annotation)) {
             var p1 = p.clone();
-            p1.offset(-fontsize * 1.2, -fontsize * 1.5);
+            p1.offset(-fontsize * 2, -fontsize * 1.5);
             JSDraw2.Drawer.drawLabel(surface, p1, a.bio.annotation, "orange", fontsize, null, null, null, false);
         }
     },
@@ -4297,11 +4297,12 @@ org.helm.webeditor.MolViewer = {
     dlg: null,
     jsd: null,
     molscale: 1,
+    delay: 800,
 
     show: function (e, type, m, code) {
         this.clearTimer();
         var me = this;
-        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code); }, 500);
+        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code); }, this.delay);
     },
 
     clearTimer: function() {

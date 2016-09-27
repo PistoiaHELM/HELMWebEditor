@@ -14,11 +14,12 @@ org.helm.webeditor.MolViewer = {
     dlg: null,
     jsd: null,
     molscale: 1,
+    delay: 800,
 
     show: function (e, type, m, code) {
         this.clearTimer();
         var me = this;
-        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code); }, 500);
+        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code); }, this.delay);
     },
 
     clearTimer: function() {

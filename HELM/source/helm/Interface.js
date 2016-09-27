@@ -175,7 +175,7 @@ org.helm.webeditor.Interface = {
         }
         if (!scil.Utils.isNullOrEmpty(a.bio.annotation)) {
             var p1 = p.clone();
-            p1.offset(-fontsize * 1.2, -fontsize * 1.5);
+            p1.offset(-fontsize * 2, -fontsize * 1.5);
             JSDraw2.Drawer.drawLabel(surface, p1, a.bio.annotation, "orange", fontsize, null, null, null, false);
         }
     },
