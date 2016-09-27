@@ -41,12 +41,14 @@ org.helm.webeditor.Layout = {
         m.clearFlag();
         for (var i = 0; i < chains.length; ++i) {
             var chain = chains[i];
-            for (var k = 0; k < chain.atoms.length; ++k)
+            for (var k = 0; k < chain.atoms.length; ++k) {
                 chain.atoms[k].flag = i;
+                if (chain.bases[k] != null)
+                    chain.bases[k].flag = i;
+            }
         }
 
         var fixed = {};
-
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
             if (b.a1.flag != null && b.a2.flag != null && b.a1.flag != b.a2.flag) {
@@ -70,8 +72,19 @@ org.helm.webeditor.Layout = {
                     a1 = b.a1;
                     a2 = b.a2;
                 }
-                var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
-                chains[a2.flag].move(delta);
+
+                if (b.type == JSDraw2.BONDTYPES.UNKNOWN) {
+                    // hydrogen bond
+                    var chain = chains[a2.flag];
+                    chain.rotate(180);
+
+                    var delta = a1.p.clone().offset(0, bondlength * org.helm.webeditor.bondscale).offset(-a2.p.x, -a2.p.y);
+                    chain.move(delta);
+                }
+                else {
+                    var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
+                    chains[a2.flag].move(delta);
+                }
 
                 fixed[a1.flag] = true;
                 fixed[a2.flag] = true;

@@ -45,7 +45,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             var b = this.bases[i];
 
             var a2 = a.clone();
-            a2.p.y += 3 * d
+            a2.p.y += 3 * d;
             a2.bio.annotation = null;
             m.addAtom(a2);
             if (b != null) {
@@ -187,12 +187,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             var biotype = a.biotype();
             if (biotype == org.helm.webeditor.HELM.AA) {
                 a.bio.id = ++aaid;
-                if (aaid == 1) {
+                if (aaid == 1)
                     a.bio.annotation = "n";
-                }
-                else {
+                else
                     a.bio.annotation = null;
-                }
                 baseid = 0;
             }
             else if (biotype == org.helm.webeditor.HELM.SUGAR || biotype == org.helm.webeditor.HELM.LINKER) {
@@ -251,6 +249,16 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         a.p = org.helm.webeditor.Interface.createPoint(origin.x + radius, origin.y);
         for (var i = 1; i < this.atoms.length - 1; ++i) {
             this.atoms[i].p = this.atoms[i - 1].p.clone().rotateAround(origin, -deg);
+        }
+    },
+
+    rotate: function(deg) {
+        var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
+        for (var i = 0; i < n; ++i) {
+            this.atoms[i].p.rotate(deg);
+            var a = this.bases[i];
+            if (a != null)
+                a.p.rotate(deg);
         }
     },
   

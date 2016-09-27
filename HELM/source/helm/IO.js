@@ -260,41 +260,50 @@ org.helm.webeditor.IO = {
 
             // RNA1,RNA1,1:R1-21:R2
             for (var i = 0; i < ss.length; ++i) {
-                var tt = ss[i].split(',');
-                if (tt.length != 3) {
-                    //error ???
-                }
+                var c = this.parseConnection(ss[i]);
+                if (c == null || chains[c.chain1] == null || chains[c.chain2] == null)
+                    continue; //error
 
-                var tt2 = tt[2].split('-');
-                if (tt2.length != 2) {
-                    //error ???
-                }
-                var c1 = tt2[0].split(':');
-                var c2 = tt2[1].split(':');
-                if (c1.length != 2 || c2.length != 2) {
-                    //error ???
-                }
+                var atom1 = chains[c.chain1].getAtomByAAID(c.a1);
+                var atom2 = chains[c.chain2].getAtomByAAID(c.a2);
+                if (atom1 == null || atom2 == null)
+                    continue; //error
 
-                var aa1 = parseInt(c1[0]);
-                var r1 = parseInt(c1[1].substr(1));
-                var aa2 = parseInt(c2[0]);
-                var r2 = parseInt(c2[1].substr(1));
-
-                var chain1 = chains[tt[0]];
-                var chain2 = chains[tt[1]];
-                var atom1 = chain1.getAtomByAAID(aa1);
-                var atom2 = chain2.getAtomByAAID(aa2);
+                if (c.r1 == null || c.r2 == null || !/^R[0-9]+$/.test(c.r1) || !/^R[0-9]+$/.test(c.r2))
+                    continue; //error
+                var r1 = parseInt(c.r1.substr(1));
+                var r2 = parseInt(c.r2.substr(1));
+                if (!(r1 > 0 && r2 > 0))
+                    continue; //error
 
                 //chain.bonds.push(plugin.addBond(atom1, atom2, r1, r2));
                 plugin.addBond(atom1, atom2, r1, r2);
             }
         }
 
-        // ???
+        // pairs, hydrogen bonds
+        // RNA1,RNA2,2:pair-9:pair|RNA1,RNA2,5:pair-6:pair|RNA1,RNA2,8:pair-3:pair
         p = remained == null ? -1 : remained.indexOf("$");
         if (p >= 0) {
             s = remained.substr(0, p);
             remained = remained.substr(p + 1);
+            var ss = s == "" ? [] : s.split("|");
+            for (var i = 0; i < ss.length; ++i) {
+                var c = this.parseConnection(ss[i]);
+                if (c == null || chains[c.chain1] == null || chains[c.chain2] == null || !scil.Utils.startswith(c.chain1, "RNA") || !scil.Utils.startswith(c.chain2, "RNA"))
+                    continue; //error
+
+                var atom1 = chains[c.chain1].getAtomByAAID(c.a1);
+                var atom2 = chains[c.chain2].getAtomByAAID(c.a2);
+                if (atom1 == null || atom2 == null)
+                    continue; //error
+
+                if (c.r1 != "pair" || c.r2 != "pair")
+                    continue; //error
+
+                //chain.bonds.push(plugin.addBond(atom1, atom2, r1, r2));
+                plugin.addHydrogenBond(atom1, atom2);
+            }
         }
 
         // annotation
@@ -319,6 +328,23 @@ org.helm.webeditor.IO = {
         }
 
         return n;
+    },
+
+    parseConnection: function(s) {
+        var tt = s.split(',');
+        if (tt.length != 3)
+            return null; // error
+
+        var tt2 = tt[2].split('-');
+        if (tt2.length != 2)
+            return null;// error
+
+        var c1 = tt2[0].split(':');
+        var c2 = tt2[1].split(':');
+        if (c1.length != 2 || c2.length != 2)
+            return null;// error
+
+        return { chain1: tt[0], chain2: tt[1], a1: parseInt(c1[0]), r1: c1[1], a2: parseInt(c2[0]), r2: c2[1] };
     },
 
     splitChars: function (s) {

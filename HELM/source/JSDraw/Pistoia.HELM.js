@@ -850,7 +850,7 @@ org.helm.webeditor.Monomers = {
 org.helm.webeditor.monomers = org.helm.webeditor.Monomers;
 
 
-org.helm.webeditor.Monomerssugars = {
+org.helm.webeditor.Monomers.sugars = {
     'mph': { n: 'morpholino', na: 'R', rs: 3, at: { R3: 'OH', R1: 'H', R2: 'H' }, m: '\nMolEngine04211615442D\n\n 11 11  0  0  0  0            999 V2000\n    2.8579    2.4751    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    2.1434    2.0626    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.1434    1.2376    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.8579    0.8250    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5723    1.2376    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5723    2.0626    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.4289    2.4751    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.3163    2.4751    0.0000 R   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7145    2.0626    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    2.4751    0.0000 R   0  0  0  0  0  0  0  0  0  0  0  0\n    2.8579    0.0000    0.0000 R   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  1  0  0  0  0\n  4  5  1  0  0  0  0\n  5  6  1  0  0  0  0\n  1  6  1  0  0  0  0\n  2  7  1  1  0  0  0\n  6  8  1  1  0  0  0\n  7  9  1  0  0  0  0\n  9 10  1  0  0  0  0\n  4 11  1  0  0  0  0\nA    8\nR3\nA   10\nR1\nA   11\nR2\nM  END\n' },
     'MOE': { n: '2\'-O-Methoxyethyl ribose', na: 'R', rs: 3, at: { R3: 'OH', R1: 'H', R2: 'H' }, m: '\nMolEngine04211615442D\n\n 16 16  0  0  0  0            999 V2000\n    2.1588    2.5890    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    1.4450    2.1755    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.8739    2.1775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.6596    1.3790    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.6615    1.3804    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.6608    0.5540    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    2.6627    0.5554    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    1.2965    3.0299    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.8727    3.2087    0.0000 R   0  0  0  0  0  0  0  0  0  0  0  0\n    0.8250    3.3835    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    3.5381    0.0000 R   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3621    0.0000    0.0000 R   0  0  0  0  0  0  0  0  0  0  0  0\n    3.3772    0.1429    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.0916    0.5554    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.8061    0.1429    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    5.5206    0.5554    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  3  1  0  0  0  0\n  2  4  1  0  0  0  0\n  2  8  1  1  0  0  0\n  3  5  1  0  0  0  0\n  3  9  1  1  0  0  0\n  4  5  1  0  0  0  0\n  4  6  1  6  0  0  0\n  5  7  1  6  0  0  0\n  6 12  1  0  0  0  0\n  8 10  1  0  0  0  0\n 10 11  1  0  0  0  0\n  7 13  1  0  0  0  0\n 13 14  1  0  0  0  0\n 14 15  1  0  0  0  0\n 15 16  1  0  0  0  0\nA    9\nR3\nA   11\nR1\nA   12\nR2\nM  END\n' },
     'LR': { n: '2,\'4\'-locked-Ribose', na: 'R', rs: 3, at: { R3: 'OH', R1: 'H', R2: 'H' }, m: '\nMolEngine04211615442D\n\n 13 14  0  0  0  0            999 V2000\n    2.1588    2.5890    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    1.4450    2.1755    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.8739    2.1775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.6596    1.3790    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.6615    1.3804    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.6608    0.5540    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    1.2965    3.0299    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.8727    3.2087    0.0000 R   0  0  0  0  0  0  0  0  0  0  0  0\n    0.8250    3.3835    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    3.5381    0.0000 R   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3621    0.0000    0.0000 R   0  0  0  0  0  0  0  0  0  0  0  0\n    1.2315    1.3786    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.2406    0.7893    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  3  1  0  0  0  0\n  2  4  1  0  0  0  0\n  2  7  1  1  0  0  0\n  3  5  1  0  0  0  0\n  3  8  1  1  0  0  0\n  4  5  1  0  0  0  0\n  6 11  1  0  0  0  0\n  7  9  1  0  0  0  0\n  9 10  1  0  0  0  0\n  2 12  1  6  0  0  0\n 12 13  1  0  0  0  0\n  5 13  1  6  0  0  0\n  4  6  1  6  0  0  0\nA    8\nR3\nA   10\nR1\nA   11\nR2\nM  END\n' },
@@ -1223,6 +1223,14 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         var b = org.helm.webeditor.Interface.createBond(this.jsd.m, a1, a2);
         b.r1 = r1;
         b.r2 = r2;
+        return b;
+    },
+
+    addHydrogenBond: function (a1, a2) {
+        if (a1 == null || a2 == null || a1 == a2)
+            return null;
+        var b = org.helm.webeditor.Interface.createBond(this.jsd.m, a1, a2);
+        b.type = JSDraw2.BONDTYPES.UNKNOWN;
         return b;
     },
 
@@ -2025,7 +2033,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             var b = this.bases[i];
 
             var a2 = a.clone();
-            a2.p.y += 3 * d
+            a2.p.y += 3 * d;
             a2.bio.annotation = null;
             m.addAtom(a2);
             if (b != null) {
@@ -2167,12 +2175,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             var biotype = a.biotype();
             if (biotype == org.helm.webeditor.HELM.AA) {
                 a.bio.id = ++aaid;
-                if (aaid == 1) {
+                if (aaid == 1)
                     a.bio.annotation = "n";
-                }
-                else {
+                else
                     a.bio.annotation = null;
-                }
                 baseid = 0;
             }
             else if (biotype == org.helm.webeditor.HELM.SUGAR || biotype == org.helm.webeditor.HELM.LINKER) {
@@ -2231,6 +2237,16 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         a.p = org.helm.webeditor.Interface.createPoint(origin.x + radius, origin.y);
         for (var i = 1; i < this.atoms.length - 1; ++i) {
             this.atoms[i].p = this.atoms[i - 1].p.clone().rotateAround(origin, -deg);
+        }
+    },
+
+    rotate: function(deg) {
+        var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
+        for (var i = 0; i < n; ++i) {
+            this.atoms[i].p.rotate(deg);
+            var a = this.bases[i];
+            if (a != null)
+                a.p.rotate(deg);
         }
     },
   
@@ -2687,12 +2703,14 @@ org.helm.webeditor.Layout = {
         m.clearFlag();
         for (var i = 0; i < chains.length; ++i) {
             var chain = chains[i];
-            for (var k = 0; k < chain.atoms.length; ++k)
+            for (var k = 0; k < chain.atoms.length; ++k) {
                 chain.atoms[k].flag = i;
+                if (chain.bases[k] != null)
+                    chain.bases[k].flag = i;
+            }
         }
 
         var fixed = {};
-
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
             if (b.a1.flag != null && b.a2.flag != null && b.a1.flag != b.a2.flag) {
@@ -2716,8 +2734,19 @@ org.helm.webeditor.Layout = {
                     a1 = b.a1;
                     a2 = b.a2;
                 }
-                var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
-                chains[a2.flag].move(delta);
+
+                if (b.type == JSDraw2.BONDTYPES.UNKNOWN) {
+                    // hydrogen bond
+                    var chain = chains[a2.flag];
+                    chain.rotate(180);
+
+                    var delta = a1.p.clone().offset(0, bondlength * org.helm.webeditor.bondscale).offset(-a2.p.x, -a2.p.y);
+                    chain.move(delta);
+                }
+                else {
+                    var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
+                    chains[a2.flag].move(delta);
+                }
 
                 fixed[a1.flag] = true;
                 fixed[a2.flag] = true;
@@ -3036,41 +3065,50 @@ org.helm.webeditor.IO = {
 
             // RNA1,RNA1,1:R1-21:R2
             for (var i = 0; i < ss.length; ++i) {
-                var tt = ss[i].split(',');
-                if (tt.length != 3) {
-                    //error ???
-                }
+                var c = this.parseConnection(ss[i]);
+                if (c == null || chains[c.chain1] == null || chains[c.chain2] == null)
+                    continue; //error
 
-                var tt2 = tt[2].split('-');
-                if (tt2.length != 2) {
-                    //error ???
-                }
-                var c1 = tt2[0].split(':');
-                var c2 = tt2[1].split(':');
-                if (c1.length != 2 || c2.length != 2) {
-                    //error ???
-                }
+                var atom1 = chains[c.chain1].getAtomByAAID(c.a1);
+                var atom2 = chains[c.chain2].getAtomByAAID(c.a2);
+                if (atom1 == null || atom2 == null)
+                    continue; //error
 
-                var aa1 = parseInt(c1[0]);
-                var r1 = parseInt(c1[1].substr(1));
-                var aa2 = parseInt(c2[0]);
-                var r2 = parseInt(c2[1].substr(1));
-
-                var chain1 = chains[tt[0]];
-                var chain2 = chains[tt[1]];
-                var atom1 = chain1.getAtomByAAID(aa1);
-                var atom2 = chain2.getAtomByAAID(aa2);
+                if (c.r1 == null || c.r2 == null || !/^R[0-9]+$/.test(c.r1) || !/^R[0-9]+$/.test(c.r2))
+                    continue; //error
+                var r1 = parseInt(c.r1.substr(1));
+                var r2 = parseInt(c.r2.substr(1));
+                if (!(r1 > 0 && r2 > 0))
+                    continue; //error
 
                 //chain.bonds.push(plugin.addBond(atom1, atom2, r1, r2));
                 plugin.addBond(atom1, atom2, r1, r2);
             }
         }
 
-        // ???
+        // pairs, hydrogen bonds
+        // RNA1,RNA2,2:pair-9:pair|RNA1,RNA2,5:pair-6:pair|RNA1,RNA2,8:pair-3:pair
         p = remained == null ? -1 : remained.indexOf("$");
         if (p >= 0) {
             s = remained.substr(0, p);
             remained = remained.substr(p + 1);
+            var ss = s == "" ? [] : s.split("|");
+            for (var i = 0; i < ss.length; ++i) {
+                var c = this.parseConnection(ss[i]);
+                if (c == null || chains[c.chain1] == null || chains[c.chain2] == null || !scil.Utils.startswith(c.chain1, "RNA") || !scil.Utils.startswith(c.chain2, "RNA"))
+                    continue; //error
+
+                var atom1 = chains[c.chain1].getAtomByAAID(c.a1);
+                var atom2 = chains[c.chain2].getAtomByAAID(c.a2);
+                if (atom1 == null || atom2 == null)
+                    continue; //error
+
+                if (c.r1 != "pair" || c.r2 != "pair")
+                    continue; //error
+
+                //chain.bonds.push(plugin.addBond(atom1, atom2, r1, r2));
+                plugin.addHydrogenBond(atom1, atom2);
+            }
         }
 
         // annotation
@@ -3095,6 +3133,23 @@ org.helm.webeditor.IO = {
         }
 
         return n;
+    },
+
+    parseConnection: function(s) {
+        var tt = s.split(',');
+        if (tt.length != 3)
+            return null; // error
+
+        var tt2 = tt[2].split('-');
+        if (tt2.length != 2)
+            return null;// error
+
+        var c1 = tt2[0].split(':');
+        var c2 = tt2[1].split(':');
+        if (c1.length != 2 || c2.length != 2)
+            return null;// error
+
+        return { chain1: tt[0], chain2: tt[1], a1: parseInt(c1[0]), r1: c1[1], a2: parseInt(c2[0]), r2: c2[1] };
     },
 
     splitChars: function (s) {

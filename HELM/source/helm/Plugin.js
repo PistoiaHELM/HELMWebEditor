@@ -220,6 +220,14 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         return b;
     },
 
+    addHydrogenBond: function (a1, a2) {
+        if (a1 == null || a2 == null || a1 == a2)
+            return null;
+        var b = org.helm.webeditor.Interface.createBond(this.jsd.m, a1, a2);
+        b.type = JSDraw2.BONDTYPES.UNKNOWN;
+        return b;
+    },
+
     connectFragment: function (a1, a2, extendchain) {
         var b = null;
         var a = null;
