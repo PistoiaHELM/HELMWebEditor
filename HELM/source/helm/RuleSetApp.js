@@ -24,6 +24,18 @@
 * );
 * **********************************************************
 * </pre>
+* JSON Schema
+* <pre>
+* {
+*     id: 3,                                          // rule internal ID
+*     name: 'Replace base A with U',                  // rule long name
+*     script: '	\nfunction(plugin) {\n // ... \n}',   // rule script
+*     description: null,                              // rule full description
+*     author: null,                                   // rule author
+*     createddate: null,                              // rule created date
+*     category: null                                  // rule category
+* }
+* </pre>
 **/
 org.helm.webeditor.RuleSetApp = scil.extend(scil._base, {
     /**

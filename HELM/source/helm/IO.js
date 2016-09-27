@@ -37,13 +37,22 @@ org.helm.webeditor.IO = {
             a._aaid = 1;
         }
 
+        var pairs = [];
+        // RNA1,RNA2,5:pair-11:pair
         for (var i = 0; i < branches.bonds.length; ++i) {
             var b = branches.bonds[i];
-            var c1 = this.findChainID(ret.chains, b.a1);
-            var c2 = this.findChainID(ret.chains, b.a2);
-
-            var s = c1 + "," + c2 + "," + b.a1._aaid + ":R" + b.r1 + "-" + b.a2._aaid + ":R" + b.r2;
-            ret.connections.push(s);
+            if (b.type == JSDraw2.BONDTYPES.UNKNOWN) {
+                var c1 = this.findChainID(ret.chains, b.a1);
+                var c2 = this.findChainID(ret.chains, b.a2);
+                var s = c1 + "," + c2 + "," + b.a1._aaid + ":pair-" + b.a2._aaid + ":pair";
+                pairs.push(s);
+            }
+            else {
+                var c1 = this.findChainID(ret.chains, b.a1);
+                var c2 = this.findChainID(ret.chains, b.a2);
+                var s = c1 + "," + c2 + "," + b.a1._aaid + ":R" + b.r1 + "-" + b.a2._aaid + ":R" + b.r2;
+                ret.connections.push(s);
+            }
         }
 
         var s = "";
@@ -57,7 +66,11 @@ org.helm.webeditor.IO = {
         for (var i = 0; i < ret.connections.length; ++i)
             s += (i > 0 ? "|" : "") + ret.connections[i];
 
-        s += "$$";
+        s += "$";
+        for (var i = 0; i < pairs.length; ++i)
+            s += (i > 0 ? "|" : "") + pairs[i];
+
+        s += "$";
 
         //RNA1{R(C)P.R(A)P.R(T)}$$$RNA1{ss}$
         for (var i = 0; i < ret.annotations.length; ++i)
@@ -156,7 +169,7 @@ org.helm.webeditor.IO = {
         return s;
     },
 
-    findChainID: function(chains, a) {
+    findChainID: function (chains, a) {
         for (var k in chains) {
             var atoms = chains[k];
             if (scil.Utils.indexOf(atoms, a) >= 0)

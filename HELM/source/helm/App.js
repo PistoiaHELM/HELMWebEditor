@@ -355,16 +355,20 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.properties.setData(data);
         if (this.options.calculatorurl != null) {
             var me = this;
-            scil.Utils.jsonp(this.options.calculatorurl, function (ret) {
-                data.mw = ret.MolecularWeight;
-                data.mf = ret.MolecularFormula;
-                data.ec = ret.ExtinctionCoefficient;
-                me.properties.setData(data);
-            }, { HELMNotation: this.canvas.getHelm() });
+            var helm = this.canvas.getHelm();
+            if (helm != null) {
+                scil.Utils.jsonp(this.options.calculatorurl, function (ret) {
+                    data.mw = ret.MolecularWeight;
+                    data.mf = ret.MolecularFormula;
+                    data.ec = ret.ExtinctionCoefficient;
+                    me.properties.setData(data);
+                }, { helm: helm });
+            }
         }
         else {
             data.mw = this.canvas.getMolWeight();
             data.mf = this.canvas.getFormula(true);
+            data.ec = this.canvas.getExtinctionCoefficient(true);
             this.properties.setData(data);
         }
     },

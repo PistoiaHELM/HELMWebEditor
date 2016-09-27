@@ -18,6 +18,116 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         this.bases = [];
     },
 
+    getComplementary: function(a) {
+        var m = org.helm.webeditor.Monomers.getMonomer(a);
+        switch (m.na) {
+            case "A":
+                return "T";
+            case "G":
+                return "C";
+            case "T":
+            case "U":
+                return "A";
+            case "C":
+                return "G";
+            default:
+                return "U";
+        }
+    },
+
+    makeComplementaryStrand: function (m, bondlength) {
+        var n = 0;
+        var lasta2 = null;
+        var lastsugar = null;
+        var d = bondlength * org.helm.webeditor.bondscale;
+        for (var i = 0; i < this.atoms.length; ++i) {
+            var a = this.atoms[i];
+            var b = this.bases[i];
+
+            var a2 = a.clone();
+            a2.p.y += 3 * d
+            a2.bio.annotation = null;
+            m.addAtom(a2);
+            if (b != null) {
+                var b2 = b.clone();
+                b2.p.y += d;
+                b2.elem = this.getComplementary(b);
+                m.addAtom(b2);
+
+                var bond = new JSDraw2.Bond(a2, b2);
+                bond.r1 = 3;
+                bond.r2 = 1;
+                m.addBond(bond);
+
+                bond = new JSDraw2.Bond(b, b2, JSDraw2.BONDTYPES.UNKNOWN);
+                m.addBond(bond);
+            }
+
+            if (lasta2 != null) {
+                var bond = new JSDraw2.Bond(lasta2, a2);
+                bond.r1 = 1;
+                bond.r2 = 2;
+                m.addBond(bond);
+            }
+
+            lasta2 = a2;
+            if (a2.biotype() == org.helm.webeditor.HELM.SUGAR) {
+                lastsugar = a2;
+                a2.elem = org.helm.webeditor.Monomers.getDefaultMonomer(org.helm.webeditor.HELM.SUGAR);
+            }
+            else if (a2.biotype() == org.helm.webeditor.HELM.LINKER) {
+                a2.elem = org.helm.webeditor.Monomers.getDefaultMonomer(org.helm.webeditor.HELM.LINKER);
+            }
+            ++n;
+        }
+
+        if (lastsugar != null)
+            lastsugar.bio.annotation = "5'";
+
+        return n > 0;
+    },
+
+    _getPolymers: function() {
+        var ret = [];
+
+        var polymer = null;
+        var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
+        for (var i = 0; i < n; ++i) {
+            var a = this.atoms[i];
+            var biotype = a.biotype();
+            if (biotype == org.helm.webeditor.HELM.AA) {
+                if (polymer != null && polymer.type != "Peptide")
+                    polymer = null;
+
+                if (polymer == null) {
+                    polymer = { type: "Peptide", atoms: [] };
+                    ret.push(polymer);
+                }
+                polymer.atoms.push(a);
+            }
+            else if (biotype == org.helm.webeditor.HELM.SUGAR || biotype == org.helm.webeditor.HELM.HELM_LINKER) {
+                if (polymer != null && polymer.type != "RNA")
+                    polymer = null;
+
+                if (biotype == org.helm.webeditor.HELM.SUGAR) {
+                    var b = this.bases[i];
+                    if (b != null) {
+                        if (polymer == null) {
+                            polymer = { type: "RNA", atoms: [] };
+                            ret.push(polymer);
+                        }
+                        polymer.atoms.push(b);
+                    }
+                }
+            }
+            else {
+                polymer = null;
+            }
+        }
+
+        return ret;
+    },
+
     expand: function (plugin) {
         var m1 = null;
         var m2 = null;
@@ -322,6 +432,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
 
             a._aaid = ++aaid;
             chn.push(a);
+
             if (aaid > 1 && !(i > 0 && a.biotype() == org.helm.webeditor.HELM.LINKER && this.atoms[i - 1].biotype() == org.helm.webeditor.HELM.SUGAR))
                 sequence += ".";
             sequence += org.helm.webeditor.IO.getCode(a, highlightselection);
@@ -330,6 +441,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 var b = this.bases[i];
                 sequence += org.helm.webeditor.IO.getCode(b, highlightselection, true);
                 b._aaid = ++aaid;
+                chn.push(b);
             }
         }
 

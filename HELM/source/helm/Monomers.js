@@ -30,7 +30,7 @@ org.helm.webeditor.Monomers = {
         if (monomertype == org.helm.webeditor.HELM.BASE)
             return this._getFirstKey(org.helm.webeditor.Monomers.bases, "a", "A");
         else if (monomertype == org.helm.webeditor.HELM.SUGAR)
-            return this._getFirstKey(org.helm.webeditor.Monomers.linkers, "r", "R");
+            return this._getFirstKey(org.helm.webeditor.Monomers.sugars, "r", "R");
         else if (monomertype == org.helm.webeditor.HELM.LINKER)
             return this._getFirstKey(org.helm.webeditor.Monomers.linkers, "p", "P");
         else if (monomertype == org.helm.webeditor.HELM.AA)

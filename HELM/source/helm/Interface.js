@@ -175,7 +175,7 @@ org.helm.webeditor.Interface = {
         }
         if (!scil.Utils.isNullOrEmpty(a.bio.annotation)) {
             var p1 = p.clone();
-            p1.offset(-fontsize * 2, -fontsize * 1.5);
+            p1.offset(-fontsize * 1.2, -fontsize * 1.5);
             JSDraw2.Drawer.drawLabel(surface, p1, a.bio.annotation, "orange", fontsize, null, null, null, false);
         }
     },
@@ -241,6 +241,8 @@ org.helm.webeditor.Interface = {
                 items.push({ caption: "Set as Sense", key: "helm_set_sense" });
                 items.push({ caption: "Set as Antisense", key: "helm_set_antisense" });
                 items.push({ caption: "Clear Annotation", key: "helm_set_clear" });
+                items.push("-");
+                items.push({ caption: "Create Complementary Strand", key: "helm_complementary_strand" });
                 return items;
             }
             return null;

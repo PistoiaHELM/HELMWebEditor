@@ -46,6 +46,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         return org.helm.webeditor.Formula.getMW(this.jsd.m);
     },
 
+    /**
+    * Get the Extinction Coefficient
+    * @function getExtinctionCoefficient
+    * @returns the Extinction Coefficient as a number
+    */
+    getExtinctionCoefficient: function () {
+        return org.helm.webeditor.ExtinctionCoefficient.calculate(this.jsd.m);
+    },
+
     getSpareRs: function (a, rs) {
         if (a.bio == null) // not bio
             return [];
@@ -161,6 +170,14 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             }
         }
         return n;
+    },
+
+    makeComplementaryStand: function (a) {
+        var chain = org.helm.webeditor.Chain.getChain(this.jsd.m, a);
+        if (chain == null)
+            return false;
+
+        return chain.makeComplementaryStrand(this.jsd.m, this.jsd.bondlength);
     },
 
     /**
@@ -411,6 +428,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         var a2 = null;
         var r1 = null;
         var r2 = null;
+        var bond = null;
         if (cmd == "helm_chem") {
             if (Math.abs(p2.y - p1.y) / Math.abs(p2.x - p1.x) > 5)
                 p = org.helm.webeditor.Interface.createPoint(a1.p.x, a1.p.y + Math.abs(delta) * (p2.y > p1.y ? 1 : -1));
@@ -452,33 +470,70 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             else {
                 if (rs[1] == true || rs[2] == true) {
                     var m = this.getDefaultNodeType(org.helm.webeditor.HELM.SUGAR);
-                    a2 = this.addNode(p, org.helm.webeditor.HELM.SUGAR, m);
-                    var a3 = null;
-                    if (cmd == "helm_nucleotide" && org.helm.webeditor.Monomers.hasR(org.helm.webeditor.HELM.SUGAR, m, "R3")) {
-                        a3 = this.addNode(org.helm.webeditor.Interface.createPoint(p.x, p.y + Math.abs(delta)), org.helm.webeditor.HELM.BASE, this.getDefaultNodeType(org.helm.webeditor.HELM.BASE));
-                        this.addBond(a2, a3, 3, 1);
-                    }
-
                     var e = this.getDefaultNodeType(org.helm.webeditor.HELM.LINKER);
-                    if (e != "null") {
-                        var a4 = this.addNode(p.clone(), org.helm.webeditor.HELM.LINKER, e);
-                        this.addBond(a2, a4, 2, 1);
-                        if (delta > 0) {
-                            a4.p.x += delta;
+                    var linker = null;
+                    var sugar = null;
+                    if (delta < 0) {
+                        if (e != "null") {
+                            linker = this.addNode(p.clone(), org.helm.webeditor.HELM.LINKER, e);
+                            p.x += delta;
+                        }
+                        sugar = this.addNode(p.clone(), org.helm.webeditor.HELM.SUGAR, m);
+
+                        if (rs[1])
+                            r1 = 1;
+                        else
+                            r1 = 2;
+
+                        r2 = r1 == 1 ? 2 : 1;
+                        if (linker != null) {
+                            bond = this.addBond(a1, linker, r1, r2);
+                            this.addBond(linker, sugar, r1, r2);
                         }
                         else {
-                            a2.p.x += delta;
-                            if (a3 != null)
-                                a3.p.x += delta;
-                            a2 = a4;
+                            bond = this.addBond(a1, sugar, r1, r2);
                         }
                     }
+                    else {
+                        sugar = this.addNode(p.clone(), org.helm.webeditor.HELM.SUGAR, m);
+                        p.x += delta;
+                        if (e != "null")
+                            linker = this.addNode(p.clone(), org.helm.webeditor.HELM.LINKER, e);
+
+                        if (rs[2])
+                            r1 = 2;
+                        else
+                            r1 = 1;
+
+                        r2 = r1 == 1 ? 2 : 1;
+                        if (linker != null) {
+                            bond = this.addBond(a1, sugar, r1, r2);
+                            this.addBond(sugar, linker, r1, r2);
+                        }
+                        else {
+                            bond = this.addBond(a1, sugar, r1, r2);
+                        }
+                    }
+
+                    var base = null;
+                    if (cmd == "helm_nucleotide" && org.helm.webeditor.Monomers.hasR(org.helm.webeditor.HELM.SUGAR, m, "R3")) {
+                        base = this.addNode(sugar.p.clone(), org.helm.webeditor.HELM.BASE, this.getDefaultNodeType(org.helm.webeditor.HELM.BASE));
+                        this.addBond(sugar, base, 3, 1);
+
+                        var leftR = bond.a1.p.x < bond.a2.p.x ? bond.r1 : bond.r2;
+                        if (leftR == 1) // reversed
+                            base.p.y -= Math.abs(delta);
+                        else
+                            base.p.y += Math.abs(delta);
+                    }
+
+                    this.jsd.pushundo(cloned);
+                    this.finishConnect(false, bond, null, a1);
                 }
             }
         }
 
         if (a2 != null) {
-            this.jsd.pushundo(cloned);
             if (r1 == null || r2 == null) {
                 if (this.hasSpareR(a1, 2) && !this.hasSpareR(a1, 1)) {
                     r1 = 2;
@@ -493,9 +548,12 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                     r2 = r1 == 2 ? 1 : 2;
                 }
             }
-            var b = this.addBond(a1, a2, r1, r2);
+            bond = this.addBond(a1, a2, r1, r2);
+        }
 
-            this.finishConnect(false, b, null, a1);
+        if (bond != null) {
+            this.jsd.pushundo(cloned);
+            this.finishConnect(false, bond, null, a1);
         }
         else {
             this.jsd.refresh();

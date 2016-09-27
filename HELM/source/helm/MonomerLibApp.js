@@ -34,6 +34,26 @@
 * );
 * **********************************************************
 * </pre>
+* JSON Schema
+* <pre>
+* {
+*     id: 69,                     // monomer internal ID
+*     symbol: 'Alexa',            // monomer symbol
+*     name: 'Alexa Fluor 488',    // monomer long name
+*     naturalanalog: null,        // natural analog
+*     smiles: null,               // smiles
+*     polymertype: 'CHEM',        // polymer type: CHEM, SUGAR, LINKER, BASE, AA
+*     monomertype: null,          // momer type: Backbone, Branch, null
+*     molfile: null,              // molfile of monomer, plain text, not BASE64 encoded or compressed
+*     r1: 'X',                    // cap for R1 
+*     r2: null,                   // cap for R2
+*     r3: null,                   // cap for R3
+*     r4: null,                   // cap for R4
+*     r5: null,                   // cap for R5
+*     author: null,               // monomer author
+*     createddate: null           // monomer created date
+* }
+* </pre>
 **/
 org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
     /**
