@@ -33,7 +33,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     /**
     * @constructor App
     * @param {DOM} parent - The parent element to host the Editor App
-    * @bio {dict} options - options on how to render the App
+    * @param {dict} options - options on how to render the App
     * <pre>
     * mexfontsize: {string} Monomer Explorer font size, e.g. "90%"
     * mexrnapinontab: {bool} show RNA pin icon on its tab on Monomer Explorer
@@ -43,6 +43,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     * sequenceviewonly: {bool} show Sequence View in viewonly mode
     * showabout: {bool} show about button
     * topmargin: {number} top margin
+    * calculatorurl: {string} ajax web service url for calculate properties
     *
     * <b>Example:</b>
     *    &lt;div id="div1" style="margin: 5px; margin-top: 15px"&gt;&lt;/div&gt;

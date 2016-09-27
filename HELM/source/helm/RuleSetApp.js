@@ -113,7 +113,7 @@ org.helm.webeditor.RuleSetApp = scil.extend(scil._base, {
     },
 
     onbeforerefresh: function (args) {
-        args.countperpage = scil.Form.getButtonValuesByKey(this.buttons, ["category", "countperpage"]);
+        scil.Form.getButtonValuesByKey(this.buttons, ["category", "countperpage"], args);
     },
 
     testapplying: function (field, form) {
