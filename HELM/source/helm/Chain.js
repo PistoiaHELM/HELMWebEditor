@@ -238,18 +238,15 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
     },
 
     layoutCircle: function (bondlength) {
-        var rect = this.getRect();
-        var origin = rect.center();
+        org.helm.webeditor.Layout.layoutCircle(this.atoms, bondlength, 0);
+        //var delta = org.helm.webeditor.bondscale * bondlength;
+        //var deg = 360 / (this.atoms.length - 1);
+        //var radius = (delta / 2) / Math.sin((deg / 2) * Math.PI / 180);
 
-        var delta = org.helm.webeditor.bondscale * bondlength;
-        var deg = 360 / (this.atoms.length - 1);
-        var radius = (delta / 2) / Math.sin((deg / 2) * Math.PI / 180);
-
-        var a = this.atoms[0];
-        a.p = org.helm.webeditor.Interface.createPoint(origin.x + radius, origin.y);
-        for (var i = 1; i < this.atoms.length - 1; ++i) {
-            this.atoms[i].p = this.atoms[i - 1].p.clone().rotateAround(origin, -deg);
-        }
+        //var a = this.atoms[0];
+        //a.p = org.helm.webeditor.Interface.createPoint(origin.x + radius, origin.y);
+        //for (var i = 1; i < this.atoms.length - 1; ++i)
+        //    this.atoms[i].p = this.atoms[i - 1].p.clone().rotateAround(origin, -deg);
     },
 
     rotate: function(deg) {
@@ -314,28 +311,8 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
-
     getRect: function () {
-        var a = this.atoms[0];
-        var x1 = a.p.x;
-        var y1 = a.p.y;
-        var x2 = x1;
-        var y2 = y1;
-
-        var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
-        for (var i = 1; i < n; ++i) {
-            var p = this.atoms[i].p;
-            if (p.x < x1)
-                x1 = p.x;
-            else if (p.x > x2)
-                x2 = p.x;
-            if (p.y < y1)
-                y1 = p.y;
-            else if (p.y > y2)
-                y2 = p.y;
-        }
-
-        return org.helm.webeditor.Interface.createRect(x1, y1, x2 - x1, y2 - y1);
+        return org.helm.webeditor.Layout.getRect(this.atoms);
     },
 
     getSequence: function (highlightselection) {

@@ -2226,18 +2226,15 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
     },
 
     layoutCircle: function (bondlength) {
-        var rect = this.getRect();
-        var origin = rect.center();
+        org.helm.webeditor.Layout.layoutCircle(this.atoms, bondlength, 0);
+        //var delta = org.helm.webeditor.bondscale * bondlength;
+        //var deg = 360 / (this.atoms.length - 1);
+        //var radius = (delta / 2) / Math.sin((deg / 2) * Math.PI / 180);
 
-        var delta = org.helm.webeditor.bondscale * bondlength;
-        var deg = 360 / (this.atoms.length - 1);
-        var radius = (delta / 2) / Math.sin((deg / 2) * Math.PI / 180);
-
-        var a = this.atoms[0];
-        a.p = org.helm.webeditor.Interface.createPoint(origin.x + radius, origin.y);
-        for (var i = 1; i < this.atoms.length - 1; ++i) {
-            this.atoms[i].p = this.atoms[i - 1].p.clone().rotateAround(origin, -deg);
-        }
+        //var a = this.atoms[0];
+        //a.p = org.helm.webeditor.Interface.createPoint(origin.x + radius, origin.y);
+        //for (var i = 1; i < this.atoms.length - 1; ++i)
+        //    this.atoms[i].p = this.atoms[i - 1].p.clone().rotateAround(origin, -deg);
     },
 
     rotate: function(deg) {
@@ -2302,28 +2299,8 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
-
     getRect: function () {
-        var a = this.atoms[0];
-        var x1 = a.p.x;
-        var y1 = a.p.y;
-        var x2 = x1;
-        var y2 = y1;
-
-        var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
-        for (var i = 1; i < n; ++i) {
-            var p = this.atoms[i].p;
-            if (p.x < x1)
-                x1 = p.x;
-            else if (p.x > x2)
-                x2 = p.x;
-            if (p.y < y1)
-                y1 = p.y;
-            else if (p.y > y2)
-                y2 = p.y;
-        }
-
-        return org.helm.webeditor.Interface.createRect(x1, y1, x2 - x1, y2 - y1);
+        return org.helm.webeditor.Layout.getRect(this.atoms);
     },
 
     getSequence: function (highlightselection) {
@@ -2677,12 +2654,24 @@ org.helm.webeditor.Layout = {
         //m.clearFlag();
         var chains = org.helm.webeditor.Chain._getChains(m, a);
 
+        this._removeChainID(m.atoms);
         for (var i = 0; i < chains.length; ++i) {
             var chain = chains[i];
-            if (chain.isCircle())
+
+            // set chain id
+            for (var k = 0; k < chain.atoms.length; ++k) {
+                chain.atoms[k]._chainid = i;
+                if (chain.bases[k] != null)
+                    chain.bases[k]._chainid = i;
+            }
+
+            if (chain.isCircle()) {
                 chain.layoutCircle(bondlength);
-            else
-                chain.layoutLine(bondlength);
+            }
+            else {
+                if (!this.layoutInnerCircle(chain, bondlength, m, i))
+                    chain.layoutLine(bondlength);
+            }
             chain.layoutBases();
 
             //chain.setFlag(true);
@@ -2691,6 +2680,9 @@ org.helm.webeditor.Layout = {
 
         this.layoutCrossChainBonds(m, chains, bondlength);
         //this.layoutBranches(m);
+
+        // clear chain id
+        this._removeChainID(m.atoms);
     },
 
     resetIDs: function(m) {
@@ -2699,34 +2691,96 @@ org.helm.webeditor.Layout = {
             chains[i].resetIDs();
     },
 
-    layoutCrossChainBonds: function (m, chains, bondlength) {
-        m.clearFlag();
-        for (var i = 0; i < chains.length; ++i) {
-            var chain = chains[i];
-            for (var k = 0; k < chain.atoms.length; ++k) {
-                chain.atoms[k].flag = i;
-                if (chain.bases[k] != null)
-                    chain.bases[k].flag = i;
+    _removeChainID: function(atoms) {
+        for (var i = 0; i < atoms.length; ++i)
+            delete atoms[i]._chainid;
+    },
+
+    layoutInnerCircle: function (chain, bondlength, m, chainid) {
+        var pairs = [];
+        for (var i = 0; i < m.bonds.length; ++i) {
+            var b = m.bonds[i];
+            if (b.a1._chainid == chainid && b.a2._chainid == chainid && scil.Utils.indexOf(chain.bonds, b) < 0) {
+                var ai1 = scil.Utils.indexOf(chain.atoms, b.a1);
+                var ai2 = scil.Utils.indexOf(chain.atoms, b.a2);
+                var p1 = { a1: ai1 < ai2 ? ai1 : ai2, a2: ai1 < ai2 ? ai2 : ai1 };
+                pairs.push(p1);
             }
         }
 
+        if (pairs.length == 0)
+            return false;
+
+        // find the biggest circle
+        var pair = pairs[0];
+        for (var i = 1; i < pairs.length; ++i) {
+            var r = pairs[i];
+            if (r.a1 >= pair.a1 && r.a1 <= pair.a2 && r.a1 >= pair.a1 && r.a1 <= pair.a2) {
+                pair = r;
+            }
+            else if (pair.a1 < r.a1 || pair.a1 > r.a2 || pair.a2 < r.a1 || pair.a2 > r.a2) {
+                if (r.a2 - r.a1 > pair.a2 - pair.a1)
+                    pair = r;
+            }
+        }
+
+        var atoms = [];
+        for (var i = pair.a1; i <= pair.a2; ++i)
+            atoms.push(chain.atoms[i]);
+        atoms.push(atoms[0]);
+        this.layoutCircle(atoms, bondlength, -360 / (atoms.length - 1) / 2);
+
+        var delta = org.helm.webeditor.bondscale * bondlength;
+        var p = chain.atoms[pair.a1].p.clone();
+        for (var i = pair.a1 - 1; i >= 0; --i) {
+            p.x += delta;
+            chain.atoms[i].p = p.clone();
+        }
+
+        p = chain.atoms[pair.a2].p.clone();
+        for (var i = pair.a2 + 1; i < chain.atoms.length; ++i) {
+            p.x += delta;
+            chain.atoms[i].p = p.clone();
+        }
+
+        return true;
+    },
+
+    layoutCircle: function(atoms, bondlength, startdeg) {
+        var rect = this.getRect(atoms);
+        var origin = rect.center();
+        
+        var delta = org.helm.webeditor.bondscale * bondlength;
+        var deg = 360 / (atoms.length - 1);
+        var radius = (delta / 2) / Math.sin((deg / 2) * Math.PI / 180);
+
+        var a = atoms[0];
+        a.p = org.helm.webeditor.Interface.createPoint(origin.x + radius, origin.y);
+        if (startdeg != null && startdeg != 0)
+            a.p.rotateAround(origin, startdeg);
+
+        for (var i = 1; i < atoms.length - 1; ++i)
+            atoms[i].p = atoms[i - 1].p.clone().rotateAround(origin, -deg);
+    },
+
+    layoutCrossChainBonds: function (m, chains, bondlength) {
         var fixed = {};
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
-            if (b.a1.flag != null && b.a2.flag != null && b.a1.flag != b.a2.flag) {
+            if (b.a1._chainid != null && b.a2._chainid != null && b.a1._chainid != b.a2._chainid) {
                 var a1, a2;
-                if (fixed[b.a1.flag] && fixed[b.a2.flag]) {
+                if (fixed[b.a1._chainid] && fixed[b.a2._chainid]) {
                     continue;
                 }
-                else if (fixed[b.a1.flag]) {
+                else if (fixed[b.a1._chainid]) {
                     a1 = b.a1;
                     a2 = b.a2;
                 }
-                else if (fixed[b.a2.flag]) {
+                else if (fixed[b.a2._chainid]) {
                     a1 = b.a2;
                     a2 = b.a1;
                 }
-                else if (b.a1.flag > b.a2.flag) {
+                else if (b.a1._chainid > b.a2._chainid) {
                     a1 = b.a2;
                     a2 = b.a1;
                 }
@@ -2737,7 +2791,7 @@ org.helm.webeditor.Layout = {
 
                 if (b.type == JSDraw2.BONDTYPES.UNKNOWN) {
                     // hydrogen bond
-                    var chain = chains[a2.flag];
+                    var chain = chains[a2._chainid];
                     chain.rotate(180);
 
                     var delta = a1.p.clone().offset(0, bondlength * org.helm.webeditor.bondscale).offset(-a2.p.x, -a2.p.y);
@@ -2745,11 +2799,11 @@ org.helm.webeditor.Layout = {
                 }
                 else {
                     var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
-                    chains[a2.flag].move(delta);
+                    chains[a2._chainid].move(delta);
                 }
 
-                fixed[a1.flag] = true;
-                fixed[a2.flag] = true;
+                fixed[a1._chainid] = true;
+                fixed[a2._chainid] = true;
             }
         }
     },
@@ -2801,6 +2855,28 @@ org.helm.webeditor.Layout = {
                     b.f = b.a1.f = b.a2.f = true;
             }
         }
+    },
+
+    getRect: function (atoms) {
+        var a = atoms[0];
+        var x1 = a.p.x;
+        var y1 = a.p.y;
+        var x2 = x1;
+        var y2 = y1;
+
+        for (var i = 1; i < atoms.length; ++i) {
+            var p = atoms[i].p;
+            if (p.x < x1)
+                x1 = p.x;
+            else if (p.x > x2)
+                x2 = p.x;
+            if (p.y < y1)
+                y1 = p.y;
+            else if (p.y > y2)
+                y2 = p.y;
+        }
+
+        return org.helm.webeditor.Interface.createRect(x1, y1, x2 - x1, y2 - y1);
     }
 };
 ﻿//////////////////////////////////////////////////////////////////////////////////
