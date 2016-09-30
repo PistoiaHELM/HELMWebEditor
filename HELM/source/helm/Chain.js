@@ -15,6 +15,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         this.id = id;
         this.bonds = [];
         this.atoms = [];
+        this.basebonds = [];
         this.bases = [];
     },
 
@@ -621,6 +622,7 @@ scil.apply(org.helm.webeditor.Chain, {
                             at = chains[i].bases[k] = b.a1;
 
                         if (at != null) {
+                            chains[i].basebonds.push(b);
                             branches.splice(j, 1);
                             at.f = true;
                         }

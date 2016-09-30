@@ -267,8 +267,17 @@ org.helm.webeditor.Interface = {
         }
         if (!scil.Utils.isNullOrEmpty(a.bio.annotation)) {
             var p1 = p.clone();
-            p1.offset(-fontsize * 2, -fontsize * 1.5);
-            JSDraw2.Drawer.drawLabel(surface, p1, a.bio.annotation, "orange", fontsize, null, null, null, false);
+            var s = a.bio.annotation;
+            if (a.bio.annotationshowright) {
+                var c = a.biotype() == org.helm.webeditor.HELM.AA ? 0.7 : 1;
+                p1.offset(fontsize * c, -fontsize * 1.5);
+                JSDraw2.Drawer.drawLabel(surface, p1, s, "orange", fontsize, null, "start", null, false);
+            }
+            else {
+                var c = a.biotype() == org.helm.webeditor.HELM.AA ? 1.5 : 1;
+                p1.offset(-fontsize * c, -fontsize * 1.5);
+                JSDraw2.Drawer.drawLabel(surface, p1, s, "orange", fontsize, null, "end", null, false);
+            }
         }
     },
 

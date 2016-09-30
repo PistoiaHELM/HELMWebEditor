@@ -61,7 +61,7 @@ org.helm.webeditor.Layout = {
         var pairs = [];
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
-            if (b.a1._chainid == chainid && b.a2._chainid == chainid && scil.Utils.indexOf(chain.bonds, b) < 0) {
+            if (b.a1._chainid != null && b.a2._chainid != null && b.a1._chainid == chainid && b.a2._chainid == chainid && scil.Utils.indexOf(chain.bonds, b) < 0 && scil.Utils.indexOf(chain.basebonds, b) < 0) {
                 var ai1 = scil.Utils.indexOf(chain.atoms, b.a1);
                 var ai2 = scil.Utils.indexOf(chain.atoms, b.a2);
                 var p1 = { a1: ai1 < ai2 ? ai1 : ai2, a2: ai1 < ai2 ? ai2 : ai1 };
