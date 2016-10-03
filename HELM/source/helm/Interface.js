@@ -171,7 +171,7 @@ org.helm.webeditor.Interface = {
         if (a.bio.id > 0) {
             var p1 = p.clone();
             p1.offset(-fontsize * 1.2, -fontsize * 1.2);
-            JSDraw2.Drawer.drawLabel(surface, p1, a.bio.id, "green", fontsize, null, null, null, false);
+            JSDraw2.Drawer.drawLabel(surface, p1, a.bio.id, "#00FF00", fontsize, null, null, null, false);
         }
         if (!scil.Utils.isNullOrEmpty(a.bio.annotation)) {
             var p1 = p.clone();
@@ -179,12 +179,12 @@ org.helm.webeditor.Interface = {
             if (a.bio.annotationshowright) {
                 var c = a.biotype() == org.helm.webeditor.HELM.AA ? 0.7 : 1;
                 p1.offset(fontsize * c, -fontsize * 1.5);
-                JSDraw2.Drawer.drawLabel(surface, p1, s, "orange", fontsize, null, "start", null, false);
+                JSDraw2.Drawer.drawLabel(surface, p1, s, "#FFA500", fontsize, null, "start", null, false);
             }
             else {
                 var c = a.biotype() == org.helm.webeditor.HELM.AA ? 1.5 : 1;
                 p1.offset(-fontsize * c, -fontsize * 1.5);
-                JSDraw2.Drawer.drawLabel(surface, p1, s, "orange", fontsize, null, "end", null, false);
+                JSDraw2.Drawer.drawLabel(surface, p1, s, "#FFA500", fontsize, null, "end", null, false);
             }
         }
     },
@@ -201,6 +201,7 @@ org.helm.webeditor.Interface = {
         var main = { c: "helm_nucleotide", t: "Nucleotide", label: "Nucleotide", sub: sub, hidden: true };
         buttons.push(main);
 
+        buttons.push({ c: "new", t: "New", label: "New" });
         buttons.push({ c: "open", t: "Load", label: "Load" });
         buttons.push({ c: "save", t: "Save", label: "Save" });
         buttons.push({ c: "|" });

@@ -263,7 +263,7 @@ org.helm.webeditor.Interface = {
         if (a.bio.id > 0) {
             var p1 = p.clone();
             p1.offset(-fontsize * 1.2, -fontsize * 1.2);
-            JSDraw2.Drawer.drawLabel(surface, p1, a.bio.id, "green", fontsize, null, null, null, false);
+            JSDraw2.Drawer.drawLabel(surface, p1, a.bio.id, "#00FF00", fontsize, null, null, null, false);
         }
         if (!scil.Utils.isNullOrEmpty(a.bio.annotation)) {
             var p1 = p.clone();
@@ -271,12 +271,12 @@ org.helm.webeditor.Interface = {
             if (a.bio.annotationshowright) {
                 var c = a.biotype() == org.helm.webeditor.HELM.AA ? 0.7 : 1;
                 p1.offset(fontsize * c, -fontsize * 1.5);
-                JSDraw2.Drawer.drawLabel(surface, p1, s, "orange", fontsize, null, "start", null, false);
+                JSDraw2.Drawer.drawLabel(surface, p1, s, "#FFA500", fontsize, null, "start", null, false);
             }
             else {
                 var c = a.biotype() == org.helm.webeditor.HELM.AA ? 1.5 : 1;
                 p1.offset(-fontsize * c, -fontsize * 1.5);
-                JSDraw2.Drawer.drawLabel(surface, p1, s, "orange", fontsize, null, "end", null, false);
+                JSDraw2.Drawer.drawLabel(surface, p1, s, "#FFA500", fontsize, null, "end", null, false);
             }
         }
     },
@@ -293,6 +293,7 @@ org.helm.webeditor.Interface = {
         var main = { c: "helm_nucleotide", t: "Nucleotide", label: "Nucleotide", sub: sub, hidden: true };
         buttons.push(main);
 
+        buttons.push({ c: "new", t: "New", label: "New" });
         buttons.push({ c: "open", t: "Load", label: "Load" });
         buttons.push({ c: "save", t: "Save", label: "Save" });
         buttons.push({ c: "|" });
@@ -2012,6 +2013,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         this.id = id;
         this.bonds = [];
         this.atoms = [];
+        this.basebonds = [];
         this.bases = [];
     },
 
@@ -2618,6 +2620,7 @@ scil.apply(org.helm.webeditor.Chain, {
                             at = chains[i].bases[k] = b.a1;
 
                         if (at != null) {
+                            chains[i].basebonds.push(b);
                             branches.splice(j, 1);
                             at.f = true;
                         }
@@ -2709,7 +2712,7 @@ org.helm.webeditor.Layout = {
         var pairs = [];
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
-            if (b.a1._chainid == chainid && b.a2._chainid == chainid && scil.Utils.indexOf(chain.bonds, b) < 0) {
+            if (b.a1._chainid != null && b.a2._chainid != null && b.a1._chainid == chainid && b.a2._chainid == chainid && scil.Utils.indexOf(chain.bonds, b) < 0 && scil.Utils.indexOf(chain.basebonds, b) < 0) {
                 var ai1 = scil.Utils.indexOf(chain.atoms, b.a1);
                 var ai2 = scil.Utils.indexOf(chain.atoms, b.a2);
                 var p1 = { a1: ai1 < ai2 ? ai1 : ai2, a2: ai1 < ai2 ? ai2 : ai1 };
