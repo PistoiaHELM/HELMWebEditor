@@ -96,6 +96,9 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         if (a.bio == null)
             return true;
 
+        if (typeof (r) == "string" && scil.Utils.startswith(r, "R"))
+            r = parseInt(r.substr(1));
+
         var rs = this.getSpareRs(a);
         if (rs == null || rs.indexOf(r) < 0) {
             //scil.Utils.alert("The monomer, " + a.elem + ", does define R" + r);

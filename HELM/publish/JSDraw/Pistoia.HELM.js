@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-09-26
+// 2.0.0-2016-10-04
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -1114,6 +1114,9 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         if (a.bio == null)
             return true;
 
+        if (typeof (r) == "string" && scil.Utils.startswith(r, "R"))
+            r = parseInt(r.substr(1));
+
         var rs = this.getSpareRs(a);
         if (rs == null || rs.indexOf(r) < 0) {
             //scil.Utils.alert("The monomer, " + a.elem + ", does define R" + r);
@@ -2129,7 +2132,22 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return ret;
     },
 
-    expand: function (plugin) {
+    getMol: function(a, plugin) {
+        var mon = org.helm.webeditor.Monomers.getMonomer(a);
+        var molfile = org.helm.webeditor.monomers.getMolfile(mon);
+        var m = org.helm.webeditor.Interface.createMol(molfile);
+
+        if (plugin != null) {
+            for (var r in mon.at) {
+                if (plugin.hasSpareR(a, r))
+                    org.helm.webeditor.MolViewer.capRGroup(m, r, mon);
+            }
+        }
+
+        return m;
+    },
+
+    expand: function (plugin, branches) {
         var m1 = null;
         var m2 = null;
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
@@ -2137,12 +2155,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             var a = this.atoms[i];
             var b = this.bases[i];
 
-            var mon = org.helm.webeditor.Monomers.getMonomer(a);
-            var m2 = org.helm.webeditor.Interface.createMol(org.helm.webeditor.monomers.getMolfile(mon));
+            m2 = this.getMol(a, plugin);
 
             if (b != null) {
-                var mb = org.helm.webeditor.Monomers.getMonomer(b);
-                var m3 = org.helm.webeditor.Interface.createMol(org.helm.webeditor.monomers.getMolfile(mb));
+                var m3 = this.getMol(b, plugin);
                 org.helm.webeditor.MolViewer.mergeMol(m2, "R3", m3, "R1");
             }
 
@@ -2161,17 +2177,49 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                     r1 = bond.r2;
                 }
 
-                if (plugin != null) {
-                    if (i == 1 && plugin.hasSpareR(this.atoms[0], r2))
-                        org.helm.webeditor.MolViewer.capRGroup(m1, "R" + r2, org.helm.webeditor.Monomers.getMonomer(this.atoms[0]));
-                    if (i == n - 1 && plugin.hasSpareR(a, r1))
-                        org.helm.webeditor.MolViewer.capRGroup(m2, "R" + r1, mon);
-                }
                 org.helm.webeditor.MolViewer.mergeMol(m1, "R" + r1, m2, "R" + r2);
             }
         }
 
+        if (branches != null) {
+            for (var i = 0; i < n; ++i) {
+                var a = this.atoms[i];
+                this.connectBranches(m1, a, branches, plugin)
+            }
+        }
+
         return m1;
+    },
+
+    connectBranches: function(m, a, branches, plugin) {
+        if (branches == null || branches.bonds == null)
+            return;
+
+        var r1 = null;
+        var r2 = null;
+        var a2 = null;
+        for (var i = 0; i < branches.bonds.length; ++i) {
+            var b = branches.bonds[i];
+            if (b.a1 == a) {
+                r1 = b.r1;
+                r2 = b.r2;
+                a2 = b.a2;
+            }
+            else if (b.a2 == a) {
+                r1 = b.r2;
+                r2 = b.r1;
+                a2 = b.a1;
+            }
+
+            if (a2 != null)
+                break;
+        }
+
+        if (a2 == null)
+            return;
+
+        var m2 = this.getMol(a2, plugin);
+        org.helm.webeditor.MolViewer.mergeMol(m, "R" + r1, m2, "R" + r1);
     },
 
     isCircle: function () {
@@ -5298,7 +5346,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var selected = this.getSelectedAsMol(this.canvas.m);
 
         var m = null;
-        var chains = org.helm.webeditor.Chain.getChains(selected);
+        var branches = {};
+        var chains = org.helm.webeditor.Chain.getChains(selected, branches);
         if (chains == null || chains.length == 0) {
             if (selected != null && selected.atoms.length == 1) {
                 // only a base selected
@@ -5308,7 +5357,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             }
         }
         else {
-            m = chains[0].expand(this.canvas.helm);
+            m = chains[0].expand(this.canvas.helm, branches);
         }
 
         if (m == null)

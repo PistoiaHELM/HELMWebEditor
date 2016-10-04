@@ -398,7 +398,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var selected = this.getSelectedAsMol(this.canvas.m);
 
         var m = null;
-        var chains = org.helm.webeditor.Chain.getChains(selected);
+        var branches = {};
+        var chains = org.helm.webeditor.Chain.getChains(selected, branches);
         if (chains == null || chains.length == 0) {
             if (selected != null && selected.atoms.length == 1) {
                 // only a base selected
@@ -408,7 +409,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             }
         }
         else {
-            m = chains[0].expand(this.canvas.helm);
+            m = chains[0].expand(this.canvas.helm, branches);
         }
 
         if (m == null)
