@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-09-27",
+    kVersion: "2.0.0.2016-10-04",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -79,7 +79,7 @@ org.helm.webeditor = {
             scil.Utils.createElement(scil.Utils.createElement(tbody, "tr"), "td", "&nbsp;");
             var btn = scil.Utils.createElement(scil.Utils.createElement(div, "div", null, { textAlign: "center" }), "button", "OK", { width: scil.Utils.buttonWidth + "px" });
 
-            me.about = new JSDraw2.Dialog("About JSDraw", div);
+            me.about = new JSDraw2.Dialog("About HELM Web Editor", div);
             scil.connect(btn, "onclick", function (e) { me.about.hide(); e.preventDefault(); });
         }
         this.about.show();
@@ -345,20 +345,22 @@ org.helm.webeditor.Interface = {
                 items.push({ caption: "Clear Annotation", key: "helm_set_clear" });
                 items.push("-");
                 items.push({ caption: "Create Complementary Strand", key: "helm_complementary_strand" });
-                return items;
             }
-            return null;
+        }
+        else {
+            items.push({ caption: "Copy Molfile V2000", key: "copymolfile2000" });
+            items.push({ caption: "Copy Molfile V3000", key: "copymolfile3000" });
+            //items.push({ caption: "Paste Mol File", key: "pastemolfile" });
+            items.push({ caption: "Copy SMILES", key: "copysmiles" });
         }
 
-        items.push({ caption: "Copy Molfile V2000", key: "copymolfile2000" });
-        items.push({ caption: "Copy Molfile V3000", key: "copymolfile3000" });
-        //items.push({ caption: "Paste Mol File", key: "pastemolfile" });
-        items.push({ caption: "Copy SMILES", key: "copysmiles" });
+        if (items.length > 0)
+            items.push("-");
+        items.push({ caption: "About HELM Web Editor", key: "about" });
 
         return items;
     }
-};
-﻿//////////////////////////////////////////////////////////////////////////////////
+};﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
@@ -5383,191 +5385,6 @@ org.helm.webeditor.AppToolbar.Resources = {
     'settings-1.png': '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',
     'settings-2.png': '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'
 };﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
-
-/**
-* MonomerLibApp class
-* @class org.helm.webeditor.MonomerLibApp
-* Recommended database schema:
-* <pre>
-* **********************************************************
-* create table HELMMonomers
-* (
-* id bigint not null identity(1, 1) primary key,
-* Symbol varchar(256) not null,
-* Name varchar(256) not null,
-* NaturalAnalog varchar(256),
-* SMILES varchar(max),
-* PolymerType varchar(256) not null,
-* MonomerType varchar(256),
-* Status varchar(256),
-* Molfile varchar(max),
-* Hashcode varchar(128),
-* R1 varchar(256),
-* R2 varchar(256),
-* R3 varchar(256),
-* R4 varchar(256),
-* R5 varchar(256),
-* Author nvarchar(256),
-* CreatedDate DateTime default getdate()
-* );
-* **********************************************************
-* </pre>
-* JSON Schema
-* <pre>
-* {
-*     id: 69,                     // monomer internal ID
-*     symbol: 'Alexa',            // monomer symbol
-*     name: 'Alexa Fluor 488',    // monomer long name
-*     naturalanalog: null,        // natural analog
-*     smiles: null,               // smiles
-*     polymertype: 'CHEM',        // polymer type: CHEM, SUGAR, LINKER, BASE, AA
-*     monomertype: null,          // momer type: Backbone, Branch, null
-*     molfile: null,              // molfile of monomer, plain text, not BASE64 encoded or compressed
-*     r1: 'X',                    // cap for R1 
-*     r2: null,                   // cap for R2
-*     r3: null,                   // cap for R3
-*     r4: null,                   // cap for R4
-*     r5: null,                   // cap for R5
-*     author: null,               // monomer author
-*     createddate: null           // monomer created date
-* }
-* </pre>
-**/
-org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
-    /**
-    * @constructor MonomerLibApp
-    * @param {DOM} parent - The parent element to host Monomer Manager
-    * @bio {dict} options - options on how to render the App
-    * <pre>
-    * ajaxurl: {string} The service url for the ajax
-    * <b>Example:</b>
-    *     <div id="div1" style="margin: 5px; margin-top: 15px"></div>
-    *     <script type="text/javascript">
-    *       scil.ready(function () {
-    *         new org.helm.webeditor.MonomerLibApp("div1", { ajaxurl: "../service/ajaxtool/post?cmd=" });
-    *       });
-    *     </script>
-    * </pre>
-    **/
-    constructor: function (parent, options) {
-        if (typeof (parent) == "string")
-            parent = scil.byId(parent);
-        this.options = options == null ? {} : options;
-        scil.Page.ajaxurl = this.options.ajaxurl;
-        this.init(parent);
-    },
-
-    init: function (parent) {
-        var me = this;
-
-        this.page = new scil.Page(parent);
-
-        var me = this;
-        this.buttons = [
-            "-",
-            { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomer XML Library", onclick: function () { me.uploadFile(); } },
-            "-",
-            { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
-            { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
-            { type: "select", key: "monomertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), label: "Monomer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
-            { type: "select", key: "status", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getStatuses(), label: "Status", styles: { width: 100 }, onchange: function () { me.refresh(); } },
-            { type: "select", key: "countperpage", labelstyle: { fontSize: "90%" }, label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
-        ];
-
-        this.monomers = this.page.addForm({
-            caption: "Monomer List",
-            key: "id",
-            object: "helm.monomer",
-            imagewidth: 30,
-            buttons: this.buttons,
-            onbeforerefresh: function (args) { me.onbeforerefresh(args); },
-            onbeforesave: function (data, args, form) { data.molfile = form.fields.molfile.jsd.getMolfile(); },
-            columns: {
-                id: { type: "hidden", iskey: true },
-                symbol: { label: "Symbol", width: 100 },
-                name: { label: "Name", width: 200 },
-                naturalanalog: { label: "Natural Analog", width: 100 },
-                polymertype: { label: "Polymer Type", width: 100 },
-                monomertype: { label: "Monomer Type", width: 100 },
-                r1: { label: "R1", width: 50 },
-                r2: { label: "R2", width: 50 },
-                r3: { label: "R3", width: 50 },
-                author: { label: "Author", width: 100 },
-                createddate: { label: "Created Date", type: "date", width: 100 },
-                status: { label: "Status", width: 100 }
-            },
-            formcaption: "Monomer",
-            fields: org.helm.webeditor.MonomerLibApp.getFields()
-        });
-
-        this.page.addForm({
-            caption: "Monomer",
-            type: "form",
-            object: "helm.monomer",
-            fields: org.helm.webeditor.MonomerLibApp.getFields()
-        }, this.monomers);
-
-        this.monomers.refresh();
-    },
-
-    refresh: function (view) {
-        this.monomers.refresh();
-    },
-
-    onbeforerefresh: function (args) {
-        scil.Form.getButtonValuesByKey(this.buttons, ["status", "polymertype", "monomertype", "status", "symbol", "countperpage"], args);
-    },
-
-    uploadFile: function (duplicatecheck) {
-        scil.Utils.uploadFile("Import Monomer Library", "Select HELM monomer xml file (" + (duplicatecheck ? "with" : "without") + " duplicate check)", this.options.ajaxurl + "helm.monomer.uploadlib",
-            function (ret) { scil.Utils.alert(ret.n + " monomers are imported"); }, { duplicatecheck: duplicatecheck });
-    }
-});
-
-scil.apply(org.helm.webeditor.MonomerLibApp, {
-    getFields: function() {
-        return {
-            id: { type: "hidden" },
-            symbol: { label: "Symbol", required: true },
-            name: { label: "Name", required: true, width: 800 },
-            naturalanalog: { label: "Natural Analog", required: true, width: 100 },
-            polymertype: { label: "Polymer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), width: 100 },
-            monomertype: { label: "Monomer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), width: 100 },
-            author: { label: "Author", width: 100 },
-            status: { label: "Status", type: "select", items: org.helm.webeditor.MonomerLibApp.getStatuses(), width: 100 },
-            molfile: { label: "Structure", type: "jsdraw", width: 800, height: 300 },
-            r1: { label: "R1", type: "select", items: ["", "H", "OH", "X"] },
-            r2: { label: "R2", type: "select", items: ["", "H", "OH", "X"] },
-            r3: { label: "R3", type: "select", items: ["", "H", "OH", "X"] }
-        }
-    },
-
-    getValueByKey: function (list, key) {
-        for (var i = 0; i < list.length; ++i) {
-            if (list[i].key == key)
-                return list[i].b.value;
-        }
-        return null;
-    },
-
-    getPolymerTypes: function () {
-        return ["", "RNA", "CHEM", "PEPTIDE"];
-    },
-
-    getMonomerTypes: function () {
-        return ["", "Backbone", "Branch", "Undefined"]
-    },
-
-    getStatuses: function () {
-        return ["", "New", "Approved", "Retired"]
-    }
-});﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)

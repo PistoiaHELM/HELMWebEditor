@@ -253,15 +253,18 @@ org.helm.webeditor.Interface = {
                 items.push({ caption: "Clear Annotation", key: "helm_set_clear" });
                 items.push("-");
                 items.push({ caption: "Create Complementary Strand", key: "helm_complementary_strand" });
-                return items;
             }
-            return null;
+        }
+        else {
+            items.push({ caption: "Copy Molfile V2000", key: "copymolfile2000" });
+            items.push({ caption: "Copy Molfile V3000", key: "copymolfile3000" });
+            //items.push({ caption: "Paste Mol File", key: "pastemolfile" });
+            items.push({ caption: "Copy SMILES", key: "copysmiles" });
         }
 
-        items.push({ caption: "Copy Molfile V2000", key: "copymolfile2000" });
-        items.push({ caption: "Copy Molfile V3000", key: "copymolfile3000" });
-        //items.push({ caption: "Paste Mol File", key: "pastemolfile" });
-        items.push({ caption: "Copy SMILES", key: "copysmiles" });
+        if (items.length > 0)
+            items.push("-");
+        items.push({ caption: "About HELM Web Editor", key: "about" });
 
         return items;
     }

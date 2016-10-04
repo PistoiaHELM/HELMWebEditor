@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-09-27",
+    kVersion: "2.0.0.2016-10-04",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -79,7 +79,7 @@ org.helm.webeditor = {
             scil.Utils.createElement(scil.Utils.createElement(tbody, "tr"), "td", "&nbsp;");
             var btn = scil.Utils.createElement(scil.Utils.createElement(div, "div", null, { textAlign: "center" }), "button", "OK", { width: scil.Utils.buttonWidth + "px" });
 
-            me.about = new JSDraw2.Dialog("About JSDraw", div);
+            me.about = new JSDraw2.Dialog("About HELM Web Editor", div);
             scil.connect(btn, "onclick", function (e) { me.about.hide(); e.preventDefault(); });
         }
         this.about.show();
