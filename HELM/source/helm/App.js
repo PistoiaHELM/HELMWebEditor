@@ -43,7 +43,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     * sequenceviewonly: {bool} show Sequence View in viewonly mode
     * showabout: {bool} show about button
     * topmargin: {number} top margin
-    * calculatorurl: {string} ajax web service url for calculate properties
+    * calculatorurl: {string} ajax web service url to calculate properties
+    * cleanupurl: {string} ajax web service url to clean up structures
     *
     * <b>Example:</b>
     *    &lt;div id="div1" style="margin: 5px; margin-top: 15px"&gt;&lt;/div&gt;
@@ -412,9 +413,18 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             m = chains[0].expand(this.canvas.helm, branches);
         }
 
+        this.structureview.clear(true);
         if (m == null)
-            this.structureview.clear(true);
-        else
+            return;
+
+        if (this.options.cleanupurl != null) {
+            var me = this;
+            scil.Utils.ajax(this.options.cleanupurl, function (ret) {
+                me.structureview.setMolfile(ret.output);
+            }, { input: m.getMolfile(), inputformat: "mol", outputformat: "mol" });
+        }
+        else {
             this.structureview.setMolfile(m.getMolfile());
+        }
     }
 });
