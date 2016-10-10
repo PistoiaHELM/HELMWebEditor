@@ -77,7 +77,7 @@ org.helm.webeditor.RuleSetApp = scil.extend(scil._base, {
         fields.script.button = [{ label: "Test Script", onclick2: function (field) { me.testscript(field); } },
             { label: "Test Applying", onclick2: function (field, form) { me.testapplying(field, form); } }
         ];
-        fields.test = { label: "Test Structure", type: "jsdraw", helmtoolbar: true, width: 800, height: 300 };
+        fields.test = { label: "Test Structure", type: "jsdraw", width: 800, height: 300 };
         this.rules = this.page.addForm({
             caption: "Rule Set",
             key: "id",
