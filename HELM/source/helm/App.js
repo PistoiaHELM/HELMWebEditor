@@ -420,7 +420,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         if (this.options.cleanupurl != null) {
             var me = this;
             scil.Utils.ajax(this.options.cleanupurl, function (ret) {
-                me.structureview.setMolfile(ret.output);
+                me.structureview.setMolfile(ret == null ? null : ret.output);
             }, { input: m.getMolfile(), inputformat: "mol", outputformat: "mol" });
         }
         else {

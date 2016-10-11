@@ -134,17 +134,9 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                     continue;
 
                 var name = scil.Utils.getInnerText(d);
-                var f = scil.Utils.startswith(name.toLowerCase(), s);//name.toLowerCase().indexOf(s) >= 0;
-                if (!f) {
-                    var m = org.helm.webeditor.Monomers.getMonomer(type, name);
-                    var fullname = m == null ? null : m.n;
-                    f = fullname == null ? false : scil.Utils.startswith(fullname.toLowerCase(), s); //fullname.toLowerCase().indexOf(s) >= 0;
-                }
+                var f = scil.Utils.startswith(name.toLowerCase(), s) || name.toLowerCase().indexOf(s) >= 0;
 
-                if (f)
-                    d.style.display = "table";
-                else
-                    d.style.display = "none";
+                d.style.display = f ? "table" : "none";
             }
         }
     },
@@ -343,17 +335,17 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             ret.push("null");
 
         var fun = function (a, b) {
-            if (a.na == b.na) {
+            /*if (a.na == b.na)*/ {
                 if (a.id == b.id)
                     return 0;
                 else if (a.id.length != b.id.length && (a.id.length == 1 || b.id.length == 1))
                     return a.id.length > b.id.length ? 1 : -1;
                 else
-                return a.id > b.id ? 1 : -1;
+                    return a.id.toLowerCase() > b.id.toLowerCase() ? 1 : -1;
             }
-            else {
-                return a.na < b.na ? 1 : -1;
-            }
+            //else {
+            //    return a.na < b.na ? 1 : -1;
+            //}
         };
         list.sort(fun);
         for (var i = 0; i < list.length; ++i)

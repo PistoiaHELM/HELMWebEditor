@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-10-10
+// 2.0.0-2016-10-11
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -3674,17 +3674,9 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                     continue;
 
                 var name = scil.Utils.getInnerText(d);
-                var f = scil.Utils.startswith(name.toLowerCase(), s);//name.toLowerCase().indexOf(s) >= 0;
-                if (!f) {
-                    var m = org.helm.webeditor.Monomers.getMonomer(type, name);
-                    var fullname = m == null ? null : m.n;
-                    f = fullname == null ? false : scil.Utils.startswith(fullname.toLowerCase(), s); //fullname.toLowerCase().indexOf(s) >= 0;
-                }
+                var f = scil.Utils.startswith(name.toLowerCase(), s) || name.toLowerCase().indexOf(s) >= 0;
 
-                if (f)
-                    d.style.display = "table";
-                else
-                    d.style.display = "none";
+                d.style.display = f ? "table" : "none";
             }
         }
     },
@@ -3883,17 +3875,17 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             ret.push("null");
 
         var fun = function (a, b) {
-            if (a.na == b.na) {
+            /*if (a.na == b.na)*/ {
                 if (a.id == b.id)
                     return 0;
                 else if (a.id.length != b.id.length && (a.id.length == 1 || b.id.length == 1))
                     return a.id.length > b.id.length ? 1 : -1;
                 else
-                return a.id > b.id ? 1 : -1;
+                    return a.id.toLowerCase() > b.id.toLowerCase() ? 1 : -1;
             }
-            else {
-                return a.na < b.na ? 1 : -1;
-            }
+            //else {
+            //    return a.na < b.na ? 1 : -1;
+            //}
         };
         list.sort(fun);
         for (var i = 0; i < list.length; ++i)
@@ -4595,8 +4587,8 @@ org.helm.webeditor.MolViewer = {
         }
 
         if (t != null && s != null) {
-            this.extendDistance(t.a0.p, t.a1.p, 2);
-            this.extendDistance(s.a0.p, s.a1.p, 2);
+            this.extendDistance(t.a0.p, t.a1.p, 1);
+            this.extendDistance(s.a0.p, s.a1.p, 1);
 
             // align
             src.offset(t.a1.p.x - s.a0.p.x, t.a1.p.y - s.a0.p.y);
@@ -5368,7 +5360,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         if (this.options.cleanupurl != null) {
             var me = this;
             scil.Utils.ajax(this.options.cleanupurl, function (ret) {
-                me.structureview.setMolfile(ret.output);
+                me.structureview.setMolfile(ret == null ? null : ret.output);
             }, { input: m.getMolfile(), inputformat: "mol", outputformat: "mol" });
         }
         else {

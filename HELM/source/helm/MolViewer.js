@@ -119,8 +119,8 @@ org.helm.webeditor.MolViewer = {
         }
 
         if (t != null && s != null) {
-            this.extendDistance(t.a0.p, t.a1.p, 2);
-            this.extendDistance(s.a0.p, s.a1.p, 2);
+            this.extendDistance(t.a0.p, t.a1.p, 1);
+            this.extendDistance(s.a0.p, s.a1.p, 1);
 
             // align
             src.offset(t.a1.p.x - s.a0.p.x, t.a1.p.y - s.a0.p.y);
