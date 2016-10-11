@@ -5299,11 +5299,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             var me = this;
             var helm = this.canvas.getHelm();
             if (helm != null) {
-                scil.Utils.jsonp(this.options.calculatorurl, function (ret) {
-                    data.mw = ret.MolecularWeight;
-                    data.mf = ret.MolecularFormula;
-                    data.ec = ret.ExtinctionCoefficient;
-                    me.properties.setData(data);
+                scil.Utils.ajax(this.options.calculatorurl, function (ret) {
+                    me.properties.setData(ret);
                 }, { helm: helm });
             }
         }
