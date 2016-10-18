@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-10-17
+// 2.0.0-2016-10-18
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -3061,7 +3061,7 @@ org.helm.webeditor.Layout = {
 * @class org.helm.webeditor.IO
 */
 org.helm.webeditor.IO = {
-    kVersion: "$V2.0",
+    kVersion: "V2.0",
 
     getHelm: function (m, highlightselection) {
         var branches = {};

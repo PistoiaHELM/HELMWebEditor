@@ -11,7 +11,7 @@
 * @class org.helm.webeditor.IO
 */
 org.helm.webeditor.IO = {
-    kVersion: "$V2.0",
+    kVersion: "V2.0",
 
     getHelm: function (m, highlightselection) {
         var branches = {};
