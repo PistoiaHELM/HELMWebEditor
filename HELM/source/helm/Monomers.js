@@ -330,6 +330,56 @@ org.helm.webeditor.Monomers = {
         return null;
     },
 
+    smilesmonomerid: 0,
+    smilesmonomers: {},
+    addSmilesMonomer: function (type, smiles) {
+        var ss = this.findSmilesRs(smiles);
+        if (ss == null || ss.length == 0)
+            return null;
+
+        if (this.smilesmonomers[smiles] != null)
+            return this.smilesmonomers[smiles];
+
+        var m = { at: {}, smiles: smiles, issmiles: true };
+        m.id = "#" + (++this.smilesmonomerid);
+        m.name = "SMILES Monomer #" + this.smilesmonomerid;
+        for (var i = 0; i < ss.length; ++i)
+            m.at[ss[i]] = "H";
+        m.rs = ss.length;
+        var set = this.getMonomerSet(type);
+        set[m.id] = m;
+
+        this.smilesmonomers[smiles] = m;
+        return m;
+    },
+
+    findSmilesRs: function(s)    {
+        // "C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|"
+        
+        var ret = [];
+        // JSDraw like Rs
+        for (var i = 1; i <= 5; ++i) {
+            var s2 = s.replace(new RegExp("\[R" + i + "\]"), "");
+            if (s2.length == s.length)
+                break;
+            s = s2;
+            ret.push("R" + i);
+        }
+
+        if (ret.length == 0) {
+            // ChemAxon like Rs
+            for (var i = 1; i <= 5; ++i) {
+                var s2 = s.replace(new RegExp("_R" + i), "");
+                if (s2.length == s.length)
+                    break;
+                s = s2;
+                ret.push("R" + i);
+            }
+        }
+
+        return ret;
+    },
+
     addOneMonomer: function (m) {
         var set = this.getMonomerSet(this.helm2Type(m));
         if (set == null)

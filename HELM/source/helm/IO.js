@@ -11,6 +11,8 @@
 * @class org.helm.webeditor.IO
 */
 org.helm.webeditor.IO = {
+    kVersion: "$V2.0",
+
     getHelm: function (m, highlightselection) {
         var branches = {};
         var chains = org.helm.webeditor.Chain.getChains(m, branches);
@@ -41,17 +43,22 @@ org.helm.webeditor.IO = {
         // RNA1,RNA2,5:pair-11:pair
         for (var i = 0; i < branches.bonds.length; ++i) {
             var b = branches.bonds[i];
+
+            var tag = "";
+            if (!scil.Utils.isNullOrEmpty(b.tag))
+                tag = '\"' + b.tag.replace(/"/g, "\\\"") + '\"';
+
             if (b.type == JSDraw2.BONDTYPES.UNKNOWN) {
                 var c1 = this.findChainID(ret.chains, b.a1);
                 var c2 = this.findChainID(ret.chains, b.a2);
                 var s = c1 + "," + c2 + "," + b.a1._aaid + ":pair-" + b.a2._aaid + ":pair";
-                pairs.push(s);
+                pairs.push(s + tag);
             }
             else {
                 var c1 = this.findChainID(ret.chains, b.a1);
                 var c2 = this.findChainID(ret.chains, b.a2);
                 var s = c1 + "," + c2 + "," + b.a1._aaid + ":R" + b.r1 + "-" + b.a2._aaid + ":R" + b.r2;
-                ret.connections.push(s);
+                ret.connections.push(s + tag);
             }
         }
 
@@ -77,7 +84,7 @@ org.helm.webeditor.IO = {
             s += (i > 0 ? "|" : "") + ret.annotations[i];
 
         s += "$";
-        return s;
+        return s + this.kVersion;
     },
 
     getSequence: function(m, highlightselection) {
@@ -159,9 +166,23 @@ org.helm.webeditor.IO = {
     },
 
     getCode: function (a, highlightselection, bracket) {
-        var s = typeof(a) == "string" ? a : a.elem;
+        var s;
+        if (typeof (a) == "string") {
+            s = a;
+        }
+        else {
+            var m = org.helm.webeditor.Monomers.getMonomer(a);
+            if (m.issmiles)
+                s = m.smiles;
+            else
+                s = a.elem;
+        }
+
         if (s.length > 1)
             s = "[" + s + "]";
+        if (!scil.Utils.isNullOrEmpty(a.tag))
+            s += '\"' + a.tag.replace(/"/g, "\\\"") + '\"';
+
         if (bracket)
             s = "(" + s + ")";
         if (highlightselection && a.selected)
@@ -213,54 +234,54 @@ org.helm.webeditor.IO = {
 
     parseHelm: function (plugin, s, origin, renamedmonomers) {
         var n = 0;
-        var p = s.indexOf("$");
-        var conn = s.substr(p + 1);
+        var sections = this.split(s, '$');
+        var chains = {};
 
         // sequence
-        s = s.substr(0, p);
-        var chains = {};
-        var seqs = s.split('|');
-        for (var i = 0; i < seqs.length; ++i) {
-            s = seqs[i];
-            p = s.indexOf("{");
-            var sid = s.substr(0, p);
-            var type = sid.replace(/[0-9]+$/, "");
-            var id = parseInt(sid.substr(type.length));
+        s = sections[0];
+        if (!scil.Utils.isNullOrEmpty(s)) {
+            var seqs = this.split(s, '|');
+            for (var i = 0; i < seqs.length; ++i) {
+                var e = this.detachAnnotation(seqs[i]);
+                s = e.str;
 
-            var chain = new org.helm.webeditor.Chain(sid);
-            chains[sid] = chain;
-            chain.type = type;
+                p = s.indexOf("{");
+                var sid = s.substr(0, p);
+                var type = sid.replace(/[0-9]+$/, "");
+                var id = parseInt(sid.substr(type.length));
 
-            s = s.substr(p + 1);
-            p = s.indexOf('}');
-            s = s.substr(0, p);
+                var chain = new org.helm.webeditor.Chain(sid);
+                chains[sid] = chain;
+                chain.type = type;
 
-            var n2 = 0;
-            var ss = s.split('.');
-            if (type == "PEPTIDE")
-                n2 = this.addAAs(plugin, ss, chain, origin, renamedmonomers);
-            else if (type == "RNA")
-                n2 = this.addHELMRNAs(plugin, ss, chain, origin, renamedmonomers);
-            else if (type == "CHEM")
-                n2 = this.addChem(plugin, s, chain, origin, renamedmonomers);
+                s = s.substr(p + 1);
+                p = s.indexOf('}');
+                s = s.substr(0, p);
 
-            if (n2 > 0) {
-                n += n2;
-                origin.y += 4 * plugin.jsd.bondlength;
+                var n2 = 0;
+                var ss = this.split(s, '.');
+                if (type == "PEPTIDE")
+                    n2 = this.addAAs(plugin, ss, chain, origin, renamedmonomers);
+                else if (type == "RNA")
+                    n2 = this.addHELMRNAs(plugin, ss, chain, origin, renamedmonomers);
+                else if (type == "CHEM")
+                    n2 = this.addChem(plugin, s, chain, origin, renamedmonomers);
+
+                if (n2 > 0) {
+                    n += n2;
+                    origin.y += 4 * plugin.jsd.bondlength;
+                }
             }
         }
 
         // connection
-        var remained = null;
-        p = conn.indexOf("$");
-        if (p >= 0) {
-            s = conn.substr(0, p);
-            remained = conn.substr(p + 1);
-            var ss = s == "" ? [] : s.split('|');
-
+        s = sections[1];
+        if (!scil.Utils.isNullOrEmpty(s)) {
+            var ss = s == "" ? [] : this.split(s, '|');
             // RNA1,RNA1,1:R1-21:R2
             for (var i = 0; i < ss.length; ++i) {
-                var c = this.parseConnection(ss[i]);
+                var e = this.detachAnnotation(ss[i]);
+                var c = this.parseConnection(e.str);
                 if (c == null || chains[c.chain1] == null || chains[c.chain2] == null)
                     continue; //error
 
@@ -277,17 +298,16 @@ org.helm.webeditor.IO = {
                     continue; //error
 
                 //chain.bonds.push(plugin.addBond(atom1, atom2, r1, r2));
-                plugin.addBond(atom1, atom2, r1, r2);
+                var b = plugin.addBond(atom1, atom2, r1, r2);
+                b.tag = e.tag;
             }
         }
 
         // pairs, hydrogen bonds
         // RNA1,RNA2,2:pair-9:pair|RNA1,RNA2,5:pair-6:pair|RNA1,RNA2,8:pair-3:pair
-        p = remained == null ? -1 : remained.indexOf("$");
-        if (p >= 0) {
-            s = remained.substr(0, p);
-            remained = remained.substr(p + 1);
-            var ss = s == "" ? [] : s.split("|");
+        s = sections[2];
+        if (!scil.Utils.isNullOrEmpty(s)) {
+            var ss = s == "" ? [] : this.split(s, '|');
             for (var i = 0; i < ss.length; ++i) {
                 var c = this.parseConnection(ss[i]);
                 if (c == null || chains[c.chain1] == null || chains[c.chain2] == null || !scil.Utils.startswith(c.chain1, "RNA") || !scil.Utils.startswith(c.chain2, "RNA"))
@@ -307,12 +327,9 @@ org.helm.webeditor.IO = {
         }
 
         // annotation
-        p = remained == null ? -1 : remained.indexOf("$");
-        if (p >= 0) {
-            s = remained.substr(0, p);
-            remained = remained.substr(p + 1);
-
-            var ss = s == "" ? [] : s.split("|");
+        s = sections[3];
+        if (!scil.Utils.isNullOrEmpty(s)) {
+            var ss = s == "" ? [] : this.split(s, '|');
             for (var i = 0; i < ss.length; ++i) {
                 var s = ss[i];
                 p = s.indexOf("{");
@@ -328,6 +345,36 @@ org.helm.webeditor.IO = {
         }
 
         return n;
+    },
+
+    split: function(s, sep) {
+        var ret = [];
+        // PEPTIDE1{G.[C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|].T}$$$$
+
+        var frag = "";
+        var bracket = 0;
+        var quote = 0;
+        for (var i = 0; i < s.length; ++i) {
+            var c = s.substr(i, 1);
+            if (c == sep && bracket == 0 && quote == 0) {
+                ret.push(frag);
+                frag = "";
+            }
+            else {
+                frag += c;
+                if (c == '\"') {
+                    if (!(i > 0 && s.substr(i - 1, 1) == '\\'))
+                        quote = quote == 0 ? 1 : 0;
+                }
+                else if (c == '[')
+                    ++bracket;
+                else if (c == ']')
+                    --bracket;
+            }
+        }
+
+        ret.push(frag);
+        return ret;
     },
 
     parseConnection: function(s) {
@@ -373,11 +420,34 @@ org.helm.webeditor.IO = {
         return elem;
     },
 
-    addNode: function (plugin, chain, atoms, p, type, elem, renamedmonomers) {
-        a2 = plugin.addNode(p, type, this.getRenamedMonomer(type, elem, renamedmonomers));
-        if (a2 == null)
-            throw "";
+    detachAnnotation: function (s) {
+        var tag = null;
+        if (scil.Utils.endswith(s, '\"')) {
+            var p = s.length - 1;
+            while (p > 0) {
+                p = s.lastIndexOf('\"', p - 1);
+                if (p <= 0 || s.substr(p - 1, 1) != '\\')
+                    break;
+            }
 
+            if (p > 0 && p < s.length - 1) {
+                tag = s.substr(p + 1, s.length - p - 2);
+                s = s.substr(0, p);
+            }
+        }
+
+        if (tag != null)
+            tag = tag.replace(/\\"/g, '\"');
+        return { tag: tag, str: s };
+    },
+
+    addNode: function (plugin, chain, atoms, p, type, elem, renamedmonomers) {
+        var e = this.detachAnnotation(elem);
+        a2 = plugin.addNode(p, type, this.getRenamedMonomer(type, e.str, renamedmonomers));
+        if (a2 == null)
+            throw "Failed to creating node: " + e.str;
+
+        a2.tag = e.tag;
         atoms.push(a2);
         a2._aaid = chain.atoms.length + chain.bases.length;
         return a2;

@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-10-11
+// 2.0.0-2016-10-17
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -750,6 +750,56 @@ org.helm.webeditor.Monomers = {
         return null;
     },
 
+    smilesmonomerid: 0,
+    smilesmonomers: {},
+    addSmilesMonomer: function (type, smiles) {
+        var ss = this.findSmilesRs(smiles);
+        if (ss == null || ss.length == 0)
+            return null;
+
+        if (this.smilesmonomers[smiles] != null)
+            return this.smilesmonomers[smiles];
+
+        var m = { at: {}, smiles: smiles, issmiles: true };
+        m.id = "#" + (++this.smilesmonomerid);
+        m.name = "SMILES Monomer #" + this.smilesmonomerid;
+        for (var i = 0; i < ss.length; ++i)
+            m.at[ss[i]] = "H";
+        m.rs = ss.length;
+        var set = this.getMonomerSet(type);
+        set[m.id] = m;
+
+        this.smilesmonomers[smiles] = m;
+        return m;
+    },
+
+    findSmilesRs: function(s)    {
+        // "C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|"
+        
+        var ret = [];
+        // JSDraw like Rs
+        for (var i = 1; i <= 5; ++i) {
+            var s2 = s.replace(new RegExp("\[R" + i + "\]"), "");
+            if (s2.length == s.length)
+                break;
+            s = s2;
+            ret.push("R" + i);
+        }
+
+        if (ret.length == 0) {
+            // ChemAxon like Rs
+            for (var i = 1; i <= 5; ++i) {
+                var s2 = s.replace(new RegExp("_R" + i), "");
+                if (s2.length == s.length)
+                    break;
+                s = s2;
+                ret.push("R" + i);
+            }
+        }
+
+        return ret;
+    },
+
     addOneMonomer: function (m) {
         var set = this.getMonomerSet(this.helm2Type(m));
         if (set == null)
@@ -1218,13 +1268,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         elem = org.helm.webeditor.IO.trimBracket(elem);
 
         var m = org.helm.webeditor.Monomers.getMonomer(biotype, elem);
+        if (m == null)
+            m = org.helm.webeditor.Monomers.addSmilesMonomer(biotype, elem);
         if (m == null) {
             scil.Utils.alert("Unknown " + biotype + " monomer name: " + elem);
             return null;
         }
 
         var a = org.helm.webeditor.Interface.createAtom(this.jsd.m, p);
-        this.setNodeType(a, biotype, elem);
+        this.setNodeType(a, biotype, m.id == null ? elem : m.id);
         return a;
     },
 
@@ -1339,8 +1391,13 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         else {
             if (extendchain)
                 this.jsd.refresh();
+
+            // bug: https://github.com/tony-yuan/JsHELM/issues/60
+            var name1 = a1.elem + (a1.bio.id == null ? "" : a1.bio.id);
+            var name2 = a2.elem + (a2.bio.id == null ? "" : a2.bio.id);
+
             var me = this;
-            this.chooseRs(rs1, rs2, function (r1, r2) {
+            this.chooseRs(rs1, rs2, name1, name2, function (r1, r2) {
                 frag = me.jsd.getFragment(a2);
                 b = me.addBond(a1, a2, r1, r2);
                 me.finishConnect(extendchain, b, a1, a1, a2, frag, delta);
@@ -1393,7 +1450,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         this.jsd.refresh(extendchain || b != null);
     },
 
-    chooseRs: function (rs1, rs2, callback) {
+    chooseRs: function (rs1, rs2, name1, name2, callback) {
         if (this.chooseRDlg == null) {
             var me = this;
             var fields = { r1: { label: "Monomer 1 (left)", type: "select", width: 120 }, r2: { label: "Monomer 2 (right)", type: "select", width: 120 } };
@@ -1407,6 +1464,11 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
         this.chooseRDlg.form.fields.r1.disabled = rs1.length <= 1;
         this.chooseRDlg.form.fields.r2.disabled = rs2.length <= 1;
+
+        var tr1 = scil.Utils.getParent(this.chooseRDlg.form.fields.r1, "TR");
+        var tr2 = scil.Utils.getParent(this.chooseRDlg.form.fields.r2, "TR");
+        tr1.childNodes[0].innerHTML = name1;
+        tr2.childNodes[0].innerHTML = name2;
 
         this.chooseRDlg.rs1 = rs1;
         this.chooseRDlg.rs2 = rs2;
@@ -2144,6 +2206,9 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             }
         }
 
+        for (var i = 0; i < m.atoms.length; ++i)
+            m.atoms[i]._helmgroup = a;
+
         return m;
     },
 
@@ -2159,7 +2224,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
 
             if (b != null) {
                 var m3 = this.getMol(b, plugin);
-                org.helm.webeditor.MolViewer.mergeMol(m2, "R3", m3, "R1");
+                org.helm.webeditor.MolViewer.mergeMol(m2, "R3", m3, "R1", a, b);
             }
 
             if (m1 == null) {
@@ -2167,24 +2232,51 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             }
             else {
                 var r1, r2;
+                var a1, a2;
                 var bond = this.bonds[i - 1];
                 if (bond.a2 == a) {
                     r2 = bond.r2;
                     r1 = bond.r1;
+                    a1 = bond.a1;
+                    a2 = bond.a2;
                 }
                 else {
                     r2 = bond.r1;
                     r1 = bond.r2;
+                    a1 = bond.a2;
+                    a2 = bond.a1;
                 }
 
-                org.helm.webeditor.MolViewer.mergeMol(m1, "R" + r1, m2, "R" + r2);
+                org.helm.webeditor.MolViewer.mergeMol(m1, "R" + r1, m2, "R" + r2, a1, a2);
             }
         }
 
         if (branches != null) {
-            for (var i = 0; i < n; ++i) {
-                var a = this.atoms[i];
-                this.connectBranches(m1, a, branches, plugin)
+            var bonds = branches.bonds;
+            if (bonds != null) {
+                for (var i = 0; i < bonds.length; ++i) {
+                    var b = bonds[i];
+                    if (scil.Utils.indexOf(this.atoms, b.a1) >= 0 && scil.Utils.indexOf(this.atoms, b.a2) >= 0) {
+                        bonds[i] = null;
+                        var t = org.helm.webeditor.MolViewer.findR(m1, "R" + b.r1, b.a1);
+                        var s = org.helm.webeditor.MolViewer.findR(m1, "R" + b.r2, b.a2);
+                        if (t != null && s != null) {
+                            m1.atoms.splice(scil.Utils.indexOf(m1.atoms, t.a1), 1);
+                            m1.bonds.splice(scil.Utils.indexOf(m1.bonds, t.b), 1);
+
+                            m1.atoms.splice(scil.Utils.indexOf(m1.atoms, s.a1), 1);
+                            m1.bonds.splice(scil.Utils.indexOf(m1.bonds, s.b), 1);
+
+                            var bond = new JSDraw2.Bond(t.a0, s.a0);
+                            m1.addBond(bond);
+                        }
+                    }
+                }
+
+                for (var i = 0; i < n; ++i) {
+                    var a = this.atoms[i];
+                    this.connectBranches(m1, a, branches, plugin);
+                }
             }
         }
 
@@ -2197,17 +2289,23 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
 
         var r1 = null;
         var r2 = null;
+        var a1 = null;
         var a2 = null;
         for (var i = 0; i < branches.bonds.length; ++i) {
             var b = branches.bonds[i];
+            if (b == null)
+                continue;
+
             if (b.a1 == a) {
                 r1 = b.r1;
                 r2 = b.r2;
+                a1 = b.a1;
                 a2 = b.a2;
             }
             else if (b.a2 == a) {
                 r1 = b.r2;
                 r2 = b.r1;
+                a1 = b.a2;
                 a2 = b.a1;
             }
 
@@ -2219,7 +2317,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             return;
 
         var m2 = this.getMol(a2, plugin);
-        org.helm.webeditor.MolViewer.mergeMol(m, "R" + r1, m2, "R" + r1);
+        org.helm.webeditor.MolViewer.mergeMol(m, "R" + r1, m2, "R" + r1, a, a2);
     },
 
     isCircle: function () {
@@ -2448,7 +2546,11 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                     else
                         conn = b.a1._aaid + ":R" + r1 + "-" + b.a2._aaid + ":R" + r2;
                     if (lastseqid != null) {
-                        ret.connections.push(lastseqid + "," + seqid + "," + conn);
+                        var tag = "";
+                        if (!scil.Utils.isNullOrEmpty(b.tag))
+                            tag = '\"' + b.tag.replace(/"/g, "\\\"") + '\"';
+
+                        ret.connections.push(lastseqid + "," + seqid + "," + conn + tag);
                         ret.sequences[lastseqid] = sequence;
                         ret.chains[lastseqid] = chn;
                     }
@@ -2492,6 +2594,11 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 conn = b.a1._aaid + ":R" + b.r1 + "-" + b.a2._aaid + ":R" + b.r2;
             else
                 conn = b.a2._aaid + ":R" + b.r2 + "-" + b.a1._aaid + ":R" + b.r1;
+
+            var tag = "";
+            if (!scil.Utils.isNullOrEmpty(b.tag))
+                tag = '\"' + b.tag.replace(/"/g, "\\\"") + '\"';
+
             ret.connections.push(firstseqid + "," + lastseqid + "," + conn);
         }
     },
@@ -2954,6 +3061,8 @@ org.helm.webeditor.Layout = {
 * @class org.helm.webeditor.IO
 */
 org.helm.webeditor.IO = {
+    kVersion: "$V2.0",
+
     getHelm: function (m, highlightselection) {
         var branches = {};
         var chains = org.helm.webeditor.Chain.getChains(m, branches);
@@ -2984,17 +3093,22 @@ org.helm.webeditor.IO = {
         // RNA1,RNA2,5:pair-11:pair
         for (var i = 0; i < branches.bonds.length; ++i) {
             var b = branches.bonds[i];
+
+            var tag = "";
+            if (!scil.Utils.isNullOrEmpty(b.tag))
+                tag = '\"' + b.tag.replace(/"/g, "\\\"") + '\"';
+
             if (b.type == JSDraw2.BONDTYPES.UNKNOWN) {
                 var c1 = this.findChainID(ret.chains, b.a1);
                 var c2 = this.findChainID(ret.chains, b.a2);
                 var s = c1 + "," + c2 + "," + b.a1._aaid + ":pair-" + b.a2._aaid + ":pair";
-                pairs.push(s);
+                pairs.push(s + tag);
             }
             else {
                 var c1 = this.findChainID(ret.chains, b.a1);
                 var c2 = this.findChainID(ret.chains, b.a2);
                 var s = c1 + "," + c2 + "," + b.a1._aaid + ":R" + b.r1 + "-" + b.a2._aaid + ":R" + b.r2;
-                ret.connections.push(s);
+                ret.connections.push(s + tag);
             }
         }
 
@@ -3020,7 +3134,7 @@ org.helm.webeditor.IO = {
             s += (i > 0 ? "|" : "") + ret.annotations[i];
 
         s += "$";
-        return s;
+        return s + this.kVersion;
     },
 
     getSequence: function(m, highlightselection) {
@@ -3102,9 +3216,23 @@ org.helm.webeditor.IO = {
     },
 
     getCode: function (a, highlightselection, bracket) {
-        var s = typeof(a) == "string" ? a : a.elem;
+        var s;
+        if (typeof (a) == "string") {
+            s = a;
+        }
+        else {
+            var m = org.helm.webeditor.Monomers.getMonomer(a);
+            if (m.issmiles)
+                s = m.smiles;
+            else
+                s = a.elem;
+        }
+
         if (s.length > 1)
             s = "[" + s + "]";
+        if (!scil.Utils.isNullOrEmpty(a.tag))
+            s += '\"' + a.tag.replace(/"/g, "\\\"") + '\"';
+
         if (bracket)
             s = "(" + s + ")";
         if (highlightselection && a.selected)
@@ -3156,54 +3284,54 @@ org.helm.webeditor.IO = {
 
     parseHelm: function (plugin, s, origin, renamedmonomers) {
         var n = 0;
-        var p = s.indexOf("$");
-        var conn = s.substr(p + 1);
+        var sections = this.split(s, '$');
+        var chains = {};
 
         // sequence
-        s = s.substr(0, p);
-        var chains = {};
-        var seqs = s.split('|');
-        for (var i = 0; i < seqs.length; ++i) {
-            s = seqs[i];
-            p = s.indexOf("{");
-            var sid = s.substr(0, p);
-            var type = sid.replace(/[0-9]+$/, "");
-            var id = parseInt(sid.substr(type.length));
+        s = sections[0];
+        if (!scil.Utils.isNullOrEmpty(s)) {
+            var seqs = this.split(s, '|');
+            for (var i = 0; i < seqs.length; ++i) {
+                var e = this.detachAnnotation(seqs[i]);
+                s = e.str;
 
-            var chain = new org.helm.webeditor.Chain(sid);
-            chains[sid] = chain;
-            chain.type = type;
+                p = s.indexOf("{");
+                var sid = s.substr(0, p);
+                var type = sid.replace(/[0-9]+$/, "");
+                var id = parseInt(sid.substr(type.length));
 
-            s = s.substr(p + 1);
-            p = s.indexOf('}');
-            s = s.substr(0, p);
+                var chain = new org.helm.webeditor.Chain(sid);
+                chains[sid] = chain;
+                chain.type = type;
 
-            var n2 = 0;
-            var ss = s.split('.');
-            if (type == "PEPTIDE")
-                n2 = this.addAAs(plugin, ss, chain, origin, renamedmonomers);
-            else if (type == "RNA")
-                n2 = this.addHELMRNAs(plugin, ss, chain, origin, renamedmonomers);
-            else if (type == "CHEM")
-                n2 = this.addChem(plugin, s, chain, origin, renamedmonomers);
+                s = s.substr(p + 1);
+                p = s.indexOf('}');
+                s = s.substr(0, p);
 
-            if (n2 > 0) {
-                n += n2;
-                origin.y += 4 * plugin.jsd.bondlength;
+                var n2 = 0;
+                var ss = this.split(s, '.');
+                if (type == "PEPTIDE")
+                    n2 = this.addAAs(plugin, ss, chain, origin, renamedmonomers);
+                else if (type == "RNA")
+                    n2 = this.addHELMRNAs(plugin, ss, chain, origin, renamedmonomers);
+                else if (type == "CHEM")
+                    n2 = this.addChem(plugin, s, chain, origin, renamedmonomers);
+
+                if (n2 > 0) {
+                    n += n2;
+                    origin.y += 4 * plugin.jsd.bondlength;
+                }
             }
         }
 
         // connection
-        var remained = null;
-        p = conn.indexOf("$");
-        if (p >= 0) {
-            s = conn.substr(0, p);
-            remained = conn.substr(p + 1);
-            var ss = s == "" ? [] : s.split('|');
-
+        s = sections[1];
+        if (!scil.Utils.isNullOrEmpty(s)) {
+            var ss = s == "" ? [] : this.split(s, '|');
             // RNA1,RNA1,1:R1-21:R2
             for (var i = 0; i < ss.length; ++i) {
-                var c = this.parseConnection(ss[i]);
+                var e = this.detachAnnotation(ss[i]);
+                var c = this.parseConnection(e.str);
                 if (c == null || chains[c.chain1] == null || chains[c.chain2] == null)
                     continue; //error
 
@@ -3220,17 +3348,16 @@ org.helm.webeditor.IO = {
                     continue; //error
 
                 //chain.bonds.push(plugin.addBond(atom1, atom2, r1, r2));
-                plugin.addBond(atom1, atom2, r1, r2);
+                var b = plugin.addBond(atom1, atom2, r1, r2);
+                b.tag = e.tag;
             }
         }
 
         // pairs, hydrogen bonds
         // RNA1,RNA2,2:pair-9:pair|RNA1,RNA2,5:pair-6:pair|RNA1,RNA2,8:pair-3:pair
-        p = remained == null ? -1 : remained.indexOf("$");
-        if (p >= 0) {
-            s = remained.substr(0, p);
-            remained = remained.substr(p + 1);
-            var ss = s == "" ? [] : s.split("|");
+        s = sections[2];
+        if (!scil.Utils.isNullOrEmpty(s)) {
+            var ss = s == "" ? [] : this.split(s, '|');
             for (var i = 0; i < ss.length; ++i) {
                 var c = this.parseConnection(ss[i]);
                 if (c == null || chains[c.chain1] == null || chains[c.chain2] == null || !scil.Utils.startswith(c.chain1, "RNA") || !scil.Utils.startswith(c.chain2, "RNA"))
@@ -3250,12 +3377,9 @@ org.helm.webeditor.IO = {
         }
 
         // annotation
-        p = remained == null ? -1 : remained.indexOf("$");
-        if (p >= 0) {
-            s = remained.substr(0, p);
-            remained = remained.substr(p + 1);
-
-            var ss = s == "" ? [] : s.split("|");
+        s = sections[3];
+        if (!scil.Utils.isNullOrEmpty(s)) {
+            var ss = s == "" ? [] : this.split(s, '|');
             for (var i = 0; i < ss.length; ++i) {
                 var s = ss[i];
                 p = s.indexOf("{");
@@ -3271,6 +3395,36 @@ org.helm.webeditor.IO = {
         }
 
         return n;
+    },
+
+    split: function(s, sep) {
+        var ret = [];
+        // PEPTIDE1{G.[C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|].T}$$$$
+
+        var frag = "";
+        var bracket = 0;
+        var quote = 0;
+        for (var i = 0; i < s.length; ++i) {
+            var c = s.substr(i, 1);
+            if (c == sep && bracket == 0 && quote == 0) {
+                ret.push(frag);
+                frag = "";
+            }
+            else {
+                frag += c;
+                if (c == '\"') {
+                    if (!(i > 0 && s.substr(i - 1, 1) == '\\'))
+                        quote = quote == 0 ? 1 : 0;
+                }
+                else if (c == '[')
+                    ++bracket;
+                else if (c == ']')
+                    --bracket;
+            }
+        }
+
+        ret.push(frag);
+        return ret;
     },
 
     parseConnection: function(s) {
@@ -3316,11 +3470,34 @@ org.helm.webeditor.IO = {
         return elem;
     },
 
-    addNode: function (plugin, chain, atoms, p, type, elem, renamedmonomers) {
-        a2 = plugin.addNode(p, type, this.getRenamedMonomer(type, elem, renamedmonomers));
-        if (a2 == null)
-            throw "";
+    detachAnnotation: function (s) {
+        var tag = null;
+        if (scil.Utils.endswith(s, '\"')) {
+            var p = s.length - 1;
+            while (p > 0) {
+                p = s.lastIndexOf('\"', p - 1);
+                if (p <= 0 || s.substr(p - 1, 1) != '\\')
+                    break;
+            }
 
+            if (p > 0 && p < s.length - 1) {
+                tag = s.substr(p + 1, s.length - p - 2);
+                s = s.substr(0, p);
+            }
+        }
+
+        if (tag != null)
+            tag = tag.replace(/\\"/g, '\"');
+        return { tag: tag, str: s };
+    },
+
+    addNode: function (plugin, chain, atoms, p, type, elem, renamedmonomers) {
+        var e = this.detachAnnotation(elem);
+        a2 = plugin.addNode(p, type, this.getRenamedMonomer(type, e.str, renamedmonomers));
+        if (a2 == null)
+            throw "Failed to creating node: " + e.str;
+
+        a2.tag = e.tag;
         atoms.push(a2);
         a2._aaid = chain.atoms.length + chain.bases.length;
         return a2;
@@ -4554,37 +4731,51 @@ org.helm.webeditor.MolViewer = {
         var cap = mon == null || mon.at == null ? null : mon.at[r];
         if (cap == "OH")
             cap = "O";
-        else if (cap != "H" && cap != "X")
+        else if (cap != "H" && cap != "X" && cap != "O")
             return false;
 
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
             if (b.a1.alias == r || b.a2.alias == r) {
-                m.setAtomType(b.a1.alias == r ? b.a1 : b.a2, cap);
+                var a = b.a1.alias == r ? b.a1 : b.a2;
+                m.setAtomType(a, cap);
+                a.alias = null;
                 return true;
             }
         }
         return false;
     },
 
-    mergeMol: function (m, r1, src, r2) {
-        var t = null;
+    findR: function(m, r1, a1) {
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
-            if (b.a1.alias == r1 || b.a2.alias == r1) {
-                t = { b: b, a0: b.a1.alias == r1 ? b.a2 : b.a1, a1: b.a1.alias == r1 ? b.a1 : b.a2 };
-                break;
-            }
+            if (b.a1.alias == r1 && (a1 == null || b.a1._helmgroup == a1))
+                return { b: b, a0: b.a2, a1: b.a1 };
+            else if (b.a2.alias == r1 && (a1 == null || b.a2._helmgroup == a1))
+                return { b: b, a0: b.a1, a1: b.a2 };
         }
+        return null;
+    },
 
-        var s = null;
-        for (var i = 0; i < src.bonds.length; ++i) {
-            var b = src.bonds[i];
-            if (b.a1.alias == r2 || b.a2.alias == r2) {
-                s = { b: b, a0: b.a1.alias == r2 ? b.a2 : b.a1, a1: b.a1.alias == r2 ? b.a1 : b.a2 };
-                break;
-            }
-        }
+    mergeMol: function (m, r1, src, r2, a1, a2) {
+        var t = this.findR(m, r1, a1);
+        var s = this.findR(src, r2, a2);
+        //for (var i = 0; i < m.bonds.length; ++i) {
+        //    var b = m.bonds[i];
+        //    if (b.a1.alias == r1 && (a1 == null || b.a1._helmgroup == a1) || b.a2.alias == r1 && (a1 == null || b.a2._helmgroup == a1)) {
+        //        t = { b: b, a0: b.a1.alias == r1 ? b.a2 : b.a1, a1: b.a1.alias == r1 ? b.a1 : b.a2 };
+        //        break;
+        //    }
+        //}
+
+        //var s = null;
+        //for (var i = 0; i < src.bonds.length; ++i) {
+        //    var b = src.bonds[i];
+        //    if (b.a1.alias == r2 && (a2 == null || b.a1._helmgroup == a2) || b.a2.alias == r2 && (a2 == null || b.a2._helmgroup == a2)) {
+        //        s = { b: b, a0: b.a1.alias == r2 ? b.a2 : b.a1, a1: b.a1.alias == r2 ? b.a1 : b.a2 };
+        //        break;
+        //    }
+        //}
 
         if (t != null && s != null) {
             this.extendDistance(t.a0.p, t.a1.p, 1);

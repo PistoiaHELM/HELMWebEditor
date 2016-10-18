@@ -200,13 +200,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         elem = org.helm.webeditor.IO.trimBracket(elem);
 
         var m = org.helm.webeditor.Monomers.getMonomer(biotype, elem);
+        if (m == null)
+            m = org.helm.webeditor.Monomers.addSmilesMonomer(biotype, elem);
         if (m == null) {
             scil.Utils.alert("Unknown " + biotype + " monomer name: " + elem);
             return null;
         }
 
         var a = org.helm.webeditor.Interface.createAtom(this.jsd.m, p);
-        this.setNodeType(a, biotype, elem);
+        this.setNodeType(a, biotype, m.id == null ? elem : m.id);
         return a;
     },
 
@@ -321,8 +323,13 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         else {
             if (extendchain)
                 this.jsd.refresh();
+
+            // bug: https://github.com/tony-yuan/JsHELM/issues/60
+            var name1 = a1.elem + (a1.bio.id == null ? "" : a1.bio.id);
+            var name2 = a2.elem + (a2.bio.id == null ? "" : a2.bio.id);
+
             var me = this;
-            this.chooseRs(rs1, rs2, function (r1, r2) {
+            this.chooseRs(rs1, rs2, name1, name2, function (r1, r2) {
                 frag = me.jsd.getFragment(a2);
                 b = me.addBond(a1, a2, r1, r2);
                 me.finishConnect(extendchain, b, a1, a1, a2, frag, delta);
@@ -375,7 +382,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         this.jsd.refresh(extendchain || b != null);
     },
 
-    chooseRs: function (rs1, rs2, callback) {
+    chooseRs: function (rs1, rs2, name1, name2, callback) {
         if (this.chooseRDlg == null) {
             var me = this;
             var fields = { r1: { label: "Monomer 1 (left)", type: "select", width: 120 }, r2: { label: "Monomer 2 (right)", type: "select", width: 120 } };
@@ -389,6 +396,11 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
         this.chooseRDlg.form.fields.r1.disabled = rs1.length <= 1;
         this.chooseRDlg.form.fields.r2.disabled = rs2.length <= 1;
+
+        var tr1 = scil.Utils.getParent(this.chooseRDlg.form.fields.r1, "TR");
+        var tr2 = scil.Utils.getParent(this.chooseRDlg.form.fields.r2, "TR");
+        tr1.childNodes[0].innerHTML = name1;
+        tr2.childNodes[0].innerHTML = name2;
 
         this.chooseRDlg.rs1 = rs1;
         this.chooseRDlg.rs2 = rs2;
