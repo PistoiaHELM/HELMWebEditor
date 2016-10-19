@@ -20,8 +20,18 @@ Rule Service running on http://localhost:8080
    
     <div id="div1"></div>
     <script type="text/javascript">
+        
+        scil.Utils.stupidTomcatBug = function(params) {
+            if (params == null)
+                return params;
+            var ret = {"_":"_"};
+            scil.apply(ret, params);
+            return ret;
+        }; 
+        
         JSDraw2.defaultoptions = {skin: "w8"};
-        JSDrawServices={url:'http://localhost:8080/WebService/service/ajaxtool/post'};
+
+        
         scil.ready(function () {
             new org.helm.webeditor.RuleSetApp("div1", { ajaxurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=" });
         });       
