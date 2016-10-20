@@ -71,8 +71,8 @@ org.helm.webeditor.Interface = {
     * @param {JSDraw2.Atom} a1
     * @param {JSDraw2.Atom} a2
     */
-    createBond: function (m, a1, a2) {
-        return m.addBond(new JSDraw2.Bond(a1, a2, JSDraw2.BONDTYPES.SINGLE));
+    createBond: function (m, a1, a2, bondtype) {
+        return m.addBond(new JSDraw2.Bond(a1, a2, bondtype == null ? JSDraw2.BONDTYPES.SINGLE : bondtype));
     },
 
     /**
@@ -264,7 +264,7 @@ org.helm.webeditor.Interface = {
 
         if (items.length > 0)
             items.push("-");
-        items.push({ caption: "About HELM Web Editor", key: "about" });
+        items.push({ caption: "About HELM Web Editor", key: "abouthelm" });
 
         return items;
     }

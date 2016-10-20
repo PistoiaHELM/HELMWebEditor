@@ -14,6 +14,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
     constructor: function (parent, plugin, options) {
         this.plugin = plugin;
         this.options = options == null ? {} : options;
+        this.height = null;
         var w = this.options.monomerwidth > 0 ? this.options.monomerwidth : 50;
         this.kStyle = { borderRadius: "5px", border: "solid 1px gray", backgroundRepeat: "no-repeat", display: "table", width: w, height: w, float: "left", margin: 2 };
 
@@ -61,9 +62,9 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         tabs.push({ caption: "Rules", tabkey: "rule" });
 
         var width = this.options.width != null ? this.options.width : 300;
-        var height = this.options.height != null ? this.options.height : 400;
+        this.height = this.options.height != null ? this.options.height : 400;
         this.tabs = new scil.Tabs(scil.Utils.createElement(this.div, "div", null, { padding: "5px" }), {
-            onShowTab: function (td) { me.onShowTab(td, height); },
+            onShowTab: function (td) { me.onShowTab(td); },
             tabpadding: this.options.mexmonomerstab ? "10px" : "5px 2px 1px 2px",
             tabs: tabs,
             marginBottom: 0
@@ -173,7 +174,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             td = this.rnatabs.findTab(key);
 
         if (td != null)
-            this.onShowTab(td, null, true);
+            this.onShowTab(td, true);
     },
 
     reloadTabs: function () {
@@ -187,7 +188,43 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         this.onShowTab(this.tabs.currenttab);
     },
 
-    onShowTab: function (td, height, forcerecreate) {
+    resize: function (height) {
+        this.height = height;
+
+        if (this.divRule != null)
+            this.divRule.style.height = this.getHeight("rule") + "px";
+        if (this.divFavorite != null)
+            this.divFavorite.style.height = this.getHeight("favorite") + "px";
+        if (this.divChem != null)
+            this.divChem.style.height = this.getHeight("chem") + "px";
+        if (this.divAA != null)
+            this.divAA.style.height = this.getHeight("aa") + "px";
+
+        if (this.rnatabs != null)
+            this.rnatabs.resizeClientarea(0, this.getHeight("RNA"));
+    },
+
+    getHeight: function(key) {
+        var d1 = this.options.mexmonomerstab ? 0 : 14;
+        var d2 = this.options.mexmonomerstab ? 0 : 47;
+        var d3 = this.options.mexmonomerstab ? 0 : 46;
+        switch (key) {
+            case "rule":
+                return this.height - 19 + d1;
+            case "favorite":
+                return this.height - 33 + d2;
+            case "chem":
+                return this.height - 33 + d2;
+            case "aa":
+                return this.height - 33 + d2;
+            case "RNA":
+                return this.height - 59 + d3;
+        }
+
+        return this.height;
+    },
+
+    onShowTab: function (td, forcerecreate) {
         if (td == null)
             return;
 
@@ -204,23 +241,18 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             return;
         td._childrencreated = true;
 
-        if (height == null)
-            height = td._height;
-        else
-            td._height = height;
-
         var me = this;
         var div = td.clientarea;
         scil.Utils.unselectable(div);
         scil.Utils.removeAll(div);
 
         if (key == "favorite") {
-            var d = scil.Utils.createElement(div, "div", null, { width: "100%", height: height, overflowY: "scroll" });
-            this.recreateFavorites(d);
+            this.divFavorite = scil.Utils.createElement(div, "div", null, { width: "100%", height: this.getHeight(key), overflowY: "scroll" });
+            this.recreateFavorites(this.divFavorite);
         }
         else if (key == "rna") {
             var d = scil.Utils.createElement(div, "div");
-            this.createMonomerGroup3(d, "RNA", height, 0, false);
+            this.createMonomerGroup3(d, "RNA", 0, false);
         }
         else if (key == "nucleotide") {
             var dict = org.helm.webeditor.MonomerExplorer.loadNucleotides();
@@ -228,14 +260,14 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.createMonomerGroup4(div, key, list);
         }
         else if (key == "aa") {
-            var d = scil.Utils.createElement(div, "div", null, { width: "100%", height: height, overflowY: "scroll" });
-            dojo.connect(d, "onmousedown", function (e) { me.select(e); });
-            dojo.connect(d, "ondblclick", function (e) { me.dblclick(e); });
-            this.createMonomerGroup4(d, org.helm.webeditor.HELM.AA, null, false, this.options.mexgroupanalogs != false);
+            this.divAA = scil.Utils.createElement(div, "div", null, { width: "100%", height: this.getHeight(key), overflowY: "scroll" });
+            dojo.connect(this.divAA, "onmousedown", function (e) { me.select(e); });
+            dojo.connect(this.divAA, "ondblclick", function (e) { me.dblclick(e); });
+            this.createMonomerGroup4(this.divAA, org.helm.webeditor.HELM.AA, null, false, this.options.mexgroupanalogs != false);
         }
         else if (key == "chem") {
-            var d = scil.Utils.createElement(div, "div", null, { width: "100%", height: height, overflowY: "scroll" });
-            this.createMonomerGroup(d, org.helm.webeditor.HELM.CHEM);
+            this.divChem = scil.Utils.createElement(div, "div", null, { width: "100%", height: this.getHeight(key), overflowY: "scroll" });
+            this.createMonomerGroup(this.divChem, org.helm.webeditor.HELM.CHEM);
         }
         else if (key == "base") {
             this.createMonomerGroup4(div, org.helm.webeditor.HELM.BASE, null, null, this.options.mexgroupanalogs != false);
@@ -254,23 +286,21 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             var me = this;
             scil.connect(this.rules_category, "onchange", function () { org.helm.webeditor.RuleSet.filterRules(me.rules, me.filterInput.value, me.rules_category.value) });
 
-            var d = scil.Utils.createElement(div, "div", null, { width: "100%", height: height, overflowY: "scroll" });
-            this.rules = org.helm.webeditor.RuleSet.listRules(d, function (script) { me.plugin.applyRule(script); }, function (scripts) { me.plugin.applyRules(scripts); });
+            this.divRule = scil.Utils.createElement(div, "div", null, { width: "100%", height: this.getHeight(key), overflowY: "scroll" });
+            this.rules = org.helm.webeditor.RuleSet.listRules(this.divRule, function (script) { me.plugin.applyRule(script); }, function (scripts) { me.plugin.applyRules(scripts); });
         }
         else if (key == "monomers") {
             var d = scil.Utils.createElement(div, "div", null, { paddingTop: "5px" });
 
-            var ht = height - 30;
             if (this.options.canvastoolbar == false) {
                 var b = scil.Utils.createElement(d, "div", "<img src='" + scil.Utils.imgSrc("helm/arrow.png") + "' style='vertical-align:middle'>Mouse Pointer", { cursor: "pointer", padding: "2px", border: "solid 1px gray", margin: "5px" });
                 scil.connect(b, "onclick", function () { me.plugin.jsd.doCmd("lasso"); });
-                ht -= 23;
             }
 
             var tabs = [];
             this.addMonomerTabs(tabs);
             this.monomerstabs = new scil.Tabs(d, {
-                onShowTab: function (td) { me.onShowTab(td, ht); },
+                onShowTab: function (td) { me.onShowTab(td); },
                 tabpadding: "5px 2px 1px 2px",
                 tabs: tabs,
                 marginBottom: 0
@@ -363,7 +393,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         dojo.connect(div, "ondblclick", function (e) { me.dblclick(e); });
     },
 
-    createMonomerGroup3: function (div, group, height, i, createbar) {
+    createMonomerGroup3: function (div, group, i, createbar) {
         var me = this;
         var parent = scil.Utils.createElement(div, "div");
         if (createbar) {
@@ -394,22 +424,22 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                 tabpadding: "2px",
                 tabs: tabs,
                 marginBottom: 0,
-                clientareaheight: height - 40
+                clientareaheight: this.getHeight("RNA")
             });
         }
-        else if (group == "Chem") {
-            d.style.overflowY = "scroll";
-            d.style.height = height + "px";
-            var list = this.getMonomerList(null, org.helm.webeditor.HELM.CHEM);
-            this._listMonomers(d, list, org.helm.webeditor.HELM.CHEM, true);
-        }
-        else if (group == "Peptide") {
-            d.style.overflowY = "scroll";
-            d.style.height = height + "px";
-            this.createMonomerGroup4(d, org.helm.webeditor.HELM.AA, null, false, this.options.mexgroupanalogs != false);
-            //var list = this.getMonomerList(null, org.helm.webeditor.HELM.AA);
-            //this._listMonomers(d, list, org.helm.webeditor.HELM.AA, true);
-        }
+        //else if (group == "Chem") {
+        //    d.style.overflowY = "scroll";
+        //    d.style.height = height + "px";
+        //    var list = this.getMonomerList(null, org.helm.webeditor.HELM.CHEM);
+        //    this._listMonomers(d, list, org.helm.webeditor.HELM.CHEM, true);
+        //}
+        //else if (group == "Peptide") {
+        //    d.style.overflowY = "scroll";
+        //    d.style.height = height + "px";
+        //    this.createMonomerGroup4(d, org.helm.webeditor.HELM.AA, null, false, this.options.mexgroupanalogs != false);
+        //    //var list = this.getMonomerList(null, org.helm.webeditor.HELM.AA);
+        //    //this._listMonomers(d, list, org.helm.webeditor.HELM.AA, true);
+        //}
     },
 
     onPinMenu: function(e) {

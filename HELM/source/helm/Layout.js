@@ -12,7 +12,7 @@
 */
 org.helm.webeditor.Layout = {
     clean: function (m, bondlength, a) {
-        //m.clearFlag();
+        m.clearFlag();
         var chains = org.helm.webeditor.Chain._getChains(m, a);
 
         this._removeChainID(m.atoms);
@@ -35,12 +35,12 @@ org.helm.webeditor.Layout = {
             }
             chain.layoutBases();
 
-            //chain.setFlag(true);
+            chain.setFlag(true);
             chain.resetIDs();
         }
 
         this.layoutCrossChainBonds(m, chains, bondlength);
-        //this.layoutBranches(m);
+        this.layoutBranches(m);
 
         // clear chain id
         this._removeChainID(m.atoms);
@@ -193,27 +193,30 @@ org.helm.webeditor.Layout = {
                     }
                 }
 
-                if (b1 != null && b2 != null) {
-                    var a1 = b1.a1 == center ? b1.a2 : b1.a1;
-                    var a2 = b2.a1 == center ? b2.a2 : b2.a1;
+                if (b1 != null || b2 != null) {
+                    if (b1 != null && b2 != null) {
+                        var a1 = b1.a1 == center ? b1.a2 : b1.a1;
+                        var a2 = b2.a1 == center ? b2.a2 : b2.a1;
 
-                    var ang = center.p.angleAsOrigin(a1.p, a2.p);
-                    if (Math.abs(ang - 180) > 10)
-                        a.p = a1.p.clone().rotateAround(center.p, ang / 2);
-                    else
-                        a.p = a1.p.clone().rotateAround(center.p, 90);
-                }
-                else if (b1 != null) {
-                    var a1 = b1.a1 == center ? b1.a2 : b1.a1;
-                    a.p = a1.p.clone().rotateAround(center.p, 90);
-                }
-                else if (b2 != null) {
-                    var a2 = b2.a1 == center ? b2.a2 : b2.a1;
-                    a.p = a2.p.clone().rotateAround(center.p, -90);
-                }
+                        var ang = center.p.angleAsOrigin(a1.p, a2.p);
+                        if (Math.abs(ang - 180) > 10)
+                            a.p = a1.p.clone().rotateAround(center.p, ang / 2);
+                        else
+                            a.p = a1.p.clone().rotateAround(center.p, 90);
+                    }
+                    else {
+                        if (b1 != null) {
+                            var a1 = b1.a1 == center ? b1.a2 : b1.a1;
+                            a.p = a1.p.clone().rotateAround(center.p, 180);
+                        }
+                        else if (b2 != null) {
+                            var a2 = b2.a1 == center ? b2.a2 : b2.a1;
+                            a.p = a2.p.clone().rotateAround(center.p, 180);
+                        }
+                    }
 
-                if (b1 != null || b2 != null)
                     b.f = b.a1.f = b.a2.f = true;
+                }
             }
         }
     },

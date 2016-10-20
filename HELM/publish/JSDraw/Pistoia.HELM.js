@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-10-18
+// 2.0.0-2016-10-20
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-10-04",
+    kVersion: "2.0.0.2016-10-20",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -85,9 +85,6 @@ org.helm.webeditor = {
         this.about.show();
     }
 };
-
-if (JSDraw2.Security.kEdition == "Lite")
-    JSDraw2.Editor.showAbout = org.helm.webeditor.about;
 
 scil.helm = org.helm.webeditor;
 ﻿//////////////////////////////////////////////////////////////////////////////////
@@ -163,8 +160,8 @@ org.helm.webeditor.Interface = {
     * @param {JSDraw2.Atom} a1
     * @param {JSDraw2.Atom} a2
     */
-    createBond: function (m, a1, a2) {
-        return m.addBond(new JSDraw2.Bond(a1, a2, JSDraw2.BONDTYPES.SINGLE));
+    createBond: function (m, a1, a2, bondtype) {
+        return m.addBond(new JSDraw2.Bond(a1, a2, bondtype == null ? JSDraw2.BONDTYPES.SINGLE : bondtype));
     },
 
     /**
@@ -356,7 +353,7 @@ org.helm.webeditor.Interface = {
 
         if (items.length > 0)
             items.push("-");
-        items.push({ caption: "About HELM Web Editor", key: "about" });
+        items.push({ caption: "About HELM Web Editor", key: "abouthelm" });
 
         return items;
     }
@@ -1369,8 +1366,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         var rs1 = this.getSpareRs(a1);
         var rs2 = this.getSpareRs(a2);
         if (rs1 == null || rs2 == null) {
-            scil.Utils.alert("Either atom doesn't have any connecting point available");
-            this.finishConnect(extendchain);
+            if (this.canPaire(a1, a2) && this.jsd.m.findBond(a1, a2) == null) {
+                // hydrogen bond
+                org.helm.webeditor.Interface.createBond(this.jsd.m, a1, a2, JSDraw2.BONDTYPES.UNKNOWN);
+                this.finishConnect(extendchain);
+            }
+            else {
+                scil.Utils.alert("Either atom doesn't have any connecting point available");
+                this.finishConnect(extendchain);
+            }
             return;
         }
 
@@ -1393,8 +1397,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                 this.jsd.refresh();
 
             // bug: https://github.com/tony-yuan/JsHELM/issues/60
-            var name1 = a1.elem + (a1.bio.id == null ? "" : a1.bio.id);
-            var name2 = a2.elem + (a2.bio.id == null ? "" : a2.bio.id);
+            var name1 = a1.elem + (a1.bio == null || a1.bio.id == null ? "" : a1.bio.id);
+            var name2 = a2.elem + (a2.bio == null || a2.bio.id == null ? "" : a2.bio.id);
 
             var me = this;
             this.chooseRs(rs1, rs2, name1, name2, function (r1, r2) {
@@ -1408,6 +1412,16 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         this.finishConnect(extendchain, b, a, a1, a2, frag, delta);
     },
 
+    canPaire: function(a1, a2) {
+        if (a1.biotype() == org.helm.webeditor.HELM.BASE && a2.biotype() == org.helm.webeditor.HELM.BASE) {
+            var c1 = a1.elem;
+            var c2 = a2.elem;
+            return c1 == "A" && (c2 == "T" || c2 == "U") || (c1 == "T" || c1 == "U") && c2 == "A" ||
+                c1 == "G" && c2 == "C" || c1 == "C" && c2 == "G";
+        }
+        return false;
+    },
+
     needLinker: function() {
         var linker = this.getDefaultNodeType(org.helm.webeditor.HELM.LINKER);
         return linker != "null";
@@ -1415,37 +1429,38 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
     finishConnect: function (extendchain, b, a, a1, a2, frag, delta) {
         var cleaned = false;
-        if (b != null && b.r1 > 2 && b.r2 > 2) {
+        //if (b != null && b.r1 > 2 && b.r2 > 2) {
             this.clean();
-        }
-        else {
-            if (b != null && !extendchain) {
-                if (frag != null) {
-                    var p = a1.p.clone().offset(delta, 0);
-                    if (a == null)
-                        a = a1;
+            cleaned = true;
+        //}
+        //else {
+        //    if (b != null && !extendchain) {
+        //        if (frag != null) {
+        //            var p = a1.p.clone().offset(delta, 0);
+        //            if (a == null)
+        //                a = a1;
 
-                    if (a != a1) {
-                        a.p = p.clone();
-                        p.offset(delta, 0);
-                    }
+        //            if (a != a1) {
+        //                a.p = p.clone();
+        //                p.offset(delta, 0);
+        //            }
 
-                    if (frag.containsAtom(a1)) {
-                        this.clean(a1);
-                        cleaned = true;
-                    }
-                    else {
-                        frag.offset(p.x - a2.p.x, p.y - a2.p.y);
-                    }
-                }
-            }
+        //            if (frag.containsAtom(a1)) {
+        //                this.clean(a1);
+        //                cleaned = true;
+        //            }
+        //            else {
+        //                frag.offset(p.x - a2.p.x, p.y - a2.p.y);
+        //            }
+        //        }
+        //    }
 
-            if (!cleaned) {
-                var chain = org.helm.webeditor.Chain.getChain(this.jsd.m, a1);
-                if (chain != null)
-                    chain.resetIDs();
-            }
-        }
+        //    if (!cleaned) {
+        //        var chain = org.helm.webeditor.Chain.getChain(this.jsd.m, a1);
+        //        if (chain != null)
+        //            chain.resetIDs();
+        //    }
+        //}
 
         this.jsd.refresh(extendchain || b != null);
     },
@@ -2820,7 +2835,7 @@ scil.apply(org.helm.webeditor.Chain, {
 */
 org.helm.webeditor.Layout = {
     clean: function (m, bondlength, a) {
-        //m.clearFlag();
+        m.clearFlag();
         var chains = org.helm.webeditor.Chain._getChains(m, a);
 
         this._removeChainID(m.atoms);
@@ -2843,12 +2858,12 @@ org.helm.webeditor.Layout = {
             }
             chain.layoutBases();
 
-            //chain.setFlag(true);
+            chain.setFlag(true);
             chain.resetIDs();
         }
 
         this.layoutCrossChainBonds(m, chains, bondlength);
-        //this.layoutBranches(m);
+        this.layoutBranches(m);
 
         // clear chain id
         this._removeChainID(m.atoms);
@@ -2987,6 +3002,7 @@ org.helm.webeditor.Layout = {
                 var b1 = null;
                 var b2 = null;
                 var bonds = m.getNeighborBonds(center);
+                var bondcount = bonds.length;
                 for (var k = bonds.length - 1; k >= 0; --k) {
                     var n = bonds[k];
                     if (n.f) {
@@ -3001,27 +3017,30 @@ org.helm.webeditor.Layout = {
                     }
                 }
 
-                if (b1 != null && b2 != null) {
-                    var a1 = b1.a1 == center ? b1.a2 : b1.a1;
-                    var a2 = b2.a1 == center ? b2.a2 : b2.a1;
+                if (b1 != null || b2 != null) {
+                    if (b1 != null && b2 != null) {
+                        var a1 = b1.a1 == center ? b1.a2 : b1.a1;
+                        var a2 = b2.a1 == center ? b2.a2 : b2.a1;
 
-                    var ang = center.p.angleAsOrigin(a1.p, a2.p);
-                    if (Math.abs(ang - 180) > 10)
-                        a.p = a1.p.clone().rotateAround(center.p, ang / 2);
-                    else
-                        a.p = a1.p.clone().rotateAround(center.p, 90);
-                }
-                else if (b1 != null) {
-                    var a1 = b1.a1 == center ? b1.a2 : b1.a1;
-                    a.p = a1.p.clone().rotateAround(center.p, 90);
-                }
-                else if (b2 != null) {
-                    var a2 = b2.a1 == center ? b2.a2 : b2.a1;
-                    a.p = a2.p.clone().rotateAround(center.p, -90);
-                }
+                        var ang = center.p.angleAsOrigin(a1.p, a2.p);
+                        if (Math.abs(ang - 180) > 10)
+                            a.p = a1.p.clone().rotateAround(center.p, ang / 2);
+                        else
+                            a.p = a1.p.clone().rotateAround(center.p, 90);
+                    }
+                    else {
+                        if (b1 != null) {
+                            var a1 = b1.a1 == center ? b1.a2 : b1.a1;
+                            a.p = a1.p.clone().rotateAround(center.p, 180);
+                        }
+                        else if (b2 != null) {
+                            var a2 = b2.a1 == center ? b2.a2 : b2.a1;
+                            a.p = a2.p.clone().rotateAround(center.p, 180);
+                        }
+                    }
 
-                if (b1 != null || b2 != null)
                     b.f = b.a1.f = b.a2.f = true;
+                }
             }
         }
     },
@@ -3731,6 +3750,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
     constructor: function (parent, plugin, options) {
         this.plugin = plugin;
         this.options = options == null ? {} : options;
+        this.height = null;
         var w = this.options.monomerwidth > 0 ? this.options.monomerwidth : 50;
         this.kStyle = { borderRadius: "5px", border: "solid 1px gray", backgroundRepeat: "no-repeat", display: "table", width: w, height: w, float: "left", margin: 2 };
 
@@ -3778,9 +3798,9 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         tabs.push({ caption: "Rules", tabkey: "rule" });
 
         var width = this.options.width != null ? this.options.width : 300;
-        var height = this.options.height != null ? this.options.height : 400;
+        this.height = this.options.height != null ? this.options.height : 400;
         this.tabs = new scil.Tabs(scil.Utils.createElement(this.div, "div", null, { padding: "5px" }), {
-            onShowTab: function (td) { me.onShowTab(td, height); },
+            onShowTab: function (td) { me.onShowTab(td); },
             tabpadding: this.options.mexmonomerstab ? "10px" : "5px 2px 1px 2px",
             tabs: tabs,
             marginBottom: 0
@@ -3890,7 +3910,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             td = this.rnatabs.findTab(key);
 
         if (td != null)
-            this.onShowTab(td, null, true);
+            this.onShowTab(td, true);
     },
 
     reloadTabs: function () {
@@ -3904,7 +3924,43 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         this.onShowTab(this.tabs.currenttab);
     },
 
-    onShowTab: function (td, height, forcerecreate) {
+    resize: function (height) {
+        this.height = height;
+
+        if (this.divRule != null)
+            this.divRule.style.height = this.getHeight("rule") + "px";
+        if (this.divFavorite != null)
+            this.divFavorite.style.height = this.getHeight("favorite") + "px";
+        if (this.divChem != null)
+            this.divChem.style.height = this.getHeight("chem") + "px";
+        if (this.divAA != null)
+            this.divAA.style.height = this.getHeight("aa") + "px";
+
+        if (this.rnatabs != null)
+            this.rnatabs.resizeClientarea(0, this.getHeight("RNA"));
+    },
+
+    getHeight: function(key) {
+        var d1 = this.options.mexmonomerstab ? 0 : 14;
+        var d2 = this.options.mexmonomerstab ? 0 : 47;
+        var d3 = this.options.mexmonomerstab ? 0 : 46;
+        switch (key) {
+            case "rule":
+                return this.height - 19 + d1;
+            case "favorite":
+                return this.height - 33 + d2;
+            case "chem":
+                return this.height - 33 + d2;
+            case "aa":
+                return this.height - 33 + d2;
+            case "RNA":
+                return this.height - 59 + d3;
+        }
+
+        return this.height;
+    },
+
+    onShowTab: function (td, forcerecreate) {
         if (td == null)
             return;
 
@@ -3921,23 +3977,18 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             return;
         td._childrencreated = true;
 
-        if (height == null)
-            height = td._height;
-        else
-            td._height = height;
-
         var me = this;
         var div = td.clientarea;
         scil.Utils.unselectable(div);
         scil.Utils.removeAll(div);
 
         if (key == "favorite") {
-            var d = scil.Utils.createElement(div, "div", null, { width: "100%", height: height, overflowY: "scroll" });
-            this.recreateFavorites(d);
+            this.divFavorite = scil.Utils.createElement(div, "div", null, { width: "100%", height: this.getHeight(key), overflowY: "scroll" });
+            this.recreateFavorites(this.divFavorite);
         }
         else if (key == "rna") {
             var d = scil.Utils.createElement(div, "div");
-            this.createMonomerGroup3(d, "RNA", height, 0, false);
+            this.createMonomerGroup3(d, "RNA", 0, false);
         }
         else if (key == "nucleotide") {
             var dict = org.helm.webeditor.MonomerExplorer.loadNucleotides();
@@ -3945,14 +3996,14 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.createMonomerGroup4(div, key, list);
         }
         else if (key == "aa") {
-            var d = scil.Utils.createElement(div, "div", null, { width: "100%", height: height, overflowY: "scroll" });
-            dojo.connect(d, "onmousedown", function (e) { me.select(e); });
-            dojo.connect(d, "ondblclick", function (e) { me.dblclick(e); });
-            this.createMonomerGroup4(d, org.helm.webeditor.HELM.AA, null, false, this.options.mexgroupanalogs != false);
+            this.divAA = scil.Utils.createElement(div, "div", null, { width: "100%", height: this.getHeight(key), overflowY: "scroll" });
+            dojo.connect(this.divAA, "onmousedown", function (e) { me.select(e); });
+            dojo.connect(this.divAA, "ondblclick", function (e) { me.dblclick(e); });
+            this.createMonomerGroup4(this.divAA, org.helm.webeditor.HELM.AA, null, false, this.options.mexgroupanalogs != false);
         }
         else if (key == "chem") {
-            var d = scil.Utils.createElement(div, "div", null, { width: "100%", height: height, overflowY: "scroll" });
-            this.createMonomerGroup(d, org.helm.webeditor.HELM.CHEM);
+            this.divChem = scil.Utils.createElement(div, "div", null, { width: "100%", height: this.getHeight(key), overflowY: "scroll" });
+            this.createMonomerGroup(this.divChem, org.helm.webeditor.HELM.CHEM);
         }
         else if (key == "base") {
             this.createMonomerGroup4(div, org.helm.webeditor.HELM.BASE, null, null, this.options.mexgroupanalogs != false);
@@ -3971,23 +4022,21 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             var me = this;
             scil.connect(this.rules_category, "onchange", function () { org.helm.webeditor.RuleSet.filterRules(me.rules, me.filterInput.value, me.rules_category.value) });
 
-            var d = scil.Utils.createElement(div, "div", null, { width: "100%", height: height, overflowY: "scroll" });
-            this.rules = org.helm.webeditor.RuleSet.listRules(d, function (script) { me.plugin.applyRule(script); }, function (scripts) { me.plugin.applyRules(scripts); });
+            this.divRule = scil.Utils.createElement(div, "div", null, { width: "100%", height: this.getHeight(key), overflowY: "scroll" });
+            this.rules = org.helm.webeditor.RuleSet.listRules(this.divRule, function (script) { me.plugin.applyRule(script); }, function (scripts) { me.plugin.applyRules(scripts); });
         }
         else if (key == "monomers") {
             var d = scil.Utils.createElement(div, "div", null, { paddingTop: "5px" });
 
-            var ht = height - 30;
             if (this.options.canvastoolbar == false) {
                 var b = scil.Utils.createElement(d, "div", "<img src='" + scil.Utils.imgSrc("helm/arrow.png") + "' style='vertical-align:middle'>Mouse Pointer", { cursor: "pointer", padding: "2px", border: "solid 1px gray", margin: "5px" });
                 scil.connect(b, "onclick", function () { me.plugin.jsd.doCmd("lasso"); });
-                ht -= 23;
             }
 
             var tabs = [];
             this.addMonomerTabs(tabs);
             this.monomerstabs = new scil.Tabs(d, {
-                onShowTab: function (td) { me.onShowTab(td, ht); },
+                onShowTab: function (td) { me.onShowTab(td); },
                 tabpadding: "5px 2px 1px 2px",
                 tabs: tabs,
                 marginBottom: 0
@@ -4080,7 +4129,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         dojo.connect(div, "ondblclick", function (e) { me.dblclick(e); });
     },
 
-    createMonomerGroup3: function (div, group, height, i, createbar) {
+    createMonomerGroup3: function (div, group, i, createbar) {
         var me = this;
         var parent = scil.Utils.createElement(div, "div");
         if (createbar) {
@@ -4111,22 +4160,22 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                 tabpadding: "2px",
                 tabs: tabs,
                 marginBottom: 0,
-                clientareaheight: height - 40
+                clientareaheight: this.getHeight("RNA")
             });
         }
-        else if (group == "Chem") {
-            d.style.overflowY = "scroll";
-            d.style.height = height + "px";
-            var list = this.getMonomerList(null, org.helm.webeditor.HELM.CHEM);
-            this._listMonomers(d, list, org.helm.webeditor.HELM.CHEM, true);
-        }
-        else if (group == "Peptide") {
-            d.style.overflowY = "scroll";
-            d.style.height = height + "px";
-            this.createMonomerGroup4(d, org.helm.webeditor.HELM.AA, null, false, this.options.mexgroupanalogs != false);
-            //var list = this.getMonomerList(null, org.helm.webeditor.HELM.AA);
-            //this._listMonomers(d, list, org.helm.webeditor.HELM.AA, true);
-        }
+        //else if (group == "Chem") {
+        //    d.style.overflowY = "scroll";
+        //    d.style.height = height + "px";
+        //    var list = this.getMonomerList(null, org.helm.webeditor.HELM.CHEM);
+        //    this._listMonomers(d, list, org.helm.webeditor.HELM.CHEM, true);
+        //}
+        //else if (group == "Peptide") {
+        //    d.style.overflowY = "scroll";
+        //    d.style.height = height + "px";
+        //    this.createMonomerGroup4(d, org.helm.webeditor.HELM.AA, null, false, this.options.mexgroupanalogs != false);
+        //    //var list = this.getMonomerList(null, org.helm.webeditor.HELM.AA);
+        //    //this._listMonomers(d, list, org.helm.webeditor.HELM.AA, true);
+        //}
     },
 
     onPinMenu: function(e) {
@@ -5207,7 +5256,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             d.h -= this.options.topmargin;
 
         var leftwidth = 300;
-        var rightwidth = d.w - 300 - 50;
+        var rightwidth = d.w - 300 - 40;
         var topheight = d.h * 0.7;
         var bottomheight = d.h - topheight - 130;
 
@@ -5287,11 +5336,21 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             tabkey: "structureview",
             oncreate: function (div) { me.createStructureView(div, sizes.rightwidth, sizes.bottomheight); }
         });
+
+        scil.connect(window, "onresize", function (e) { me.resizeWindow(); });
     },
 
     resizeWindow: function () {
         var sizes = this.calculateSizes();
-        this.mex.tabs.resizeClientarea(0, sizes.height);
+        this.canvas.resize(sizes.rightwidth, sizes.topheight - 70);
+
+        var s = { width: sizes.rightwidth + "px", height: sizes.bottomheight + "px" };
+        scil.apply(this.sequence.style, s);
+        scil.apply(this.notation.style, s);
+        scil.apply(this.properties.parent.style, s);
+        this.structureview.resize(sizes.rightwidth, sizes.bottomheight);
+
+        this.mex.resize(sizes.height);
     },
 
     swapCanvasSequence: function () {
@@ -5395,7 +5454,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var d = scil.Utils.createElement(div, "div", null, { width: width, overflow: "scroll", height: height });
 
         var fields = {
-            mw: { label: "Molecular Weight", type: "number", unit: "Da" },
+            mw: { label: "Molecular Weight" },
             mf: { label: "Molecular Formula" },
             ec: { label: "Extinction Coefficient" }
         };
@@ -5837,7 +5896,7 @@ org.helm.webeditor.RuleSet = {
     favorites: new scil.Favorite("ruleset"),
 
     saveTextDB: function (url) {
-        var cols = ["id", "name", "description", "script", "author", "category", "createddate"];
+        var cols = ["id", "name", "description", "script", "author", "category"];
 
         var n = 0;
         var ret = "";

@@ -301,8 +301,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         var rs1 = this.getSpareRs(a1);
         var rs2 = this.getSpareRs(a2);
         if (rs1 == null || rs2 == null) {
-            scil.Utils.alert("Either atom doesn't have any connecting point available");
-            this.finishConnect(extendchain);
+            if (this.canPaire(a1, a2) && this.jsd.m.findBond(a1, a2) == null) {
+                // hydrogen bond
+                org.helm.webeditor.Interface.createBond(this.jsd.m, a1, a2, JSDraw2.BONDTYPES.UNKNOWN);
+                this.finishConnect(extendchain);
+            }
+            else {
+                scil.Utils.alert("Either atom doesn't have any connecting point available");
+                this.finishConnect(extendchain);
+            }
             return;
         }
 
@@ -325,8 +332,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                 this.jsd.refresh();
 
             // bug: https://github.com/tony-yuan/JsHELM/issues/60
-            var name1 = a1.elem + (a1.bio.id == null ? "" : a1.bio.id);
-            var name2 = a2.elem + (a2.bio.id == null ? "" : a2.bio.id);
+            var name1 = a1.elem + (a1.bio == null || a1.bio.id == null ? "" : a1.bio.id);
+            var name2 = a2.elem + (a2.bio == null || a2.bio.id == null ? "" : a2.bio.id);
 
             var me = this;
             this.chooseRs(rs1, rs2, name1, name2, function (r1, r2) {
@@ -340,6 +347,16 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         this.finishConnect(extendchain, b, a, a1, a2, frag, delta);
     },
 
+    canPaire: function(a1, a2) {
+        if (a1.biotype() == org.helm.webeditor.HELM.BASE && a2.biotype() == org.helm.webeditor.HELM.BASE) {
+            var c1 = a1.elem;
+            var c2 = a2.elem;
+            return c1 == "A" && (c2 == "T" || c2 == "U") || (c1 == "T" || c1 == "U") && c2 == "A" ||
+                c1 == "G" && c2 == "C" || c1 == "C" && c2 == "G";
+        }
+        return false;
+    },
+
     needLinker: function() {
         var linker = this.getDefaultNodeType(org.helm.webeditor.HELM.LINKER);
         return linker != "null";
@@ -347,37 +364,38 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
     finishConnect: function (extendchain, b, a, a1, a2, frag, delta) {
         var cleaned = false;
-        if (b != null && b.r1 > 2 && b.r2 > 2) {
+        //if (b != null && b.r1 > 2 && b.r2 > 2) {
             this.clean();
-        }
-        else {
-            if (b != null && !extendchain) {
-                if (frag != null) {
-                    var p = a1.p.clone().offset(delta, 0);
-                    if (a == null)
-                        a = a1;
+            cleaned = true;
+        //}
+        //else {
+        //    if (b != null && !extendchain) {
+        //        if (frag != null) {
+        //            var p = a1.p.clone().offset(delta, 0);
+        //            if (a == null)
+        //                a = a1;
 
-                    if (a != a1) {
-                        a.p = p.clone();
-                        p.offset(delta, 0);
-                    }
+        //            if (a != a1) {
+        //                a.p = p.clone();
+        //                p.offset(delta, 0);
+        //            }
 
-                    if (frag.containsAtom(a1)) {
-                        this.clean(a1);
-                        cleaned = true;
-                    }
-                    else {
-                        frag.offset(p.x - a2.p.x, p.y - a2.p.y);
-                    }
-                }
-            }
+        //            if (frag.containsAtom(a1)) {
+        //                this.clean(a1);
+        //                cleaned = true;
+        //            }
+        //            else {
+        //                frag.offset(p.x - a2.p.x, p.y - a2.p.y);
+        //            }
+        //        }
+        //    }
 
-            if (!cleaned) {
-                var chain = org.helm.webeditor.Chain.getChain(this.jsd.m, a1);
-                if (chain != null)
-                    chain.resetIDs();
-            }
-        }
+        //    if (!cleaned) {
+        //        var chain = org.helm.webeditor.Chain.getChain(this.jsd.m, a1);
+        //        if (chain != null)
+        //            chain.resetIDs();
+        //    }
+        //}
 
         this.jsd.refresh(extendchain || b != null);
     },

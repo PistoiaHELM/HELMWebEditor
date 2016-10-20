@@ -27,7 +27,7 @@ org.helm.webeditor.RuleSet = {
     favorites: new scil.Favorite("ruleset"),
 
     saveTextDB: function (url) {
-        var cols = ["id", "name", "description", "script", "author", "category", "createddate"];
+        var cols = ["id", "name", "description", "script", "author", "category"];
 
         var n = 0;
         var ret = "";

@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-10-18
+// 2.0.0-2016-10-20
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-10-04",
+    kVersion: "2.0.0.2016-10-20",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -85,8 +85,5 @@ org.helm.webeditor = {
         this.about.show();
     }
 };
-
-if (JSDraw2.Security.kEdition == "Lite")
-    JSDraw2.Editor.showAbout = org.helm.webeditor.about;
 
 scil.helm = org.helm.webeditor;

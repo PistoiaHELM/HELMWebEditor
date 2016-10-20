@@ -76,7 +76,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             d.h -= this.options.topmargin;
 
         var leftwidth = 300;
-        var rightwidth = d.w - 300 - 50;
+        var rightwidth = d.w - 300 - 40;
         var topheight = d.h * 0.7;
         var bottomheight = d.h - topheight - 130;
 
@@ -156,11 +156,21 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             tabkey: "structureview",
             oncreate: function (div) { me.createStructureView(div, sizes.rightwidth, sizes.bottomheight); }
         });
+
+        scil.connect(window, "onresize", function (e) { me.resizeWindow(); });
     },
 
     resizeWindow: function () {
         var sizes = this.calculateSizes();
-        this.mex.tabs.resizeClientarea(0, sizes.height);
+        this.canvas.resize(sizes.rightwidth, sizes.topheight - 70);
+
+        var s = { width: sizes.rightwidth + "px", height: sizes.bottomheight + "px" };
+        scil.apply(this.sequence.style, s);
+        scil.apply(this.notation.style, s);
+        scil.apply(this.properties.parent.style, s);
+        this.structureview.resize(sizes.rightwidth, sizes.bottomheight);
+
+        this.mex.resize(sizes.height);
     },
 
     swapCanvasSequence: function () {
@@ -264,7 +274,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var d = scil.Utils.createElement(div, "div", null, { width: width, overflow: "scroll", height: height });
 
         var fields = {
-            mw: { label: "Molecular Weight", type: "number", unit: "Da" },
+            mw: { label: "Molecular Weight" },
             mf: { label: "Molecular Formula" },
             ec: { label: "Extinction Coefficient" }
         };
