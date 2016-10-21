@@ -152,6 +152,14 @@ org.helm.webeditor.Layout = {
 
                 if (b.type == JSDraw2.BONDTYPES.UNKNOWN) {
                     // hydrogen bond
+                    if (b.a1.p.y > b.a2.p.y) {
+                        a2 = b.a1;
+                        a1 = b.a2;
+                    }
+                    else {
+                        a2 = b.a2;
+                        a1 = b.a1;
+                    }
                     var chain = chains[a2._chainid];
                     chain.rotate(180);
 

@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-10-20
+// 2.0.0-2016-10-21
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-10-20",
+    kVersion: "2.0.0.2016-10-21",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -1579,19 +1579,28 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                     var e = this.getDefaultNodeType(org.helm.webeditor.HELM.LINKER);
                     var linker = null;
                     var sugar = null;
+
                     if (delta < 0) {
+                        if (rs[1])
+                            r1 = 1;
+                        else
+                            r1 = 2;
+                    }
+                    else {
+                        if (rs[2])
+                            r1 = 2;
+                        else
+                            r1 = 1;
+                    }
+                    r2 = r1 == 1 ? 2 : 1;
+
+                    if (r1 == 1) {
                         if (e != "null") {
                             linker = this.addNode(p.clone(), org.helm.webeditor.HELM.LINKER, e);
                             p.x += delta;
                         }
                         sugar = this.addNode(p.clone(), org.helm.webeditor.HELM.SUGAR, m);
 
-                        if (rs[1])
-                            r1 = 1;
-                        else
-                            r1 = 2;
-
-                        r2 = r1 == 1 ? 2 : 1;
                         if (linker != null) {
                             bond = this.addBond(a1, linker, r1, r2);
                             this.addBond(linker, sugar, r1, r2);
@@ -1606,12 +1615,6 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                         if (e != "null")
                             linker = this.addNode(p.clone(), org.helm.webeditor.HELM.LINKER, e);
 
-                        if (rs[2])
-                            r1 = 2;
-                        else
-                            r1 = 1;
-
-                        r2 = r1 == 1 ? 2 : 1;
                         if (linker != null) {
                             bond = this.addBond(a1, sugar, r1, r2);
                             this.addBond(sugar, linker, r1, r2);
@@ -2975,6 +2978,14 @@ org.helm.webeditor.Layout = {
 
                 if (b.type == JSDraw2.BONDTYPES.UNKNOWN) {
                     // hydrogen bond
+                    if (b.a1.p.y > b.a2.p.y) {
+                        a2 = b.a1;
+                        a1 = b.a2;
+                    }
+                    else {
+                        a2 = b.a2;
+                        a1 = b.a1;
+                    }
                     var chain = chains[a2._chainid];
                     chain.rotate(180);
 
@@ -3002,7 +3013,6 @@ org.helm.webeditor.Layout = {
                 var b1 = null;
                 var b2 = null;
                 var bonds = m.getNeighborBonds(center);
-                var bondcount = bonds.length;
                 for (var k = bonds.length - 1; k >= 0; --k) {
                     var n = bonds[k];
                     if (n.f) {
@@ -5247,7 +5257,27 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.structureview = null;
 
         this.options = options == null ? {} : options;
-        this.init(parent);
+
+        if (this.options.rulesurl != null) {
+            scil.Utils.ajax(this.options.rulesurl, function (ret) {
+                if (ret.rules != null)
+                    ret = ret.rules;
+                org.helm.webeditor.RuleSet.loadDB(ret);
+            });
+        }
+
+        if (this.options.monomersurl != null) {
+            var me = this;
+            scil.Utils.ajax(this.options.monomersurl, function (ret) {
+                if (ret.monomers != null)
+                    ret = ret.monomers;
+                org.helm.webeditor.Monomers.loadDB(ret);
+                me.init(parent);
+            });
+        }
+        else {
+            this.init(parent);
+        }
     },
 
     calculateSizes: function () {
@@ -5522,7 +5552,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
-    onselectionchanged: function() {
+    onselectionchanged: function () {
         switch (this.tabs.tabs.currentTabKey()) {
             case "sequence":
                 if (this.sequence != null) {
@@ -5555,9 +5585,9 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             }
         }
         else {
-            data.mw = this.canvas.getMolWeight();
+            data.mw = Math.round(this.canvas.getMolWeight() * 100) / 100;
             data.mf = this.canvas.getFormula(true);
-            data.ec = this.canvas.getExtinctionCoefficient(true);
+            data.ec = Math.round(this.canvas.getExtinctionCoefficient(true) * 100) / 100;
             this.properties.setData(data);
         }
     },
@@ -5614,8 +5644,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             this.structureview.setMolfile(m.getMolfile());
         }
     }
-});
-﻿//////////////////////////////////////////////////////////////////////////////////
+});﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)

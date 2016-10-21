@@ -67,7 +67,27 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.structureview = null;
 
         this.options = options == null ? {} : options;
-        this.init(parent);
+
+        if (this.options.rulesurl != null) {
+            scil.Utils.ajax(this.options.rulesurl, function (ret) {
+                if (ret.rules != null)
+                    ret = ret.rules;
+                org.helm.webeditor.RuleSet.loadDB(ret);
+            });
+        }
+
+        if (this.options.monomersurl != null) {
+            var me = this;
+            scil.Utils.ajax(this.options.monomersurl, function (ret) {
+                if (ret.monomers != null)
+                    ret = ret.monomers;
+                org.helm.webeditor.Monomers.loadDB(ret);
+                me.init(parent);
+            });
+        }
+        else {
+            this.init(parent);
+        }
     },
 
     calculateSizes: function () {
@@ -342,7 +362,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
-    onselectionchanged: function() {
+    onselectionchanged: function () {
         switch (this.tabs.tabs.currentTabKey()) {
             case "sequence":
                 if (this.sequence != null) {
@@ -375,9 +395,9 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             }
         }
         else {
-            data.mw = this.canvas.getMolWeight();
+            data.mw = Math.round(this.canvas.getMolWeight() * 100) / 100;
             data.mf = this.canvas.getFormula(true);
-            data.ec = this.canvas.getExtinctionCoefficient(true);
+            data.ec = Math.round(this.canvas.getExtinctionCoefficient(true) * 100) / 100;
             this.properties.setData(data);
         }
     },

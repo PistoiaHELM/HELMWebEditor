@@ -514,19 +514,28 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                     var e = this.getDefaultNodeType(org.helm.webeditor.HELM.LINKER);
                     var linker = null;
                     var sugar = null;
+
                     if (delta < 0) {
+                        if (rs[1])
+                            r1 = 1;
+                        else
+                            r1 = 2;
+                    }
+                    else {
+                        if (rs[2])
+                            r1 = 2;
+                        else
+                            r1 = 1;
+                    }
+                    r2 = r1 == 1 ? 2 : 1;
+
+                    if (r1 == 1) {
                         if (e != "null") {
                             linker = this.addNode(p.clone(), org.helm.webeditor.HELM.LINKER, e);
                             p.x += delta;
                         }
                         sugar = this.addNode(p.clone(), org.helm.webeditor.HELM.SUGAR, m);
 
-                        if (rs[1])
-                            r1 = 1;
-                        else
-                            r1 = 2;
-
-                        r2 = r1 == 1 ? 2 : 1;
                         if (linker != null) {
                             bond = this.addBond(a1, linker, r1, r2);
                             this.addBond(linker, sugar, r1, r2);
@@ -541,12 +550,6 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                         if (e != "null")
                             linker = this.addNode(p.clone(), org.helm.webeditor.HELM.LINKER, e);
 
-                        if (rs[2])
-                            r1 = 2;
-                        else
-                            r1 = 1;
-
-                        r2 = r1 == 1 ? 2 : 1;
                         if (linker != null) {
                             bond = this.addBond(a1, sugar, r1, r2);
                             this.addBond(sugar, linker, r1, r2);
