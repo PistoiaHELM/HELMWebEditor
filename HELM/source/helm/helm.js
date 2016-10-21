@@ -67,7 +67,7 @@ org.helm.webeditor = {
 
     about: function () {
         var me = this;
-        if (this.about == null) {
+        if (this.aboutDlg == null) {
             var div = scil.Utils.createElement(null, "div");
             scil.Utils.createElement(div, "img", null, { width: 425, height: 145 }, { src: scil.Utils.imgSrc("img/helm.png") });
 
@@ -79,10 +79,10 @@ org.helm.webeditor = {
             scil.Utils.createElement(scil.Utils.createElement(tbody, "tr"), "td", "&nbsp;");
             var btn = scil.Utils.createElement(scil.Utils.createElement(div, "div", null, { textAlign: "center" }), "button", "OK", { width: scil.Utils.buttonWidth + "px" });
 
-            me.about = new JSDraw2.Dialog("About HELM Web Editor", div);
+            me.aboutDlg = new JSDraw2.Dialog("About HELM Web Editor", div);
             scil.connect(btn, "onclick", function (e) { me.about.hide(); e.preventDefault(); });
         }
-        this.about.show();
+        this.aboutDlg.show();
     }
 };
 
