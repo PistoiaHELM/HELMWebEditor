@@ -21,7 +21,6 @@
 * SMILES varchar(max),
 * PolymerType varchar(256) not null,
 * MonomerType varchar(256),
-* Status varchar(256),
 * Molfile varchar(max),
 * Hashcode varchar(128),
 * R1 varchar(256),
@@ -115,8 +114,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
                 r2: { label: "R2", width: 50 },
                 r3: { label: "R3", width: 50 },
                 author: { label: "Author", width: 100 },
-                createddate: { label: "Created Date", type: "date", width: 100 },
-                status: { label: "Status", width: 100 }
+                createddate: { label: "Created Date", type: "date", width: 100 }
             },
             formcaption: "Monomer",
             fields: org.helm.webeditor.MonomerLibApp.getFields()
@@ -156,7 +154,6 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
             polymertype: { label: "Polymer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), width: 100 },
             monomertype: { label: "Monomer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), width: 100 },
             author: { label: "Author", width: 100 },
-            status: { label: "Status", type: "select", items: org.helm.webeditor.MonomerLibApp.getStatuses(), width: 100 },
             molfile: { label: "Structure", type: "jsdraw", width: 800, height: 300 },
             r1: { label: "R1", type: "select", items: ["", "H", "OH", "X"] },
             r2: { label: "R2", type: "select", items: ["", "H", "OH", "X"] },

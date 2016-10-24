@@ -202,6 +202,13 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         var m = org.helm.webeditor.Monomers.getMonomer(biotype, elem);
         if (m == null)
             m = org.helm.webeditor.Monomers.addSmilesMonomer(biotype, elem);
+
+        var ambiguity = null;
+        if (m == null && this.isAmbiguous(elem)) {
+            m = org.helm.webeditor.Monomers.getMonomer(biotype, "?");
+            ambiguity = elem;
+        }
+
         if (m == null) {
             scil.Utils.alert("Unknown " + biotype + " monomer name: " + elem);
             return null;
@@ -209,7 +216,27 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
         var a = org.helm.webeditor.Interface.createAtom(this.jsd.m, p);
         this.setNodeType(a, biotype, m.id == null ? elem : m.id);
+        a.bio.ambiguity = ambiguity;
         return a;
+    },
+
+    isAmbiguous: function (elem) {
+        if (elem == "*")
+            return true;
+
+        if (!scil.Utils.startswith(elem, '(') || !scil.Utils.endswith(elem, ')'))
+            return false;
+
+        elem = elem.substr(1, elem.length - 2);
+        var ss = this.split(elem, ',');
+        if (ss.length > 1)
+            return true;
+
+        ss = this.split(elem, '+');
+        if (ss.length > 1)
+            return true;
+
+        return false;
     },
 
     addBond: function (a1, a2, r1, r2) {

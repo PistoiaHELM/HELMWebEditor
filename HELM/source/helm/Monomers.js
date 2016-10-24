@@ -260,8 +260,21 @@ org.helm.webeditor.Monomers = {
         if (a == null && name == null)
             return null;
 
-        var set = this.getMonomerSet(a);
-        var s = name == null ? a.elem : org.helm.webeditor.IO.trimBracket(name);
+        var s, biotype;
+        if (name == null) {
+            biotype = a.biotype();
+            s = a.elem;
+        }
+        else {
+            biotype = a;
+            s = org.helm.webeditor.IO.trimBracket(name);
+        }
+
+        if (s == "?") {
+            return { id: '?', n: "?", na: '?', rs: 2, at: { R1: 'H', R2: 'H' }, m: "" };
+        }
+
+        var set = this.getMonomerSet(biotype);
         return set == null ? null : set[s];
     },
 
@@ -359,7 +372,7 @@ org.helm.webeditor.Monomers = {
         var ret = [];
         // JSDraw like Rs
         for (var i = 1; i <= 5; ++i) {
-            var s2 = s.replace(new RegExp("\[R" + i + "\]"), "");
+            var s2 = s.replace(new RegExp("\\[R" + i + "\\]"), "");
             if (s2.length == s.length)
                 break;
             s = s2;

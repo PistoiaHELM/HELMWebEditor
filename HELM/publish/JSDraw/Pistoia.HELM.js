@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-10-21
+// 2.0.0-2016-10-24
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-10-21",
+    kVersion: "2.0.0.2016-10-24",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -71,7 +71,7 @@ org.helm.webeditor = {
             var div = scil.Utils.createElement(null, "div");
             scil.Utils.createElement(div, "img", null, { width: 425, height: 145 }, { src: scil.Utils.imgSrc("img/helm.png") });
 
-            scil.Utils.createElement(div, "div", "Built on <a target=_blank href='http://www.jsdraw.com'>JSDraw.Lite " + JSDraw2.kFileVersion + "</a> (Free Version), by <a target=_blank href='http://www.scillignece.com'>Scilligence</a>", { textAlign: "right", paddingRight: "26px" });
+            scil.Utils.createElement(div, "div", "Built on <a target=_blank href='http://www.jsdraw.com'>JSDraw.Lite " + JSDraw2.kFileVersion + "</a> (open source), by <a target=_blank href='http://www.scillignece.com'>Scilligence</a>", { textAlign: "right", paddingRight: "26px" });
             var tbody = scil.Utils.createTable(div, null, null, { borderTop: "solid 1px gray", width: "100%" });
             var tr = scil.Utils.createElement(tbody, "tr");
             scil.Utils.createElement(tr, "td", this.kVersion);
@@ -353,8 +353,11 @@ org.helm.webeditor.Interface = {
 
         if (items.length > 0)
             items.push("-");
-        items.push({ caption: "About HELM Web Editor", key: "abouthelm" });
 
+        if (ed.options.helmtoolbar)
+            items.push({ caption: "About HELM Web Editor", key: "abouthelm" });
+        else
+            items.push({ caption: "About JSDraw", key: "about" });
         return items;
     }
 };﻿//////////////////////////////////////////////////////////////////////////////////
@@ -677,8 +680,21 @@ org.helm.webeditor.Monomers = {
         if (a == null && name == null)
             return null;
 
-        var set = this.getMonomerSet(a);
-        var s = name == null ? a.elem : org.helm.webeditor.IO.trimBracket(name);
+        var s, biotype;
+        if (name == null) {
+            biotype = a.biotype();
+            s = a.elem;
+        }
+        else {
+            biotype = a;
+            s = org.helm.webeditor.IO.trimBracket(name);
+        }
+
+        if (s == "?") {
+            return { id: '?', n: "?", na: '?', rs: 2, at: { R1: 'H', R2: 'H' }, m: "" };
+        }
+
+        var set = this.getMonomerSet(biotype);
         return set == null ? null : set[s];
     },
 
@@ -776,7 +792,7 @@ org.helm.webeditor.Monomers = {
         var ret = [];
         // JSDraw like Rs
         for (var i = 1; i <= 5; ++i) {
-            var s2 = s.replace(new RegExp("\[R" + i + "\]"), "");
+            var s2 = s.replace(new RegExp("\\[R" + i + "\\]"), "");
             if (s2.length == s.length)
                 break;
             s = s2;
@@ -1267,6 +1283,13 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         var m = org.helm.webeditor.Monomers.getMonomer(biotype, elem);
         if (m == null)
             m = org.helm.webeditor.Monomers.addSmilesMonomer(biotype, elem);
+
+        var ambiguity = null;
+        if (m == null && this.isAmbiguous(elem)) {
+            m = org.helm.webeditor.Monomers.getMonomer(biotype, "?");
+            ambiguity = elem;
+        }
+
         if (m == null) {
             scil.Utils.alert("Unknown " + biotype + " monomer name: " + elem);
             return null;
@@ -1274,7 +1297,27 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
         var a = org.helm.webeditor.Interface.createAtom(this.jsd.m, p);
         this.setNodeType(a, biotype, m.id == null ? elem : m.id);
+        a.bio.ambiguity = ambiguity;
         return a;
+    },
+
+    isAmbiguous: function (elem) {
+        if (elem == "*")
+            return true;
+
+        if (!scil.Utils.startswith(elem, '(') || !scil.Utils.endswith(elem, ')'))
+            return false;
+
+        elem = elem.substr(1, elem.length - 2);
+        var ss = this.split(elem, ',');
+        if (ss.length > 1)
+            return true;
+
+        ss = this.split(elem, '+');
+        if (ss.length > 1)
+            return true;
+
+        return false;
     },
 
     addBond: function (a1, a2, r1, r2) {
@@ -3257,8 +3300,11 @@ org.helm.webeditor.IO = {
                 s = a.elem;
         }
 
-        if (s.length > 1)
+        if (s == "?")
+            s = a.bio.ambiguity;
+        else if (s.length > 1)
             s = "[" + s + "]";
+
         if (!scil.Utils.isNullOrEmpty(a.tag))
             s += '\"' + a.tag.replace(/"/g, "\\\"") + '\"';
 
@@ -3426,16 +3472,17 @@ org.helm.webeditor.IO = {
         return n;
     },
 
-    split: function(s, sep) {
+    split: function (s, sep) {
         var ret = [];
         // PEPTIDE1{G.[C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|].T}$$$$
 
         var frag = "";
+        var parentheses = 0;
         var bracket = 0;
         var quote = 0;
         for (var i = 0; i < s.length; ++i) {
             var c = s.substr(i, 1);
-            if (c == sep && bracket == 0 && quote == 0) {
+            if (c == sep && bracket == 0 && parentheses == 0 && quote == 0) {
                 ret.push(frag);
                 frag = "";
             }
@@ -3449,6 +3496,10 @@ org.helm.webeditor.IO = {
                     ++bracket;
                 else if (c == ']')
                     --bracket;
+                else if (c == '(')
+                    ++parentheses;
+                else if (c == ')')
+                    --parentheses;
             }
         }
 
@@ -5235,6 +5286,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     * topmargin: {number} top margin
     * calculatorurl: {string} ajax web service url to calculate properties
     * cleanupurl: {string} ajax web service url to clean up structures
+    * monomersurl: {string} ajax web service url to load all monomers
+    * rulesurl: {string} ajax web service url to load all rules
     *
     * <b>Example:</b>
     *    &lt;div id="div1" style="margin: 5px; margin-top: 15px"&gt;&lt;/div&gt;
@@ -5734,7 +5787,6 @@ org.helm.webeditor.AppToolbar.Resources = {
 * SMILES varchar(max),
 * PolymerType varchar(256) not null,
 * MonomerType varchar(256),
-* Status varchar(256),
 * Molfile varchar(max),
 * Hashcode varchar(128),
 * R1 varchar(256),
@@ -5828,8 +5880,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
                 r2: { label: "R2", width: 50 },
                 r3: { label: "R3", width: 50 },
                 author: { label: "Author", width: 100 },
-                createddate: { label: "Created Date", type: "date", width: 100 },
-                status: { label: "Status", width: 100 }
+                createddate: { label: "Created Date", type: "date", width: 100 }
             },
             formcaption: "Monomer",
             fields: org.helm.webeditor.MonomerLibApp.getFields()
@@ -5869,7 +5920,6 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
             polymertype: { label: "Polymer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), width: 100 },
             monomertype: { label: "Monomer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), width: 100 },
             author: { label: "Author", width: 100 },
-            status: { label: "Status", type: "select", items: org.helm.webeditor.MonomerLibApp.getStatuses(), width: 100 },
             molfile: { label: "Structure", type: "jsdraw", width: 800, height: 300 },
             r1: { label: "R1", type: "select", items: ["", "H", "OH", "X"] },
             r2: { label: "R2", type: "select", items: ["", "H", "OH", "X"] },

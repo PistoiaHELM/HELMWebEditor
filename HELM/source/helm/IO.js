@@ -178,8 +178,11 @@ org.helm.webeditor.IO = {
                 s = a.elem;
         }
 
-        if (s.length > 1)
+        if (s == "?")
+            s = a.bio.ambiguity;
+        else if (s.length > 1)
             s = "[" + s + "]";
+
         if (!scil.Utils.isNullOrEmpty(a.tag))
             s += '\"' + a.tag.replace(/"/g, "\\\"") + '\"';
 
@@ -347,16 +350,17 @@ org.helm.webeditor.IO = {
         return n;
     },
 
-    split: function(s, sep) {
+    split: function (s, sep) {
         var ret = [];
         // PEPTIDE1{G.[C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|].T}$$$$
 
         var frag = "";
+        var parentheses = 0;
         var bracket = 0;
         var quote = 0;
         for (var i = 0; i < s.length; ++i) {
             var c = s.substr(i, 1);
-            if (c == sep && bracket == 0 && quote == 0) {
+            if (c == sep && bracket == 0 && parentheses == 0 && quote == 0) {
                 ret.push(frag);
                 frag = "";
             }
@@ -370,6 +374,10 @@ org.helm.webeditor.IO = {
                     ++bracket;
                 else if (c == ']')
                     --bracket;
+                else if (c == '(')
+                    ++parentheses;
+                else if (c == ')')
+                    --parentheses;
             }
         }
 

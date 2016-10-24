@@ -45,6 +45,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     * topmargin: {number} top margin
     * calculatorurl: {string} ajax web service url to calculate properties
     * cleanupurl: {string} ajax web service url to clean up structures
+    * monomersurl: {string} ajax web service url to load all monomers
+    * rulesurl: {string} ajax web service url to load all rules
     *
     * <b>Example:</b>
     *    &lt;div id="div1" style="margin: 5px; margin-top: 15px"&gt;&lt;/div&gt;
