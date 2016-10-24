@@ -228,11 +228,11 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             return false;
 
         elem = elem.substr(1, elem.length - 2);
-        var ss = this.split(elem, ',');
+        var ss = org.helm.webeditor.IO.split(elem, ',');
         if (ss.length > 1)
             return true;
 
-        ss = this.split(elem, '+');
+        ss = org.helm.webeditor.IO.split(elem, '+');
         if (ss.length > 1)
             return true;
 
