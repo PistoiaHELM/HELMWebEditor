@@ -15,16 +15,12 @@ org.helm.webeditor.Layout = {
         m.clearFlag();
         var chains = org.helm.webeditor.Chain._getChains(m, a);
 
-        this._removeChainID(m.atoms);
+        org.helm.webeditor.Chain._removeChainID(m.atoms);
         for (var i = 0; i < chains.length; ++i) {
             var chain = chains[i];
 
             // set chain id
-            for (var k = 0; k < chain.atoms.length; ++k) {
-                chain.atoms[k]._chainid = i;
-                if (chain.bases[k] != null)
-                    chain.bases[k]._chainid = i;
-            }
+            org.helm.webeditor.Chain._setChainID(chain, i);
 
             if (chain.isCircle()) {
                 chain.layoutCircle(bondlength);
@@ -43,18 +39,13 @@ org.helm.webeditor.Layout = {
         this.layoutBranches(m);
 
         // clear chain id
-        this._removeChainID(m.atoms);
+        org.helm.webeditor.Chain._removeChainID(m.atoms);
     },
 
     resetIDs: function(m) {
         var chains = org.helm.webeditor.Chain._getChains(m);
         for (var i = 0; i < chains.length; ++i)
             chains[i].resetIDs();
-    },
-
-    _removeChainID: function(atoms) {
-        for (var i = 0; i < atoms.length; ++i)
-            delete atoms[i]._chainid;
     },
 
     layoutInnerCircle: function (chain, bondlength, m, chainid) {

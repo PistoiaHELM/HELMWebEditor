@@ -147,7 +147,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return m;
     },
 
-    expand: function (plugin, branches) {
+    _expandBackbone: function (mol, plugin) {
         var m1 = null;
         var m2 = null;
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
@@ -155,6 +155,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             var a = this.atoms[i];
             var b = this.bases[i];
 
+            a.f = true;
             m2 = this.getMol(a, plugin);
 
             if (b != null) {
@@ -186,42 +187,55 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             }
         }
 
-        if (branches != null) {
-            var bonds = branches.bonds;
-            if (bonds != null) {
-                for (var i = 0; i < bonds.length; ++i) {
-                    var b = bonds[i];
-                    if (scil.Utils.indexOf(this.atoms, b.a1) >= 0 && scil.Utils.indexOf(this.atoms, b.a2) >= 0) {
-                        bonds[i] = null;
-                        var t = org.helm.webeditor.MolViewer.findR(m1, "R" + b.r1, b.a1);
-                        var s = org.helm.webeditor.MolViewer.findR(m1, "R" + b.r2, b.a2);
-                        if (t != null && s != null) {
-                            m1.atoms.splice(scil.Utils.indexOf(m1.atoms, t.a1), 1);
-                            m1.bonds.splice(scil.Utils.indexOf(m1.bonds, t.b), 1);
+        //if (branches != null) {
+        //    var bonds = branches.bonds;
+        //    if (bonds != null) {
+        //        for (var i = 0; i < bonds.length; ++i) {
+        //            var b = bonds[i];
+        //            if (scil.Utils.indexOf(this.atoms, b.a1) >= 0 && scil.Utils.indexOf(this.atoms, b.a2) >= 0) {
+        //                bonds[i] = null;
+        //                var t = org.helm.webeditor.MolViewer.findR(m1, "R" + b.r1, b.a1);
+        //                var s = org.helm.webeditor.MolViewer.findR(m1, "R" + b.r2, b.a2);
+        //                if (t != null && s != null) {
+        //                    m1.atoms.splice(scil.Utils.indexOf(m1.atoms, t.a1), 1);
+        //                    m1.bonds.splice(scil.Utils.indexOf(m1.bonds, t.b), 1);
 
-                            m1.atoms.splice(scil.Utils.indexOf(m1.atoms, s.a1), 1);
-                            m1.bonds.splice(scil.Utils.indexOf(m1.bonds, s.b), 1);
+        //                    m1.atoms.splice(scil.Utils.indexOf(m1.atoms, s.a1), 1);
+        //                    m1.bonds.splice(scil.Utils.indexOf(m1.bonds, s.b), 1);
 
-                            var bond = new JSDraw2.Bond(t.a0, s.a0);
-                            m1.addBond(bond);
-                        }
-                    }
-                }
+        //                    var bond = new JSDraw2.Bond(t.a0, s.a0);
+        //                    m1.addBond(bond);
+        //                }
+        //            }
+        //        }
 
-                for (var i = 0; i < n; ++i) {
-                    var a = this.atoms[i];
-                    this.connectBranches(m1, a, branches, plugin);
-                }
-            }
-        }
+        //        for (var i = 0; i < n; ++i) {
+        //            var a = this.atoms[i];
+        //            this.connectBranches(m1, a, branches, plugin);
+        //        }
+        //    }
+        //}
 
-        return m1;
+        mol.atoms = mol.atoms.concat(m1.atoms);
+        mol.bonds = mol.bonds.concat(m1.bonds);
     },
 
-    connectBranches: function(m, a, branches, plugin) {
+    _connectBranches: function (m, plugin, branches) {
         if (branches == null || branches.bonds == null)
             return;
 
+        var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
+        for (var i = 0; i < n; ++i) {
+            var a = this.atoms[i];
+            this._connectBranches2(m, a, branches, plugin);
+
+            var b = this.bases[i];
+            if (b != null)
+                this._connectBranches2(m, b, branches, plugin);
+        }
+    },
+
+    _connectBranches2: function(m, a, branches, plugin) {
         var r1 = null;
         var r2 = null;
         var a1 = null;
@@ -231,21 +245,23 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             if (b == null)
                 continue;
 
-            if (b.a1 == a) {
+            if (b.a1 == a && !b.a2.f) {
                 r1 = b.r1;
                 r2 = b.r2;
                 a1 = b.a1;
                 a2 = b.a2;
             }
-            else if (b.a2 == a) {
+            else if (b.a2 == a && !b.a1.f) {
                 r1 = b.r2;
                 r2 = b.r1;
                 a1 = b.a2;
                 a2 = b.a1;
             }
 
-            if (a2 != null)
+            if (a2 != null) {
+                b.f = true;
                 break;
+            }
         }
 
         if (a2 == null)
@@ -565,6 +581,19 @@ scil.apply(org.helm.webeditor.Chain, {
 
     getChains: function (m, branchcollection) {
         return this._getChains(m, null, branchcollection);
+    },
+
+    _setChainID: function (chain, chainid) {
+        for (var k = 0; k < chain.atoms.length; ++k) {
+            chain.atoms[k]._chainid = chainid;
+            if (chain.bases[k] != null)
+                chain.bases[k]._chainid = chainid;
+        }
+    },
+
+    _removeChainID: function (atoms) {
+        for (var i = 0; i < atoms.length; ++i)
+            delete atoms[i]._chainid;
     },
 
     _getChains: function (m, startatom, branchcollection) {

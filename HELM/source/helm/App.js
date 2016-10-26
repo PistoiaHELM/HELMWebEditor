@@ -439,7 +439,46 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             }
         }
         else {
-            m = chains[0].expand(this.canvas.helm, branches);
+            this.canvas.m.clearFlag();
+            org.helm.webeditor.Chain._removeChainID(this.canvas.m.atoms);
+            for (var i = 0; i < chains.length; ++i)
+                org.helm.webeditor.Chain._setChainID(chains[i], i);
+
+            m = new JSDraw2.Mol();
+            // expand backbone
+            for (var i = 0; i < chains.length; ++i)
+                chains[i]._expandBackbone(m, this.canvas.helm);
+
+            if (branches != null) {
+                // expand branches
+                for (var i = 0; i < chains.length; ++i)
+                    chains[i]._connectBranches(m, this.canvas.helm, branches);
+
+                // connect cross chain bonds
+                var bonds = branches.bonds;
+                if (bonds != null) {
+                    for (var i = 0; i < bonds.length; ++i) {
+                        var b = bonds[i];
+                        if (!b.f) {
+                            var t = org.helm.webeditor.MolViewer.findR(m, "R" + b.r1, b.a1);
+                            var s = org.helm.webeditor.MolViewer.findR(m, "R" + b.r2, b.a2);
+                            if (t != null && s != null) {
+                                m.atoms.splice(scil.Utils.indexOf(m.atoms, t.a1), 1);
+                                m.bonds.splice(scil.Utils.indexOf(m.bonds, t.b), 1);
+
+                                m.atoms.splice(scil.Utils.indexOf(m.atoms, s.a1), 1);
+                                m.bonds.splice(scil.Utils.indexOf(m.bonds, s.b), 1);
+
+                                var bond = new JSDraw2.Bond(t.a0, s.a0);
+                                m.addBond(bond);
+                            }
+                        }
+                    }
+                }
+            }
+
+            org.helm.webeditor.Chain._removeChainID(this.canvas.m.atoms);
+            this.canvas.m.clearFlag();
         }
 
         this.structureview.clear(true);

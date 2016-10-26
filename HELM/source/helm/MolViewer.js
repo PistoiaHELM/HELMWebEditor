@@ -101,7 +101,7 @@ org.helm.webeditor.MolViewer = {
         return false;
     },
 
-    findR: function(m, r1, a1) {
+    findR: function (m, r1, a1) {
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
             if (b.a1.alias == r1 && (a1 == null || b.a1._helmgroup == a1))
@@ -115,22 +115,6 @@ org.helm.webeditor.MolViewer = {
     mergeMol: function (m, r1, src, r2, a1, a2) {
         var t = this.findR(m, r1, a1);
         var s = this.findR(src, r2, a2);
-        //for (var i = 0; i < m.bonds.length; ++i) {
-        //    var b = m.bonds[i];
-        //    if (b.a1.alias == r1 && (a1 == null || b.a1._helmgroup == a1) || b.a2.alias == r1 && (a1 == null || b.a2._helmgroup == a1)) {
-        //        t = { b: b, a0: b.a1.alias == r1 ? b.a2 : b.a1, a1: b.a1.alias == r1 ? b.a1 : b.a2 };
-        //        break;
-        //    }
-        //}
-
-        //var s = null;
-        //for (var i = 0; i < src.bonds.length; ++i) {
-        //    var b = src.bonds[i];
-        //    if (b.a1.alias == r2 && (a2 == null || b.a1._helmgroup == a2) || b.a2.alias == r2 && (a2 == null || b.a2._helmgroup == a2)) {
-        //        s = { b: b, a0: b.a1.alias == r2 ? b.a2 : b.a1, a1: b.a1.alias == r2 ? b.a1 : b.a2 };
-        //        break;
-        //    }
-        //}
 
         if (t != null && s != null) {
             this.extendDistance(t.a0.p, t.a1.p, 1);
