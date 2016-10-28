@@ -16,9 +16,10 @@ Monomer/Rule Service running on http://localhost:8080
     <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Resources.js'></script>
     <script type="text/javascript" src='../JSDraw/Pistoia.HELM.js'></script>
 
+    <!--
     <script type='text/javascript' src='http://localhost:8080/WebService/service/ajaxtool/get?cmd=helm.monomer.downloadjson'></script>
     <script type='text/javascript' src='http://localhost:8080/WebService/service/ajaxtool/get?cmd=helm.rule.downloadjson'></script>
-   
+   -->
 </head>
 <body style="padding:0;margin:0;">
    
@@ -37,9 +38,13 @@ Monomer/Rule Service running on http://localhost:8080
         
         JSDraw2.defaultoptions = {skin: "w8"};
         
+        JSDrawServices={url:'http://localhost:8080/WebService/service/ajaxtool/post'};
+        
         scil.ready(function () {
             new org.helm.webeditor.App("div1", 
-                { cleanupurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=cleanup", 
+                { monomersurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=helm.monomer.all", 
+                    rulesurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=helm.rule.all", 
+                    cleanupurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=cleanup", 
                   calculatorurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=helm.properties" });
         });
     </script>
