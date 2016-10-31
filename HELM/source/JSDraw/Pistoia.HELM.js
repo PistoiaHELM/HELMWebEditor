@@ -80,7 +80,7 @@ org.helm.webeditor = {
             var btn = scil.Utils.createElement(scil.Utils.createElement(div, "div", null, { textAlign: "center" }), "button", "OK", { width: scil.Utils.buttonWidth + "px" });
 
             me.aboutDlg = new JSDraw2.Dialog("About HELM Web Editor", div);
-            scil.connect(btn, "onclick", function (e) { me.about.hide(); e.preventDefault(); });
+            scil.connect(btn, "onclick", function (e) { me.aboutDlg.hide(); e.preventDefault(); });
         }
         this.aboutDlg.show();
     }
@@ -345,10 +345,7 @@ org.helm.webeditor.Interface = {
             }
         }
         else {
-            items.push({ caption: "Copy Molfile V2000", key: "copymolfile2000" });
-            items.push({ caption: "Copy Molfile V3000", key: "copymolfile3000" });
-            //items.push({ caption: "Paste Mol File", key: "pastemolfile" });
-            items.push({ caption: "Copy SMILES", key: "copysmiles" });
+            items.push({ caption: "Copy Molfile", key: "copymolfile" });
         }
 
         if (items.length > 0)
@@ -1415,7 +1412,14 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                 this.finishConnect(extendchain);
             }
             else {
-                scil.Utils.alert("Either atom doesn't have any connecting point available");
+                var s = "";
+                if (rs1 == null && rs2 == null)
+                    s = "Both monomers don't";
+                else if (rs1 == null)
+                    s = "Monomer, " + a1.elem + (a1.bio.id == null ? "" : a1.bio.id) + ", doesn't";
+                else if (rs2 == null)
+                    s = "Monomer, " + a2.elem + (a2.bio.id == null ? "" : a2.bio.id) + ", doesn't";
+                scil.Utils.alert(s + " have any connecting point available");
                 this.finishConnect(extendchain);
             }
             return;
@@ -1943,7 +1947,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
     showFindReplaceDlg: function () {
         if (this.findDlg == null) {
             var fields = {
-                finding: { label: "Find", width: 400, str: "<div>(Monomer name or monomer ID)</div>" },
+                finding: { label: "Find", width: 400, str: "<div>(Monomer symbol or position)</div>" },
                 monomertype: { label: "Monomer Type", type: "select", sort: false, items: org.helm.webeditor.monomerTypeList() },
                 replacewith: { label: "Replace With", width: 400 },
                 selectedonly: { label: "Scope", type: "checkbox", str: "Search Selected Only" }
@@ -2473,16 +2477,27 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         //    this.atoms[i].p = this.atoms[i - 1].p.clone().rotateAround(origin, -deg);
     },
 
-    rotate: function(deg) {
+    rotate: function (deg, origin) {
+        if (deg == 0)
+            return;
+
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
         for (var i = 0; i < n; ++i) {
-            this.atoms[i].p.rotate(deg);
+            if (origin != null)
+                this.atoms[i].p.rotateAround(origin, deg);
+            else
+                this.atoms[i].p.rotate(deg);
+
             var a = this.bases[i];
-            if (a != null)
-                a.p.rotate(deg);
+            if (a != null) {
+                if (origin != null)
+                    a.p.rotateAround(origin, deg);
+                else
+                    a.p.rotate(deg);
+            }
         }
     },
-  
+
     move: function (delta) {
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
         for (var i = 0; i < n; ++i) {
@@ -3056,8 +3071,19 @@ org.helm.webeditor.Layout = {
                     chain.move(delta);
                 }
                 else {
+                    // cross-chain connection
                     var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
                     chains[a2._chainid].move(delta);
+
+                    var bonds = m.getNeighborBonds(a1);
+                    if (bonds.length == 3) {
+                        scil.Utils.delFromArray(bonds, b);
+
+                        var p1 = bonds[0].otherAtom(a1).p;
+                        var p2 = bonds[1].otherAtom(a1).p;
+                        var deg = (p1.angleTo(a1.p) + p2.angleTo(a1.p)) / 2;
+                        chains[a2._chainid].rotate(deg - 90, a1.p);
+                    }
                 }
 
                 fixed[a1._chainid] = true;
@@ -5304,6 +5330,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     * </pre>
     **/
     constructor: function (parent, options) {
+        this.toolbarheight = 30;
+
         if (typeof (parent) == "string")
             parent = scil.byId(parent);
         this.mex = null;
@@ -5342,17 +5370,18 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         if (this.options.topmargin > 0)
             d.h -= this.options.topmargin;
 
-        var leftwidth = 300;
-        var rightwidth = d.w - 300 - 40;
-        var topheight = d.h * 0.7;
-        var bottomheight = d.h - topheight - 130;
+        var leftwidth = 0;
+        if (this.page != null && this.page.explorer != null && this.page.explorer.left != null)
+            leftwidth = this.page.explorer.left.offsetWidth;
+        if (!(leftwidth > 0))
+            leftwidth = 300;
 
         var ret = { height: 0, topheight: 0, bottomheight: 0, leftwidth: 0, rightwidth: 0 };
         ret.height = d.h - 90 - (this.options.mexfilter != false ? 30 : 0) - (this.options.mexfind ? 60 : 0);
-        ret.leftwidth = 300;
-        ret.rightwidth = d.w - 300 - 50;
+        ret.leftwidth = leftwidth;
+        ret.rightwidth = d.w - leftwidth - 25;
         ret.topheight = d.h * 0.7;
-        ret.bottomheight = d.h - topheight - 130;
+        ret.bottomheight = d.h - ret.topheight - 130;
 
         return ret;
     },
@@ -5366,6 +5395,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             caption: this.options.topmargin > 0 ? null : "Palette",
             marginBottom: "2px",
             marginTop: this.options.topmargin > 0 ? "17px" : null,
+            onresizetree: function (width) { me.resizeWindow(); },
             onrender: function (div) { me.treediv = div; me.createPalette(div, sizes.leftwidth - 10, sizes.height); }
         };
         this.page = new scil.Page(parent, tree, { resizable: true, leftwidth: sizes.leftwidth });
@@ -5434,8 +5464,11 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var s = { width: sizes.rightwidth + "px", height: sizes.bottomheight + "px" };
         scil.apply(this.sequence.style, s);
         scil.apply(this.notation.style, s);
+
+        s = { width: sizes.rightwidth + "px", height: (sizes.bottomheight + this.toolbarheight) + "px" };
         scil.apply(this.properties.parent.style, s);
-        this.structureview.resize(sizes.rightwidth, sizes.bottomheight);
+
+        this.structureview.resize(sizes.rightwidth, sizes.bottomheight + this.toolbarheight);
 
         this.mex.resize(sizes.height);
     },
@@ -5512,7 +5545,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
 
     onselectcurrent: function (e, obj, ed) {
         var a = JSDraw2.Atom.cast(obj);
-        if (a == null || ed.start != null) {
+        if (a == null || ed.start != null || ed.contextmenu != null && ed.contextmenu.isVisible()) {
             org.helm.webeditor.MolViewer.hide();
             return;
         }
@@ -5538,7 +5571,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     },
 
     createProperties: function (div, width, height) {
-        var d = scil.Utils.createElement(div, "div", null, { width: width, overflow: "scroll", height: height });
+        var d = scil.Utils.createElement(div, "div", null, { width: width, overflow: "scroll", height: height + this.toolbarheight });
 
         var fields = {
             mw: { label: "Molecular Weight" },
@@ -5550,7 +5583,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     },
 
     createStructureView: function (div, width, height) {
-        var d = scil.Utils.createElement(div, "div", null, { width: width, height: height });
+        var d = scil.Utils.createElement(div, "div", null, { width: width, height: height + this.toolbarheight });
         this.structureview = new JSDraw2.Editor(d, { viewonly: true })
     },
 
