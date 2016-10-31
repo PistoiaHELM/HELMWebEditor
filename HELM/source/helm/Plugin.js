@@ -334,7 +334,14 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                 this.finishConnect(extendchain);
             }
             else {
-                scil.Utils.alert("Either atom doesn't have any connecting point available");
+                var s = "";
+                if (rs1 == null && rs2 == null)
+                    s = "Both monomers don't";
+                else if (rs1 == null)
+                    s = "Monomer, " + a1.elem + (a1.bio.id == null ? "" : a1.bio.id) + ", doesn't";
+                else if (rs2 == null)
+                    s = "Monomer, " + a2.elem + (a2.bio.id == null ? "" : a2.bio.id) + ", doesn't";
+                scil.Utils.alert(s + " have any connecting point available");
                 this.finishConnect(extendchain);
             }
             return;
@@ -862,7 +869,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
     showFindReplaceDlg: function () {
         if (this.findDlg == null) {
             var fields = {
-                finding: { label: "Find", width: 400, str: "<div>(Monomer name or monomer ID)</div>" },
+                finding: { label: "Find", width: 400, str: "<div>(Monomer symbol or position)</div>" },
                 monomertype: { label: "Monomer Type", type: "select", sort: false, items: org.helm.webeditor.monomerTypeList() },
                 replacewith: { label: "Replace With", width: 400 },
                 selectedonly: { label: "Scope", type: "checkbox", str: "Search Selected Only" }

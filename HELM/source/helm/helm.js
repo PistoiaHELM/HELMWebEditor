@@ -80,7 +80,7 @@ org.helm.webeditor = {
             var btn = scil.Utils.createElement(scil.Utils.createElement(div, "div", null, { textAlign: "center" }), "button", "OK", { width: scil.Utils.buttonWidth + "px" });
 
             me.aboutDlg = new JSDraw2.Dialog("About HELM Web Editor", div);
-            scil.connect(btn, "onclick", function (e) { me.about.hide(); e.preventDefault(); });
+            scil.connect(btn, "onclick", function (e) { me.aboutDlg.hide(); e.preventDefault(); });
         }
         this.aboutDlg.show();
     }

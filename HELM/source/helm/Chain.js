@@ -347,16 +347,27 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         //    this.atoms[i].p = this.atoms[i - 1].p.clone().rotateAround(origin, -deg);
     },
 
-    rotate: function(deg) {
+    rotate: function (deg, origin) {
+        if (deg == 0)
+            return;
+
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
         for (var i = 0; i < n; ++i) {
-            this.atoms[i].p.rotate(deg);
+            if (origin != null)
+                this.atoms[i].p.rotateAround(origin, deg);
+            else
+                this.atoms[i].p.rotate(deg);
+
             var a = this.bases[i];
-            if (a != null)
-                a.p.rotate(deg);
+            if (a != null) {
+                if (origin != null)
+                    a.p.rotateAround(origin, deg);
+                else
+                    a.p.rotate(deg);
+            }
         }
     },
-  
+
     move: function (delta) {
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
         for (var i = 0; i < n; ++i) {

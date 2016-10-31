@@ -158,8 +158,19 @@ org.helm.webeditor.Layout = {
                     chain.move(delta);
                 }
                 else {
+                    // cross-chain connection
                     var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
                     chains[a2._chainid].move(delta);
+
+                    var bonds = m.getNeighborBonds(a1);
+                    if (bonds.length == 3) {
+                        scil.Utils.delFromArray(bonds, b);
+
+                        var p1 = bonds[0].otherAtom(a1).p;
+                        var p2 = bonds[1].otherAtom(a1).p;
+                        var deg = (p1.angleTo(a1.p) + p2.angleTo(a1.p)) / 2;
+                        chains[a2._chainid].rotate(deg - 90, a1.p);
+                    }
                 }
 
                 fixed[a1._chainid] = true;

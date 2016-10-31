@@ -59,6 +59,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     * </pre>
     **/
     constructor: function (parent, options) {
+        this.toolbarheight = 30;
+
         if (typeof (parent) == "string")
             parent = scil.byId(parent);
         this.mex = null;
@@ -97,17 +99,18 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         if (this.options.topmargin > 0)
             d.h -= this.options.topmargin;
 
-        var leftwidth = 300;
-        var rightwidth = d.w - 300 - 40;
-        var topheight = d.h * 0.7;
-        var bottomheight = d.h - topheight - 130;
+        var leftwidth = 0;
+        if (this.page != null && this.page.explorer != null && this.page.explorer.left != null)
+            leftwidth = this.page.explorer.left.offsetWidth;
+        if (!(leftwidth > 0))
+            leftwidth = 300;
 
         var ret = { height: 0, topheight: 0, bottomheight: 0, leftwidth: 0, rightwidth: 0 };
         ret.height = d.h - 90 - (this.options.mexfilter != false ? 30 : 0) - (this.options.mexfind ? 60 : 0);
-        ret.leftwidth = 300;
-        ret.rightwidth = d.w - 300 - 50;
+        ret.leftwidth = leftwidth;
+        ret.rightwidth = d.w - leftwidth - 25;
         ret.topheight = d.h * 0.7;
-        ret.bottomheight = d.h - topheight - 130;
+        ret.bottomheight = d.h - ret.topheight - 130;
 
         return ret;
     },
@@ -121,6 +124,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             caption: this.options.topmargin > 0 ? null : "Palette",
             marginBottom: "2px",
             marginTop: this.options.topmargin > 0 ? "17px" : null,
+            onresizetree: function (width) { me.resizeWindow(); },
             onrender: function (div) { me.treediv = div; me.createPalette(div, sizes.leftwidth - 10, sizes.height); }
         };
         this.page = new scil.Page(parent, tree, { resizable: true, leftwidth: sizes.leftwidth });
@@ -189,8 +193,11 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var s = { width: sizes.rightwidth + "px", height: sizes.bottomheight + "px" };
         scil.apply(this.sequence.style, s);
         scil.apply(this.notation.style, s);
+
+        s = { width: sizes.rightwidth + "px", height: (sizes.bottomheight + this.toolbarheight) + "px" };
         scil.apply(this.properties.parent.style, s);
-        this.structureview.resize(sizes.rightwidth, sizes.bottomheight);
+
+        this.structureview.resize(sizes.rightwidth, sizes.bottomheight + this.toolbarheight);
 
         this.mex.resize(sizes.height);
     },
@@ -267,7 +274,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
 
     onselectcurrent: function (e, obj, ed) {
         var a = JSDraw2.Atom.cast(obj);
-        if (a == null || ed.start != null) {
+        if (a == null || ed.start != null || ed.contextmenu != null && ed.contextmenu.isVisible()) {
             org.helm.webeditor.MolViewer.hide();
             return;
         }
@@ -293,7 +300,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     },
 
     createProperties: function (div, width, height) {
-        var d = scil.Utils.createElement(div, "div", null, { width: width, overflow: "scroll", height: height });
+        var d = scil.Utils.createElement(div, "div", null, { width: width, overflow: "scroll", height: height + this.toolbarheight });
 
         var fields = {
             mw: { label: "Molecular Weight" },
@@ -305,7 +312,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     },
 
     createStructureView: function (div, width, height) {
-        var d = scil.Utils.createElement(div, "div", null, { width: width, height: height });
+        var d = scil.Utils.createElement(div, "div", null, { width: width, height: height + this.toolbarheight });
         this.structureview = new JSDraw2.Editor(d, { viewonly: true })
     },
 

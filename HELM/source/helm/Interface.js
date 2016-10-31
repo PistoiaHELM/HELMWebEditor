@@ -256,10 +256,7 @@ org.helm.webeditor.Interface = {
             }
         }
         else {
-            items.push({ caption: "Copy Molfile V2000", key: "copymolfile2000" });
-            items.push({ caption: "Copy Molfile V3000", key: "copymolfile3000" });
-            //items.push({ caption: "Paste Mol File", key: "pastemolfile" });
-            items.push({ caption: "Copy SMILES", key: "copysmiles" });
+            items.push({ caption: "Copy Molfile", key: "copymolfile" });
         }
 
         if (items.length > 0)
