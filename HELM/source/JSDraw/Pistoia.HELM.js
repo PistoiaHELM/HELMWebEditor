@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-10-26
+// 2.0.0-2016-11-02
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -1443,12 +1443,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             if (extendchain)
                 this.jsd.refresh();
 
-            // bug: https://github.com/tony-yuan/JsHELM/issues/60
-            var name1 = a1.elem + (a1.bio == null || a1.bio.id == null ? "" : a1.bio.id);
-            var name2 = a2.elem + (a2.bio == null || a2.bio.id == null ? "" : a2.bio.id);
-
             var me = this;
-            this.chooseRs(rs1, rs2, name1, name2, function (r1, r2) {
+            this.chooseRs(rs1, rs2, a1, a2, function (r1, r2) {
                 frag = me.jsd.getFragment(a2);
                 b = me.addBond(a1, a2, r1, r2);
                 me.finishConnect(extendchain, b, a1, a1, a2, frag, delta);
@@ -1512,10 +1508,16 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         this.jsd.refresh(extendchain || b != null);
     },
 
-    chooseRs: function (rs1, rs2, name1, name2, callback) {
+    chooseRs: function (rs1, rs2, a1, a2, callback) {
         if (this.chooseRDlg == null) {
             var me = this;
-            var fields = { r1: { label: "Monomer 1 (left)", type: "select", width: 120 }, r2: { label: "Monomer 2 (right)", type: "select", width: 120 } };
+            var fields = {
+                s1: { label: "Monomer 1", type: "jsdraw", width: 240, height: 150, viewonly: true, style: { border: "solid 1px gray" } },
+                r1: { type: "select", width: 120 },
+                g: { type: "div" },
+                s2: { label: "Monomer 2", type: "jsdraw", width: 240, height: 150, viewonly: true, style: { border: "solid 1px gray" } },
+                r2: { type: "select", width: 120 }
+            };
             this.chooseRDlg = scil.Form.createDlgForm("Choose Connecting Points", fields, { label: "OK", onclick: function () { me.chooseRs2(); } });
         }
 
@@ -1527,10 +1529,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         this.chooseRDlg.form.fields.r1.disabled = rs1.length <= 1;
         this.chooseRDlg.form.fields.r2.disabled = rs2.length <= 1;
 
-        var tr1 = scil.Utils.getParent(this.chooseRDlg.form.fields.r1, "TR");
-        var tr2 = scil.Utils.getParent(this.chooseRDlg.form.fields.r2, "TR");
-        tr1.childNodes[0].innerHTML = name1;
-        tr2.childNodes[0].innerHTML = name2;
+        var m1 = org.helm.webeditor.Monomers.getMonomer(a1);
+        var m2 = org.helm.webeditor.Monomers.getMonomer(a2);
+        this.chooseRDlg.form.fields.s1.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m1))
+        this.chooseRDlg.form.fields.s2.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m2))
+
+        var tr1 = scil.Utils.getParent(this.chooseRDlg.form.fields.s1, "TR");
+        var tr2 = scil.Utils.getParent(this.chooseRDlg.form.fields.s2, "TR");
+        tr1.childNodes[0].innerHTML = a1.elem + (a1.bio == null || a1.bio.id == null ? "" : a1.bio.id);
+        tr2.childNodes[0].innerHTML = a2.elem + (a2.bio == null || a2.bio.id == null ? "" : a2.bio.id);
 
         this.chooseRDlg.rs1 = rs1;
         this.chooseRDlg.rs2 = rs2;
@@ -2045,8 +2052,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             var aaid = parseInt(a);
             var atoms = selectedonly ? this.getSelectedAtoms() : this.jsd.m.atoms;
             for (var i = 0; i < atoms.length; ++i) {
-                if (atoms[i].bio != null && aaid == atoms[i]._aaid && (monomertype == "" || monomertype == atoms[i].biotype())) {
-                    if (this.setNodeType(atoms[i].elem, atoms[i].biotype(), a2))
+                if (atoms[i].bio != null && aaid == atoms[i].bio.id && (monomertype == "" || monomertype == atoms[i].biotype())) {
+                    if (this.setNodeType(atoms[i], atoms[i].biotype(), a2))
                         ++n;
                     break;
                 }
@@ -2823,7 +2830,7 @@ scil.apply(org.helm.webeditor.Chain, {
                 if (a.f)
                     continue;
 
-                if (a.biotype() == org.helm.webeditor.HELM.AA || a.biotype() == org.helm.webeditor.HELM.SUGAR) {
+                if (a.biotype() == org.helm.webeditor.HELM.AA || a.biotype() == org.helm.webeditor.HELM.SUGAR || a.biotype() == org.helm.webeditor.HELM.LINKER) {
                     a.f = true;
                     var chain = new org.helm.webeditor.Chain();
                     chains.splice(0, 0, chain);
@@ -3045,13 +3052,17 @@ org.helm.webeditor.Layout = {
                     a1 = b.a2;
                     a2 = b.a1;
                 }
-                else if (b.a1._chainid > b.a2._chainid) {
-                    a1 = b.a2;
-                    a2 = b.a1;
-                }
                 else {
-                    a1 = b.a1;
-                    a2 = b.a2;
+                    var chain1 = chains[b.a1._chainid];
+                    var chain2 = chains[b.a2._chainid];
+                    if (chain1.atoms.length < chain2.atoms.length) {
+                        a1 = b.a2;
+                        a2 = b.a1;
+                    }
+                    else {
+                        a1 = b.a1;
+                        a2 = b.a2;
+                    }
                 }
 
                 if (b.type == JSDraw2.BONDTYPES.UNKNOWN) {
@@ -3072,17 +3083,65 @@ org.helm.webeditor.Layout = {
                 }
                 else {
                     // cross-chain connection
+<<<<<<< HEAD
+=======
                     var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
                     chains[a2._chainid].move(delta);
 
+>>>>>>> origin/master
                     var bonds = m.getNeighborBonds(a1);
                     if (bonds.length == 3) {
                         scil.Utils.delFromArray(bonds, b);
 
                         var p1 = bonds[0].otherAtom(a1).p;
                         var p2 = bonds[1].otherAtom(a1).p;
+<<<<<<< HEAD
+                        var p = new JSDraw2.Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+                        if (p.distTo(a1.p) < bondlength / 30) {
+                            // p1, a1.p and p2 in a line
+                            p = p1.clone();
+                            p.rotateAround(a1.p, -90, bondlength * 3);
+                        }
+                        else {
+                            p.rotateAround(a1.p, 180, bondlength * 3);
+                        }
+
+                        p.offset(-a2.p.x, -a2.p.y);
+                        chains[a2._chainid].move(p);
+
+                        bonds = m.getNeighborBonds(a2);
+                        if (bonds.length == 3) {
+                            scil.Utils.delFromArray(bonds, b);
+
+                            var deg;
+                            var c = a2.p.clone();
+
+                            var ang1 = a1.p.angleTo(c);
+
+                            var p1 = bonds[0].otherAtom(a2).p;
+                            var p2 = bonds[1].otherAtom(a2).p;
+                            var p = new JSDraw2.Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+                            if (p.distTo(c) < bondlength / 30) {
+                                // p1, a2.p and p2 in a line
+                                var ang2 = p2.angleTo(c);
+                                deg = (ang1 - ang2) - 90;
+                            }
+                            else {
+                                var ang2 = p.angleTo(c);
+                                deg = (ang1 + 180) - ang2;
+                            }
+
+                            chains[a2._chainid].rotate(deg, c);
+                        }
+                    }
+                    else
+                    {
+                        var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
+                        chains[a2._chainid].move(delta);
+=======
                         var deg = (p1.angleTo(a1.p) + p2.angleTo(a1.p)) / 2;
                         chains[a2._chainid].rotate(deg - 90, a1.p);
+>>>>>>> origin/master
                     }
                 }
 

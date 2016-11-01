@@ -17,12 +17,12 @@ return s;
 };
 
 scil.App.imgSmall = function (name, wrapasurl) {
-if (button != null)
-    button = button.toLowerCase();
-var imgbase64 = JSDraw2.Resources['small/' + button];
+if (name != null)
+    name = name.toLowerCase();
+var imgbase64 = JSDraw2.Resources['small/' + name];
 if (imgbase64 != null) {
-    var p = button.lastIndexOf('.');
-    var type = button.substr(p + 1);
+    var p = name.lastIndexOf('.');
+    var type = name.substr(p + 1);
     s = 'data:image/' + type + ';base64,' + imgbase64;
 }
 else {
