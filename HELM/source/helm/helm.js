@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-10-26
+// 2.0.0-2016-11-02
 //
 //////////////////////////////////////////////////////////////////////////////////
 

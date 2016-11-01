@@ -693,7 +693,7 @@ scil.apply(org.helm.webeditor.Chain, {
                 if (a.f)
                     continue;
 
-                if (a.biotype() == org.helm.webeditor.HELM.AA || a.biotype() == org.helm.webeditor.HELM.SUGAR) {
+                if (a.biotype() == org.helm.webeditor.HELM.AA || a.biotype() == org.helm.webeditor.HELM.SUGAR || a.biotype() == org.helm.webeditor.HELM.LINKER) {
                     a.f = true;
                     var chain = new org.helm.webeditor.Chain();
                     chains.splice(0, 0, chain);

@@ -365,12 +365,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             if (extendchain)
                 this.jsd.refresh();
 
-            // bug: https://github.com/tony-yuan/JsHELM/issues/60
-            var name1 = a1.elem + (a1.bio == null || a1.bio.id == null ? "" : a1.bio.id);
-            var name2 = a2.elem + (a2.bio == null || a2.bio.id == null ? "" : a2.bio.id);
-
             var me = this;
-            this.chooseRs(rs1, rs2, name1, name2, function (r1, r2) {
+            this.chooseRs(rs1, rs2, a1, a2, function (r1, r2) {
                 frag = me.jsd.getFragment(a2);
                 b = me.addBond(a1, a2, r1, r2);
                 me.finishConnect(extendchain, b, a1, a1, a2, frag, delta);
@@ -434,10 +430,16 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         this.jsd.refresh(extendchain || b != null);
     },
 
-    chooseRs: function (rs1, rs2, name1, name2, callback) {
+    chooseRs: function (rs1, rs2, a1, a2, callback) {
         if (this.chooseRDlg == null) {
             var me = this;
-            var fields = { r1: { label: "Monomer 1 (left)", type: "select", width: 120 }, r2: { label: "Monomer 2 (right)", type: "select", width: 120 } };
+            var fields = {
+                s1: { label: "Monomer 1", type: "jsdraw", width: 240, height: 150, viewonly: true, style: { border: "solid 1px gray" } },
+                r1: { type: "select", width: 120 },
+                g: { type: "div" },
+                s2: { label: "Monomer 2", type: "jsdraw", width: 240, height: 150, viewonly: true, style: { border: "solid 1px gray" } },
+                r2: { type: "select", width: 120 }
+            };
             this.chooseRDlg = scil.Form.createDlgForm("Choose Connecting Points", fields, { label: "OK", onclick: function () { me.chooseRs2(); } });
         }
 
@@ -449,10 +451,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         this.chooseRDlg.form.fields.r1.disabled = rs1.length <= 1;
         this.chooseRDlg.form.fields.r2.disabled = rs2.length <= 1;
 
-        var tr1 = scil.Utils.getParent(this.chooseRDlg.form.fields.r1, "TR");
-        var tr2 = scil.Utils.getParent(this.chooseRDlg.form.fields.r2, "TR");
-        tr1.childNodes[0].innerHTML = name1;
-        tr2.childNodes[0].innerHTML = name2;
+        var m1 = org.helm.webeditor.Monomers.getMonomer(a1);
+        var m2 = org.helm.webeditor.Monomers.getMonomer(a2);
+        this.chooseRDlg.form.fields.s1.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m1))
+        this.chooseRDlg.form.fields.s2.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m2))
+
+        var tr1 = scil.Utils.getParent(this.chooseRDlg.form.fields.s1, "TR");
+        var tr2 = scil.Utils.getParent(this.chooseRDlg.form.fields.s2, "TR");
+        tr1.childNodes[0].innerHTML = a1.elem + (a1.bio == null || a1.bio.id == null ? "" : a1.bio.id);
+        tr2.childNodes[0].innerHTML = a2.elem + (a2.bio == null || a2.bio.id == null ? "" : a2.bio.id);
 
         this.chooseRDlg.rs1 = rs1;
         this.chooseRDlg.rs2 = rs2;
@@ -967,8 +974,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             var aaid = parseInt(a);
             var atoms = selectedonly ? this.getSelectedAtoms() : this.jsd.m.atoms;
             for (var i = 0; i < atoms.length; ++i) {
-                if (atoms[i].bio != null && aaid == atoms[i]._aaid && (monomertype == "" || monomertype == atoms[i].biotype())) {
-                    if (this.setNodeType(atoms[i].elem, atoms[i].biotype(), a2))
+                if (atoms[i].bio != null && aaid == atoms[i].bio.id && (monomertype == "" || monomertype == atoms[i].biotype())) {
+                    if (this.setNodeType(atoms[i], atoms[i].biotype(), a2))
                         ++n;
                     break;
                 }

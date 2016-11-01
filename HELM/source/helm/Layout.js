@@ -132,13 +132,17 @@ org.helm.webeditor.Layout = {
                     a1 = b.a2;
                     a2 = b.a1;
                 }
-                else if (b.a1._chainid > b.a2._chainid) {
-                    a1 = b.a2;
-                    a2 = b.a1;
-                }
                 else {
-                    a1 = b.a1;
-                    a2 = b.a2;
+                    var chain1 = chains[b.a1._chainid];
+                    var chain2 = chains[b.a2._chainid];
+                    if (chain1.atoms.length < chain2.atoms.length) {
+                        a1 = b.a2;
+                        a2 = b.a1;
+                    }
+                    else {
+                        a1 = b.a1;
+                        a2 = b.a2;
+                    }
                 }
 
                 if (b.type == JSDraw2.BONDTYPES.UNKNOWN) {
@@ -159,17 +163,65 @@ org.helm.webeditor.Layout = {
                 }
                 else {
                     // cross-chain connection
+<<<<<<< HEAD
+=======
                     var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
                     chains[a2._chainid].move(delta);
 
+>>>>>>> origin/master
                     var bonds = m.getNeighborBonds(a1);
                     if (bonds.length == 3) {
                         scil.Utils.delFromArray(bonds, b);
 
                         var p1 = bonds[0].otherAtom(a1).p;
                         var p2 = bonds[1].otherAtom(a1).p;
+<<<<<<< HEAD
+                        var p = new JSDraw2.Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+                        if (p.distTo(a1.p) < bondlength / 30) {
+                            // p1, a1.p and p2 in a line
+                            p = p1.clone();
+                            p.rotateAround(a1.p, -90, bondlength * 3);
+                        }
+                        else {
+                            p.rotateAround(a1.p, 180, bondlength * 3);
+                        }
+
+                        p.offset(-a2.p.x, -a2.p.y);
+                        chains[a2._chainid].move(p);
+
+                        bonds = m.getNeighborBonds(a2);
+                        if (bonds.length == 3) {
+                            scil.Utils.delFromArray(bonds, b);
+
+                            var deg;
+                            var c = a2.p.clone();
+
+                            var ang1 = a1.p.angleTo(c);
+
+                            var p1 = bonds[0].otherAtom(a2).p;
+                            var p2 = bonds[1].otherAtom(a2).p;
+                            var p = new JSDraw2.Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+                            if (p.distTo(c) < bondlength / 30) {
+                                // p1, a2.p and p2 in a line
+                                var ang2 = p2.angleTo(c);
+                                deg = (ang1 - ang2) - 90;
+                            }
+                            else {
+                                var ang2 = p.angleTo(c);
+                                deg = (ang1 + 180) - ang2;
+                            }
+
+                            chains[a2._chainid].rotate(deg, c);
+                        }
+                    }
+                    else
+                    {
+                        var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
+                        chains[a2._chainid].move(delta);
+=======
                         var deg = (p1.angleTo(a1.p) + p2.angleTo(a1.p)) / 2;
                         chains[a2._chainid].rotate(deg - 90, a1.p);
+>>>>>>> origin/master
                     }
                 }
 
