@@ -268,7 +268,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             return;
 
         var m2 = this.getMol(a2, plugin);
-        org.helm.webeditor.MolViewer.mergeMol(m, "R" + r1, m2, "R" + r1, a, a2);
+        org.helm.webeditor.MolViewer.mergeMol(m, "R" + r1, m2, "R" + r2, a, a2);
     },
 
     isCircle: function () {

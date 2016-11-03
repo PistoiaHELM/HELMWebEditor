@@ -440,7 +440,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                 s2: { label: "Monomer 2", type: "jsdraw", width: 240, height: 150, viewonly: true, style: { border: "solid 1px gray" } },
                 r2: { type: "select", width: 120 }
             };
-            this.chooseRDlg = scil.Form.createDlgForm("Choose Connecting Points", fields, { label: "OK", onclick: function () { me.chooseRs2(); } });
+            this.chooseRDlg = scil.Form.createDlgForm("Choose Connecting Points", fields, { label: "OK", width: 240, onclick: function () { me.chooseRs2(); } });
         }
 
         this.chooseRDlg.callback = callback;
@@ -453,8 +453,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
         var m1 = org.helm.webeditor.Monomers.getMonomer(a1);
         var m2 = org.helm.webeditor.Monomers.getMonomer(a2);
-        this.chooseRDlg.form.fields.s1.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m1))
-        this.chooseRDlg.form.fields.s2.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m2))
+        this.chooseRDlg.form.fields.s1.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m1));
+        this.chooseRDlg.form.fields.s2.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m2));
 
         var tr1 = scil.Utils.getParent(this.chooseRDlg.form.fields.s1, "TR");
         var tr2 = scil.Utils.getParent(this.chooseRDlg.form.fields.s2, "TR");

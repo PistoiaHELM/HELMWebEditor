@@ -1518,7 +1518,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                 s2: { label: "Monomer 2", type: "jsdraw", width: 240, height: 150, viewonly: true, style: { border: "solid 1px gray" } },
                 r2: { type: "select", width: 120 }
             };
-            this.chooseRDlg = scil.Form.createDlgForm("Choose Connecting Points", fields, { label: "OK", onclick: function () { me.chooseRs2(); } });
+            this.chooseRDlg = scil.Form.createDlgForm("Choose Connecting Points", fields, { label: "OK", width: 240, onclick: function () { me.chooseRs2(); } });
         }
 
         this.chooseRDlg.callback = callback;
@@ -1531,8 +1531,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
         var m1 = org.helm.webeditor.Monomers.getMonomer(a1);
         var m2 = org.helm.webeditor.Monomers.getMonomer(a2);
-        this.chooseRDlg.form.fields.s1.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m1))
-        this.chooseRDlg.form.fields.s2.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m2))
+        this.chooseRDlg.form.fields.s1.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m1));
+        this.chooseRDlg.form.fields.s2.jsd.setMolfile(org.helm.webeditor.Monomers.getMolfile(m2));
 
         var tr1 = scil.Utils.getParent(this.chooseRDlg.form.fields.s1, "TR");
         var tr2 = scil.Utils.getParent(this.chooseRDlg.form.fields.s2, "TR");
@@ -2405,7 +2405,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             return;
 
         var m2 = this.getMol(a2, plugin);
-        org.helm.webeditor.MolViewer.mergeMol(m, "R" + r1, m2, "R" + r1, a, a2);
+        org.helm.webeditor.MolViewer.mergeMol(m, "R" + r1, m2, "R" + r2, a, a2);
     },
 
     isCircle: function () {
@@ -3083,19 +3083,12 @@ org.helm.webeditor.Layout = {
                 }
                 else {
                     // cross-chain connection
-<<<<<<< HEAD
-=======
-                    var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
-                    chains[a2._chainid].move(delta);
-
->>>>>>> origin/master
                     var bonds = m.getNeighborBonds(a1);
                     if (bonds.length == 3) {
                         scil.Utils.delFromArray(bonds, b);
 
                         var p1 = bonds[0].otherAtom(a1).p;
                         var p2 = bonds[1].otherAtom(a1).p;
-<<<<<<< HEAD
                         var p = new JSDraw2.Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
                         if (p.distTo(a1.p) < bondlength / 30) {
                             // p1, a1.p and p2 in a line
@@ -3106,8 +3099,9 @@ org.helm.webeditor.Layout = {
                             p.rotateAround(a1.p, 180, bondlength * 3);
                         }
 
+                        var chain = chains[a2._chainid];
                         p.offset(-a2.p.x, -a2.p.y);
-                        chains[a2._chainid].move(p);
+                        chain.move(p);
 
                         bonds = m.getNeighborBonds(a2);
                         if (bonds.length == 3) {
@@ -3131,17 +3125,13 @@ org.helm.webeditor.Layout = {
                                 deg = (ang1 + 180) - ang2;
                             }
 
-                            chains[a2._chainid].rotate(deg, c);
+                            chain.rotate(deg, c);
                         }
                     }
                     else
                     {
                         var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
                         chains[a2._chainid].move(delta);
-=======
-                        var deg = (p1.angleTo(a1.p) + p2.angleTo(a1.p)) / 2;
-                        chains[a2._chainid].rotate(deg - 90, a1.p);
->>>>>>> origin/master
                     }
                 }
 
@@ -5989,7 +5979,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             "-",
             { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomer XML Library", onclick: function () { me.uploadFile(); } },
             "-",
-            { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
+            { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol/Name", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
             { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
             { type: "select", key: "monomertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), label: "Monomer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
             //{ type: "select", key: "status", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getStatuses(), label: "Status", styles: { width: 100 }, onchange: function () { me.refresh(); } },
