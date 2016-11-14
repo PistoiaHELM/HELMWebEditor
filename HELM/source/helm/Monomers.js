@@ -434,9 +434,12 @@ org.helm.webeditor.Monomers = {
     },
 
     writeOne: function (m) {
-        var molfile = m.m.mz;
-        if (scil.Utils.isNullOrEmpty(molfile) && m.m.m != null)
-            molfile = org.helm.webeditor.IO.compressGz(m.m.m); // compress molfile
+        var molfile = this.getMolfile(m.m);
+        if (molfile != null) {
+            var s = org.helm.webeditor.IO.compressGz(molfile); // compress molfile
+            if (s != null)
+                molfile = s;
+        }
 
         var s = "<Monomer>\n";
         s += "<MonomerID>" + scil.Utils.escXmlValue(m.id) + "</MonomerID>\n";

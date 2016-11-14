@@ -121,7 +121,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         var groups = this.curtab.clientarea.className == "filtergroup" ? [this.curtab.clientarea] : this.curtab.clientarea.getElementsByClassName("filtergroup");
         for (var k = 0; k < groups.length; ++k) {
             var startingwith = [];
-            var containing = []
+            var containing = [];
             var hidden = [];
 
             var parent = groups[k];

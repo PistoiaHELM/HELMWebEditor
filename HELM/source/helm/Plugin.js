@@ -475,7 +475,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
     chooseRs2: function () {
         var d = this.chooseRDlg.form.getData();
         if (scil.Utils.isNullOrEmpty(d.r1) && this.chooseRDlg.rs1.length > 0 || scil.Utils.isNullOrEmpty(d.r2) && this.chooseRDlg.rs2.length > 0) {
-            scil.Utils.alter("Please select Rs for both Nodes");
+            scil.Utils.alert("Please select Rs for both Nodes");
             return;
         }
 

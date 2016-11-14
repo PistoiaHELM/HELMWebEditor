@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-11-13
+// 2.0.0-2016-11-14
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -851,9 +851,12 @@ org.helm.webeditor.Monomers = {
     },
 
     writeOne: function (m) {
-        var molfile = m.m.mz;
-        if (scil.Utils.isNullOrEmpty(molfile) && m.m.m != null)
-            molfile = org.helm.webeditor.IO.compressGz(m.m.m); // compress molfile
+        var molfile = this.getMolfile(m.m);
+        if (molfile != null) {
+            var s = org.helm.webeditor.IO.compressGz(molfile); // compress molfile
+            if (s != null)
+                molfile = s;
+        }
 
         var s = "<Monomer>\n";
         s += "<MonomerID>" + scil.Utils.escXmlValue(m.id) + "</MonomerID>\n";
@@ -1560,7 +1563,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
     chooseRs2: function () {
         var d = this.chooseRDlg.form.getData();
         if (scil.Utils.isNullOrEmpty(d.r1) && this.chooseRDlg.rs1.length > 0 || scil.Utils.isNullOrEmpty(d.r2) && this.chooseRDlg.rs2.length > 0) {
-            scil.Utils.alter("Please select Rs for both Nodes");
+            scil.Utils.alert("Please select Rs for both Nodes");
             return;
         }
 
@@ -4017,7 +4020,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         var groups = this.curtab.clientarea.className == "filtergroup" ? [this.curtab.clientarea] : this.curtab.clientarea.getElementsByClassName("filtergroup");
         for (var k = 0; k < groups.length; ++k) {
             var startingwith = [];
-            var containing = []
+            var containing = [];
             var hidden = [];
 
             var parent = groups[k];
