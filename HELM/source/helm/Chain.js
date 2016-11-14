@@ -19,7 +19,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         this.bases = [];
     },
 
-    getComplementary: function(a) {
+    getComplementary: function (a) {
         var m = org.helm.webeditor.Monomers.getMonomer(a);
         switch (m.na) {
             case "A":
@@ -88,7 +88,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return n > 0;
     },
 
-    _getPolymers: function() {
+    _getPolymers: function () {
         var ret = [];
 
         var polymer = null;
@@ -129,7 +129,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return ret;
     },
 
-    getMol: function(a, plugin) {
+    getMol: function (a, plugin) {
         var mon = org.helm.webeditor.Monomers.getMonomer(a);
         var molfile = org.helm.webeditor.monomers.getMolfile(mon);
         var m = org.helm.webeditor.Interface.createMol(molfile);
@@ -235,7 +235,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
-    _connectBranches2: function(m, a, branches, plugin) {
+    _connectBranches2: function (m, a, branches, plugin) {
         var r1 = null;
         var r2 = null;
         var a1 = null;
@@ -272,7 +272,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
     },
 
     isCircle: function () {
-        return this.atoms.length >=3 && this.atoms[0] == this.atoms[this.atoms.length - 1];
+        return this.atoms.length >= 3 && this.atoms[0] == this.atoms[this.atoms.length - 1];
     },
 
     resetIDs: function () {
@@ -308,17 +308,17 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 aaid = 0;
                 baseid = 0;
             }
-        } 
+        }
     },
 
-    setFlag: function(f) {
+    setFlag: function (f) {
         for (var i = 0; i < this.atoms.length; ++i)
             this.atoms[i].f = f;
         for (var i = 0; i < this.bonds.length; ++i)
             this.bonds[i].f = f;
     },
 
-    containsAtom: function(a) {
+    containsAtom: function (a) {
         return scil.Utils.indexOf(this.atoms, a) != -1;
     },
 
@@ -377,7 +377,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 a.p.offset2(delta);
         }
     },
-  
+
     layoutBases: function () {
         var circle = this.isCircle();
         var n = circle ? this.atoms.length - 1 : this.atoms.length;
@@ -431,8 +431,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         for (var i = 0; i < n; ++i) {
             var a = this.atoms[i];
             var bt = a.biotype();
-            if (bt == org.helm.webeditor.HELM.AA)
-            {
+            if (bt == org.helm.webeditor.HELM.AA) {
                 var mon = org.helm.webeditor.Monomers.getMonomer(a);
                 if (mon != null) {
                     if (lastbt != org.helm.webeditor.HELM.AA) {
@@ -498,15 +497,13 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 }
 
                 if (i > 0) {
+                    var lasta = this.atoms[i - 1];
                     var b = this.bonds[i - 1];
-                    var r1 = b.a1 == a ? b.r2 : b.r1;
-                    var r2 = b.a1 == a ? b.r1 : b.r2;
+                    var r1 = b.a1 == lasta ? b.r1 : b.r2;
+                    var r2 = b.a1 == lasta ? b.r2 : b.r1;
 
                     a._aaid = 1;
-                    if (b.a1 == a)
-                        conn = b.a2._aaid + ":R" + r2 + "-" + b.a1._aaid + ":R" + r1;
-                    else
-                        conn = b.a1._aaid + ":R" + r1 + "-" + b.a2._aaid + ":R" + r2;
+                    conn = lasta._aaid + ":R" + r1 + "-" + a._aaid + ":R" + r2;
                     if (lastseqid != null) {
                         var tag = "";
                         if (!scil.Utils.isNullOrEmpty(b.tag))
@@ -577,7 +574,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             if (this.bases[i]._aaid == aaid)
                 return this.bases[i];
         }
-        
+
         return null;
     }
 });

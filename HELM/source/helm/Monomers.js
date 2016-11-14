@@ -40,7 +40,7 @@ org.helm.webeditor.Monomers = {
         return "?";
     },
 
-    _getFirstKey: function(set, key1, key2) {
+    _getFirstKey: function (set, key1, key2) {
         if (key1 != null && set[key1] != null)
             return key1;
         if (key2 != null && set[key2] != null)
@@ -51,7 +51,7 @@ org.helm.webeditor.Monomers = {
         return "?";
     },
 
-    saveTextDB: function(url) {
+    saveTextDB: function (url) {
         var cols = ["id", "symbol", "name", "naturalanalog", "molfile", "smiles", "polymertype", "monomertype", "r1", "r2", "r3", "r4", "r5", "author", "createddate"];
         var s = "";
         var n = { n: 0 };
@@ -69,7 +69,7 @@ org.helm.webeditor.Monomers = {
         scil.Utils.post(url, args, "_blank");
     },
 
-    saveMonomerDB: function(url) {
+    saveMonomerDB: function (url) {
         var s = "<MONOMER_DB>\n";
         s += "<PolymerList>\n";
 
@@ -130,28 +130,35 @@ org.helm.webeditor.Monomers = {
         this.loadMonomers(doc);
     },
 
-    loadDB: function (list) {
+    loadDB: function (list, makeMon) {
         this.clear();
 
         for (var i = 0; i < list.length; ++i) {
             var x = list[i];
-            var m = { id: x.symbol, n: x.name, na: x.naturalanalog, type: x.polymertype, mt: x.monomertype, m: x.molfile };
 
-            m.at = {};
-            var rs = 0;
-            for (var r = 1; r <= 5; ++r) {
-                if (x["r" + r]) {
-                    m.at["R" + r] = x["r" + r];
-                    ++rs;
-                }
+            var m = null;
+            if (makeMon != null) {
+                m = makeMon(x);
             }
-            m.rs = rs;
+            else {
+                m = { id: x.symbol, n: x.name, na: x.naturalanalog, type: x.polymertype, mt: x.monomertype, m: x.molfile };
+
+                m.at = {};
+                var rs = 0;
+                for (var r = 1; r <= 5; ++r) {
+                    if (x["r" + r]) {
+                        m.at["R" + r] = x["r" + r];
+                        ++rs;
+                    }
+                }
+                m.rs = rs;
+            }
 
             this.addOneMonomer(m);
         }
     },
 
-    loadMonomers: function(doc, callback) {
+    loadMonomers: function (doc, callback) {
         var list = doc.getElementsByTagName("Monomer");
         if (list == null || list.length == 0)
             return false;
@@ -251,7 +258,7 @@ org.helm.webeditor.Monomers = {
         return null;
     },
 
-    getMonomerList: function(a) {
+    getMonomerList: function (a) {
         var set = this.getMonomerSet(a);
         return set == null ? null : scil.Utils.getDictKeys(set);
     },
@@ -278,7 +285,7 @@ org.helm.webeditor.Monomers = {
         return set == null ? null : set[s];
     },
 
-    hasR: function(type, name, r) {
+    hasR: function (type, name, r) {
         var m = this.getMonomer(type, name);
         return m != null && m.at != null && m.at[r] != null;
     },
@@ -366,9 +373,9 @@ org.helm.webeditor.Monomers = {
         return m;
     },
 
-    findSmilesRs: function(s)    {
+    findSmilesRs: function (s) {
         // "C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|"
-        
+
         var ret = [];
         // JSDraw like Rs
         for (var i = 1; i <= 5; ++i) {
@@ -494,7 +501,7 @@ org.helm.webeditor.Monomers = {
         return m;
     },
 
-    readValue: function(e, name) {
+    readValue: function (e, name) {
         var list = e.getElementsByTagName(name);
         if (list == null || list.length == 0)
             return null;

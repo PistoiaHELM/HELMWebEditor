@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-11-02
+// 2.0.0-2016-11-13
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -457,7 +457,7 @@ org.helm.webeditor.Monomers = {
         return "?";
     },
 
-    _getFirstKey: function(set, key1, key2) {
+    _getFirstKey: function (set, key1, key2) {
         if (key1 != null && set[key1] != null)
             return key1;
         if (key2 != null && set[key2] != null)
@@ -468,7 +468,7 @@ org.helm.webeditor.Monomers = {
         return "?";
     },
 
-    saveTextDB: function(url) {
+    saveTextDB: function (url) {
         var cols = ["id", "symbol", "name", "naturalanalog", "molfile", "smiles", "polymertype", "monomertype", "r1", "r2", "r3", "r4", "r5", "author", "createddate"];
         var s = "";
         var n = { n: 0 };
@@ -486,7 +486,7 @@ org.helm.webeditor.Monomers = {
         scil.Utils.post(url, args, "_blank");
     },
 
-    saveMonomerDB: function(url) {
+    saveMonomerDB: function (url) {
         var s = "<MONOMER_DB>\n";
         s += "<PolymerList>\n";
 
@@ -547,28 +547,35 @@ org.helm.webeditor.Monomers = {
         this.loadMonomers(doc);
     },
 
-    loadDB: function (list) {
+    loadDB: function (list, makeMon) {
         this.clear();
 
         for (var i = 0; i < list.length; ++i) {
             var x = list[i];
-            var m = { id: x.symbol, n: x.name, na: x.naturalanalog, type: x.polymertype, mt: x.monomertype, m: x.molfile };
 
-            m.at = {};
-            var rs = 0;
-            for (var r = 1; r <= 5; ++r) {
-                if (x["r" + r]) {
-                    m.at["R" + r] = x["r" + r];
-                    ++rs;
-                }
+            var m = null;
+            if (makeMon != null) {
+                m = makeMon(x);
             }
-            m.rs = rs;
+            else {
+                m = { id: x.symbol, n: x.name, na: x.naturalanalog, type: x.polymertype, mt: x.monomertype, m: x.molfile };
+
+                m.at = {};
+                var rs = 0;
+                for (var r = 1; r <= 5; ++r) {
+                    if (x["r" + r]) {
+                        m.at["R" + r] = x["r" + r];
+                        ++rs;
+                    }
+                }
+                m.rs = rs;
+            }
 
             this.addOneMonomer(m);
         }
     },
 
-    loadMonomers: function(doc, callback) {
+    loadMonomers: function (doc, callback) {
         var list = doc.getElementsByTagName("Monomer");
         if (list == null || list.length == 0)
             return false;
@@ -668,7 +675,7 @@ org.helm.webeditor.Monomers = {
         return null;
     },
 
-    getMonomerList: function(a) {
+    getMonomerList: function (a) {
         var set = this.getMonomerSet(a);
         return set == null ? null : scil.Utils.getDictKeys(set);
     },
@@ -695,7 +702,7 @@ org.helm.webeditor.Monomers = {
         return set == null ? null : set[s];
     },
 
-    hasR: function(type, name, r) {
+    hasR: function (type, name, r) {
         var m = this.getMonomer(type, name);
         return m != null && m.at != null && m.at[r] != null;
     },
@@ -783,9 +790,9 @@ org.helm.webeditor.Monomers = {
         return m;
     },
 
-    findSmilesRs: function(s)    {
+    findSmilesRs: function (s) {
         // "C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|"
-        
+
         var ret = [];
         // JSDraw like Rs
         for (var i = 1; i <= 5; ++i) {
@@ -911,7 +918,7 @@ org.helm.webeditor.Monomers = {
         return m;
     },
 
-    readValue: function(e, name) {
+    readValue: function (e, name) {
         var list = e.getElementsByTagName(name);
         if (list == null || list.length == 0)
             return null;
@@ -2156,7 +2163,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         this.bases = [];
     },
 
-    getComplementary: function(a) {
+    getComplementary: function (a) {
         var m = org.helm.webeditor.Monomers.getMonomer(a);
         switch (m.na) {
             case "A":
@@ -2225,7 +2232,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return n > 0;
     },
 
-    _getPolymers: function() {
+    _getPolymers: function () {
         var ret = [];
 
         var polymer = null;
@@ -2266,7 +2273,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return ret;
     },
 
-    getMol: function(a, plugin) {
+    getMol: function (a, plugin) {
         var mon = org.helm.webeditor.Monomers.getMonomer(a);
         var molfile = org.helm.webeditor.monomers.getMolfile(mon);
         var m = org.helm.webeditor.Interface.createMol(molfile);
@@ -2372,7 +2379,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
-    _connectBranches2: function(m, a, branches, plugin) {
+    _connectBranches2: function (m, a, branches, plugin) {
         var r1 = null;
         var r2 = null;
         var a1 = null;
@@ -2409,7 +2416,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
     },
 
     isCircle: function () {
-        return this.atoms.length >=3 && this.atoms[0] == this.atoms[this.atoms.length - 1];
+        return this.atoms.length >= 3 && this.atoms[0] == this.atoms[this.atoms.length - 1];
     },
 
     resetIDs: function () {
@@ -2445,17 +2452,17 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 aaid = 0;
                 baseid = 0;
             }
-        } 
+        }
     },
 
-    setFlag: function(f) {
+    setFlag: function (f) {
         for (var i = 0; i < this.atoms.length; ++i)
             this.atoms[i].f = f;
         for (var i = 0; i < this.bonds.length; ++i)
             this.bonds[i].f = f;
     },
 
-    containsAtom: function(a) {
+    containsAtom: function (a) {
         return scil.Utils.indexOf(this.atoms, a) != -1;
     },
 
@@ -2514,7 +2521,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 a.p.offset2(delta);
         }
     },
-  
+
     layoutBases: function () {
         var circle = this.isCircle();
         var n = circle ? this.atoms.length - 1 : this.atoms.length;
@@ -2568,8 +2575,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         for (var i = 0; i < n; ++i) {
             var a = this.atoms[i];
             var bt = a.biotype();
-            if (bt == org.helm.webeditor.HELM.AA)
-            {
+            if (bt == org.helm.webeditor.HELM.AA) {
                 var mon = org.helm.webeditor.Monomers.getMonomer(a);
                 if (mon != null) {
                     if (lastbt != org.helm.webeditor.HELM.AA) {
@@ -2635,15 +2641,13 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 }
 
                 if (i > 0) {
+                    var lasta = this.atoms[i - 1];
                     var b = this.bonds[i - 1];
-                    var r1 = b.a1 == a ? b.r2 : b.r1;
-                    var r2 = b.a1 == a ? b.r1 : b.r2;
+                    var r1 = b.a1 == lasta ? b.r1 : b.r2;
+                    var r2 = b.a1 == lasta ? b.r2 : b.r1;
 
                     a._aaid = 1;
-                    if (b.a1 == a)
-                        conn = b.a2._aaid + ":R" + r2 + "-" + b.a1._aaid + ":R" + r1;
-                    else
-                        conn = b.a1._aaid + ":R" + r1 + "-" + b.a2._aaid + ":R" + r2;
+                    conn = lasta._aaid + ":R" + r1 + "-" + a._aaid + ":R" + r2;
                     if (lastseqid != null) {
                         var tag = "";
                         if (!scil.Utils.isNullOrEmpty(b.tag))
@@ -2714,7 +2718,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             if (this.bases[i]._aaid == aaid)
                 return this.bases[i];
         }
-        
+
         return null;
     }
 });
@@ -3968,7 +3972,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         org.helm.webeditor.MonomerExplorer.loadNucleotides();
     },
 
-    addMonomerTabs: function(tabs) {
+    addMonomerTabs: function (tabs) {
         if (this.options.mexfavoritetab != false)
             tabs.push({ caption: "Favorite", tabkey: "favorite" });
 
@@ -3977,7 +3981,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         tabs.push({ caption: "RNA", tabkey: "rna" });
     },
 
-    findReplace: function() {
+    findReplace: function () {
         this.plugin.replaceAll(this.findinput.value, this.findreplace.value, this.findtype.value);
     },
 
@@ -3987,7 +3991,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             org.helm.webeditor.RuleSet.filterRules(this.rules, this.filterInput.value, this.rules_category.value);
         }
         else {
-            this.filterGroup(this.tabs.dom, this.filterInput.value);
+            this.filterGroup(this.filterInput.value);
         }
 
 
@@ -4006,32 +4010,67 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         //this.filterGroup(tab.clientarea, this.filterInput.value);
     },
 
-    filterGroup: function (container, s) {
-        var list = container.getElementsByTagName("DIV");
+    filterGroup: function (s) {
+        if (s == "")
+            s = null;
 
-        s = scil.Utils.trim(s).toLowerCase();
-        if (s == "") {
-            for (var i = 0; i < list.length; ++i) {
-                var d = list[i];
-                if (d.getAttribute("helm") == null)
-                    continue;
+        var groups = this.curtab.clientarea.className == "filtergroup" ? [this.curtab.clientarea] : this.curtab.clientarea.getElementsByClassName("filtergroup");
+        for (var k = 0; k < groups.length; ++k) {
+            var startingwith = [];
+            var containing = []
+            var hidden = [];
 
-                d.style.display = "table";
-            }
-        }
-        else {
-            for (var i = 0; i < list.length; ++i) {
-                var d = list[i];
-                var type = d.getAttribute("helm");
-                if (scil.Utils.isNullOrEmpty(type))
-                    continue;
-
+            var parent = groups[k];
+            for (var i = 0; i < parent.childNodes.length; ++i) {
+                var d = parent.childNodes[i];
                 var name = scil.Utils.getInnerText(d);
-                var f = scil.Utils.startswith(name.toLowerCase(), s) || name.toLowerCase().indexOf(s) >= 0;
+                var f = 1;
+                if (s != null) {
+                    if (scil.Utils.startswith(name.toLowerCase(), s))
+                        f = 1;
+                    else if (name.toLowerCase().indexOf(s) >= 0)
+                        f = 2;
+                    else
+                        f = 0;
+                }
 
-                d.style.display = f ? "table" : "none";
+                if (f == 1)
+                    startingwith.push({ id: name, div: d });
+                else if (f == 2)
+                    containing.push({ id: name, div: d });
+                else
+                    hidden.push(d);
             }
+
+            startingwith.sort(org.helm.webeditor.MonomerExplorer.compareMonomers);
+            if (containing.length > 0) {
+                containing.sort(org.helm.webeditor.MonomerExplorer.compareMonomers);
+                startingwith = startingwith.concat(containing);
+            }
+
+            var last = null;
+            for (var i = 0; i < startingwith.length; ++i) {
+                var d = startingwith[i];
+                parent.insertBefore(d.div, parent.childNodes[i]);
+                last = d.div;
+                if (s != null)
+                    d.div.firstChild.firstChild.innerHTML = this.highlightString(d.id, s);
+                else
+                    d.div.firstChild.firstChild.innerHTML = d.id;
+                d.div.style.display = "table";
+            }
+
+            for (var i = 0; i < hidden.length; ++i)
+                hidden[i].style.display = "none";
         }
+    },
+
+    highlightString: function (s, q) {
+        var p = s.toLowerCase().indexOf(q);
+        if (p < 0)
+            return s;
+
+        return s.substr(0, p) + "<span style='background:yellow'>" + s.substr(p, q.length) + "</span>" + s.substr(p + q.length);
     },
 
     reloadTab: function (type) {
@@ -4096,7 +4135,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.rnatabs.resizeClientarea(0, this.getHeight("RNA"));
     },
 
-    getHeight: function(key) {
+    getHeight: function (key) {
         var d1 = this.options.mexmonomerstab ? 0 : 14;
         var d2 = this.options.mexmonomerstab ? 0 : 47;
         var d3 = this.options.mexmonomerstab ? 0 : 46;
@@ -4119,6 +4158,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
     onShowTab: function (td, forcerecreate) {
         if (td == null)
             return;
+
+        this.filterInput.value = "";
+        this.curtab = td;
+        this.filterGroup("");
 
         var key = td.getAttribute("key");
         if (forcerecreate || key == "favorite" && org.helm.webeditor.MonomerExplorer.favorites.changed) {
@@ -4171,7 +4214,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.createMonomerGroup4(div, org.helm.webeditor.HELM.LINKER, null, true);
         }
         else if (key == "rule") {
-            var toolbar = scil.Utils.createElement(div, "div", null, {background: "#ccc"});
+            var toolbar = scil.Utils.createElement(div, "div", null, { background: "#ccc" });
             scil.Utils.createElement(toolbar, "span", "Category:");
             this.rules_category = scil.Utils.createElement(toolbar, "select");
             scil.Utils.listOptions(this.rules_category, org.helm.webeditor.RuleSetApp.categories);
@@ -4200,7 +4243,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
-    listRules: function() {
+    listRules: function () {
 
     },
 
@@ -4251,25 +4294,12 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return this.getMonomerNames(list, addnull);
     },
 
-    getMonomerNames: function(list, addnull) {
+    getMonomerNames: function (list, addnull) {
         var ret = [];
         if (addnull)
             ret.push("null");
 
-        var fun = function (a, b) {
-            /*if (a.na == b.na)*/ {
-                if (a.id == b.id)
-                    return 0;
-                else if (a.id.length != b.id.length && (a.id.length == 1 || b.id.length == 1))
-                    return a.id.length > b.id.length ? 1 : -1;
-                else
-                    return a.id.toLowerCase() > b.id.toLowerCase() ? 1 : -1;
-            }
-            //else {
-            //    return a.na < b.na ? 1 : -1;
-            //}
-        };
-        list.sort(fun);
+        list.sort(org.helm.webeditor.MonomerExplorer.compareMonomers);
         for (var i = 0; i < list.length; ++i)
             ret.push(list[i].id);
 
@@ -4299,17 +4329,17 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         dojo.connect(d, "ondblclick", function (e) { me.dblclick(e); });
 
         if (group == "RNA") {
-            var half = "<div title='Nucleotide (Combined)' style='font-size: 80%;padding-left:20px;background-repeat:no-repeat;background-position:left center;background-image:";
+            var half = " style='font-size: 80%;padding-left:20px;background-repeat:no-repeat;background-position:left center;background-image:";
 
             var base = org.helm.webeditor.Monomers.bases["A"] == null ? "a" : "A";
             var linker = org.helm.webeditor.Monomers.linkers["P"] == null ? "p" : "P";
             var sugar = org.helm.webeditor.Monomers.sugars["R"] == null ? "r" : "R";
 
             var tabs = [
-                    { caption: half + scil.Utils.imgSrc("img/helm_nucleotide.gif", true) + "'>R(A)P</div>", tabkey: "nucleotide", onmenu: this.options.mexrnapinontab ? function (e) { me.onPinMenu(e); } : null },
-                    { caption: half + scil.Utils.imgSrc("img/helm_base.gif", true) + "'>" + base + "</div>", tabkey: "base" },
-                    { caption: half + scil.Utils.imgSrc("img/helm_sugar.gif", true) + "'>" + sugar + "</div>", tabkey: "sugar" },
-                    { caption: half + scil.Utils.imgSrc("img/helm_linker.gif", true) + "'>" + linker + "</div>", tabkey: "linker" }
+                    { caption: "<div title='Nucleotide (Combined)' " + half + scil.Utils.imgSrc("img/helm_nucleotide.gif", true) + "'>R(A)P</div>", tabkey: "nucleotide", onmenu: this.options.mexrnapinontab ? function (e) { me.onPinMenu(e); } : null },
+                    { caption: "<div title='Base' " + half + scil.Utils.imgSrc("img/helm_base.gif", true) + "'>" + base + "</div>", tabkey: "base" },
+                    { caption: "<div title='Sugar' " + half + scil.Utils.imgSrc("img/helm_sugar.gif", true) + "'>" + sugar + "</div>", tabkey: "sugar" },
+                    { caption: "<div title='Linker' " + half + scil.Utils.imgSrc("img/helm_linker.gif", true) + "'>" + linker + "</div>", tabkey: "linker" }
                 ];
             this.rnatabs = new scil.Tabs(scil.Utils.createElement(d, "div", null, { paddingTop: "5px" }), {
                 onShowTab: function (td) { me.onShowTab(td); }, //function (td) { me.onShowRNATab(td); },
@@ -4334,10 +4364,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         //}
     },
 
-    onPinMenu: function(e) {
+    onPinMenu: function (e) {
         if (this.pinmenu == null) {
             var me = this;
-            var items = [{ caption: "Pin This Nucleotide" }];
+            var items = [{ caption: "Pin This Nucleotide"}];
             this.pinmenu = new scil.ContextMenu(items, function () { me.addNucleotide(); });
         }
         this.pinmenu.show(e.clientX, e.clientY);
@@ -4389,7 +4419,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
-    addNucleotide: function(tab) {
+    addNucleotide: function (tab) {
         var notation = this.getCombo();
         var dict = org.helm.webeditor.MonomerExplorer.nucleotides;
         for (var k in dict) {
@@ -4435,6 +4465,8 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
     },
 
     _listMonomers: function (div, list, type, mexfavoritefirst) {
+        div.className = "filtergroup";
+
         if (mexfavoritefirst) {
             var list2 = [];
             for (var i = 0; i < list.length; ++i) {
@@ -4489,7 +4521,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         if (this.options.mexuseshape)
             this.setMonomerBackground(div, 0);
 
-        var d = scil.Utils.createElement(div, "div", null, { display: "table-cell",  textAlign: "center", verticalAlign: "middle" });
+        var d = scil.Utils.createElement(div, "div", null, { display: "table-cell", textAlign: "center", verticalAlign: "middle" });
         scil.Utils.createElement(d, "div", name, { overflow: "hidden", width: this.kStyle.width });
 
         return div;
@@ -4622,18 +4654,18 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
     select: function (e) {
         var div = this.getMonomerDiv(e);
-       if (div != null) {
-           var d = scil.Utils.getOffset(div, true);
-           var scroll = scil.Utils.getParent(div.parentNode, "div");
-           var dx = e.clientX - d.x + scroll.scrollLeft;
-           var dy = e.clientY - d.y + scroll.scrollTop;
-           if (dx >= 0 && dx < 16 && dy >= 0 && dy < 16) {
-               // favorite
-               this.changeFavorite(div);
-               e.preventDefault();
-               return;
-           }
-       }
+        if (div != null) {
+            var d = scil.Utils.getOffset(div, true);
+            var scroll = scil.Utils.getParent(div.parentNode, "div");
+            var dx = e.clientX - d.x + scroll.scrollLeft;
+            var dy = e.clientY - d.y + scroll.scrollTop;
+            if (dx >= 0 && dx < 16 && dy >= 0 && dy < 16) {
+                // favorite
+                this.changeFavorite(div);
+                e.preventDefault();
+                return;
+            }
+        }
 
         var helm = div == null ? null : div.getAttribute("helm");
         if (scil.Utils.isNullOrEmpty(helm))
@@ -4765,11 +4797,20 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
     favorites: new scil.Favorite("monomers", function (name, f, type) { org.helm.webeditor.MonomerExplorer.onAddFavorite(name, f, type); }),
 
     nucleotides: {
-        A: "r(A)p",
-        C: "r(C)p",
-        G: "r(G)p",
-        T: "r(T)p",
-        U: "r(U)p"
+        A: "R(A)P",
+        C: "R(C)P",
+        G: "R(G)P",
+        T: "R(T)P",
+        U: "R(U)P"
+    },
+
+    compareMonomers: function (a, b) {
+        if (a.id == b.id)
+            return 0;
+        else if (a.id.length != b.id.length && (a.id.length == 1 || b.id.length == 1))
+            return a.id.length > b.id.length ? 1 : -1;
+        else
+            return a.id.toLowerCase() > b.id.toLowerCase() ? 1 : -1;
     },
 
     onAddFavorite: function (name, f, type) {
@@ -5405,7 +5446,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             scil.Utils.ajax(this.options.monomersurl, function (ret) {
                 if (ret.monomers != null)
                     ret = ret.monomers;
-                org.helm.webeditor.Monomers.loadDB(ret);
+                org.helm.webeditor.Monomers.loadDB(ret, this.options.monomerfun);
                 me.init(parent);
             });
         }
