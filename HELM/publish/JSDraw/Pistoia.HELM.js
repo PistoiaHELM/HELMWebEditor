@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-10-26",
+    kVersion: "2.0.0.2016-11-21",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -2675,8 +2675,11 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             a._aaid = ++aaid;
             chn.push(a);
 
-            if (aaid > 1 && !(i > 0 && a.biotype() == org.helm.webeditor.HELM.LINKER && this.atoms[i - 1].biotype() == org.helm.webeditor.HELM.SUGAR))
+            if (aaid > 1 && !(i > 0 && a.biotype() == org.helm.webeditor.HELM.LINKER && this.atoms[i - 1].biotype() == org.helm.webeditor.HELM.SUGAR)) {
                 sequence += ".";
+                //if (a.biotype() == org.helm.webeditor.HELM.LINKER)
+                //    sequence += "()";
+            }
             sequence += org.helm.webeditor.IO.getCode(a, highlightselection);
 
             if (this.bases[i] != null) {
@@ -3311,7 +3314,7 @@ org.helm.webeditor.IO = {
         return s + this.kVersion;
     },
 
-    getSequence: function(m, highlightselection) {
+    getSequence: function (m, highlightselection) {
         var branches = {};
         var chains = org.helm.webeditor.Chain.getChains(m, branches);
         if (chains == null)
@@ -3562,8 +3565,7 @@ org.helm.webeditor.IO = {
                 p = s.indexOf("{");
                 var chn = s.substr(0, p);
                 s = s.substr(p);
-                if (s == "{ss}" || s == "{as}")
-                {
+                if (s == "{ss}" || s == "{as}") {
                     var chain = chains[chn];
                     if (chain != null && chain.type == "RNA")
                         chain.atoms[0].bio.annotation = "5'" + s.substr(1, s.length - 2);
@@ -3609,19 +3611,19 @@ org.helm.webeditor.IO = {
         return ret;
     },
 
-    parseConnection: function(s) {
+    parseConnection: function (s) {
         var tt = s.split(',');
         if (tt.length != 3)
             return null; // error
 
         var tt2 = tt[2].split('-');
         if (tt2.length != 2)
-            return null;// error
+            return null; // error
 
         var c1 = tt2[0].split(':');
         var c2 = tt2[1].split(':');
         if (c1.length != 2 || c2.length != 2)
-            return null;// error
+            return null; // error
 
         return { chain1: tt[0], chain2: tt[1], a1: parseInt(c1[0]), r1: c1[1], a2: parseInt(c2[0]), r2: c2[1] };
     },
@@ -3633,13 +3635,13 @@ org.helm.webeditor.IO = {
         return ss;
     },
 
-    trimBracket: function(s) {
+    trimBracket: function (s) {
         if (s != null && scil.Utils.startswith(s, "[") && scil.Utils.endswith(s, "]"))
-            return  s.substr(1, s.length - 2);
+            return s.substr(1, s.length - 2);
         return s;
     },
 
-    getRenamedMonomer: function(type, elem, monomers) {
+    getRenamedMonomer: function (type, elem, monomers) {
         if (monomers == null || monomers.length == 0)
             return elem;
 
@@ -3722,6 +3724,40 @@ org.helm.webeditor.IO = {
         return n;
     },
 
+    splitCombo: function (s) {
+        var ret = [];
+
+        var m = null;
+        var i = 0;
+        while (i < s.length) {
+            var c = s.substr(i, 1);
+            if (c == '(') {
+                if (i == 0)
+                    throw "Invalid combo: " + s;
+                var p = s.indexOf(')', i + 1);
+                if (p <= i)
+                    throw "Invalid combo: " + s;
+
+                ret[ret.length - 1].base = s.substr(i + 1, p - i - 1);
+                i = p;
+            }
+            else if (c == '[') {
+                var p = s.indexOf(']', i + 1);
+                if (p <= i)
+                    throw "Invalid combo: " + s;
+                ret.push({ symbol: s.substr(i, p - i + 1) });
+                i = p;
+            }
+            else {
+                ret.push({ symbol: c });
+            }
+
+            ++i;
+        }
+
+        return ret;
+    },
+
     addHELMRNAs: function (plugin, ss, chain, origin, renamedmonomers) {
         var n = 0;
         var a1 = null;
@@ -3731,81 +3767,132 @@ org.helm.webeditor.IO = {
         var p = origin.clone();
         for (var i = 0; i < ss.length; ++i) {
             var s = ss[i];
-            var sugar = null;
-            var base = null;
-            var linker = null;
+            var combo = this.splitCombo(s);
+            for (var k = 0; k < combo.length; ++k) {
+                var c = combo[k];
+                var m = org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.SUGAR, c.symbol);
+                if (m != null) {
+                    // sugar
+                    p.x += delta;
+                    a2 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.SUGAR, c.symbol, renamedmonomers);
+                    if (a1 != null)
+                        chain.bonds.push(plugin.addBond(a1, a2, 2, 1));
+                    a1 = a2;
 
-            // handle all cases:
-            // RNA1{RP.[fR]P.[fR](A)P.[fR](A)}$$$$
-            // RNA1{R.P.[fR].P.[fR](A)P.[fR](A)}$$$$
-            // RNA1{R()P.[fR]()P.[fR](A)P.[fR](A)}$$$$
-            var k1 = s.indexOf('(');
-            var k2 = s.indexOf(')');
-            if (k1 >= 0 && k2 >= 0) {
-                sugar = s.substr(0, k1);
-                base = s.substr(k1 + 1, k2 - k1 - 1);
-                linker = s.substr(k2 + 1);
-            }
-            else {
-                if (s.substr(0, 1) == "[") {
-                    var k = s.indexOf("]");
-                    if (k > 0) {
-                        sugar = s.substr(0, k + 1);
-                        linker = s.substr(k + 1);
-                    }
-                    else {
-                        sugar = s;
+                    if (!scil.Utils.isNullOrEmpty(c.base)) {
+                        m = org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.BASE, c.base);
+                        if (m == null)
+                            throw "Unknown base: " + c.base;
+
+                        // base
+                        a3 = this.addNode(plugin, chain, chain.bases, org.helm.webeditor.Interface.createPoint(p.x, p.y + delta), org.helm.webeditor.HELM.BASE, c.base, renamedmonomers);
+                        plugin.addBond(a1, a3, 3, 1);
+                        a3.bio.id = ++n;
                     }
                 }
                 else {
-                    sugar = s.substr(0, 1);
-                    linker = s.substr(1);
-                }
-            }
-
-            if (scil.Utils.isNullOrEmpty(base)) {
-                if (scil.Utils.isNullOrEmpty(sugar) && !scil.Utils.isNullOrEmpty(linker)) {
-                    if (org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.SUGAR, linker) != null) {
-                        sugar = linker;
-                        linker = null;
-                    }
-                } 
-                else if (scil.Utils.isNullOrEmpty(linker) && !scil.Utils.isNullOrEmpty(sugar)) {
-                    if (org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.LINKER, sugar) != null) {
-                        linker = sugar;
-                        sugar = null;
+                    m = org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.LINKER, c.symbol);
+                    if (m != null) {
+                        if (!scil.Utils.isNullOrEmpty(c.base))
+                            throw "Base attached to Linker: " + s;
+                        // linker
+                        p.x += delta;
+                        a2 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.LINKER, c.symbol, renamedmonomers);
+                        chain.bonds.push(plugin.addBond(a1, a2, 2, 1));
+                        a1 = a2;
                     }
                 }
-            }
-
-            // 1. sugar (Order does matter)
-            if (!scil.Utils.isNullOrEmpty(sugar)) {
-                p.x += delta;
-                a2 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.SUGAR, sugar, renamedmonomers);
-                if (a1 != null)
-                    chain.bonds.push(plugin.addBond(a1, a2, 2, 1));
-                a1 = a2;
-            }
-
-            // 2. base
-            if (!scil.Utils.isNullOrEmpty(base)) {
-                a3 = this.addNode(plugin, chain, chain.bases, org.helm.webeditor.Interface.createPoint(p.x, p.y + delta), org.helm.webeditor.HELM.BASE, base, renamedmonomers);
-
-                plugin.addBond(a2, a3, 3, 1);
-                a3.bio.id = ++n;
-            }
-
-            // 3. linker
-            if (!scil.Utils.isNullOrEmpty(linker)) {
-                p.x += delta;
-                a0 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.LINKER, linker, renamedmonomers);
-                chain.bonds.push(plugin.addBond(a1, a0, 2, 1));
-                a1 = a0;
             }
         }
 
         return n;
     },
+
+    //    addHELMRNAs: function (plugin, ss, chain, origin, renamedmonomers) {
+    //        var n = 0;
+    //        var a1 = null;
+    //        var a2 = null;
+    //        var m = plugin.jsd.m;
+    //        var delta = org.helm.webeditor.bondscale * plugin.jsd.bondlength;
+    //        var p = origin.clone();
+    //        for (var i = 0; i < ss.length; ++i) {
+    //            var s = ss[i];
+    //            var sugar = null;
+    //            var base = null;
+    //            var linker = null;
+
+    //            // handle all cases:
+    //            // RNA1{RP.[fR]P.[fR](A)P.[fR](A)}$$$$
+    //            // RNA1{R.P.[fR].P.[fR](A)P.[fR](A)}$$$$
+    //            // RNA1{R()P.[fR]()P.[fR](A)P.[fR](A)}$$$$
+    //            // RNA1{[xX](G)[xY].[xX]()[xY].[xX]().()[xY]}$$$$
+    //            var k1 = s.indexOf('(');
+    //            var k2 = s.indexOf(')');
+    //            if (k1 >= 0 && k2 >= 0) {
+    //                sugar = s.substr(0, k1);
+    //                base = s.substr(k1 + 1, k2 - k1 - 1);
+    //                linker = s.substr(k2 + 1);
+    //            }
+    //            else {
+    //                if (s.substr(0, 1) == "[") {
+    //                    var k = s.indexOf("]");
+    //                    if (k > 0) {
+    //                        sugar = s.substr(0, k + 1);
+    //                        linker = s.substr(k + 1);
+    //                    }
+    //                    else {
+    //                        sugar = s;
+    //                    }
+    //                }
+    //                else {
+    //                    sugar = s.substr(0, 1);
+    //                    linker = s.substr(1);
+    //                }
+    //            }
+
+    //            if (scil.Utils.isNullOrEmpty(base)) {
+    //                if (scil.Utils.isNullOrEmpty(sugar) && !scil.Utils.isNullOrEmpty(linker)) {
+    //                    if (org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.SUGAR, linker) != null) {
+    //                        sugar = linker;
+    //                        linker = null;
+    //                    }
+    //                }
+    //                else if (scil.Utils.isNullOrEmpty(linker) && !scil.Utils.isNullOrEmpty(sugar)) {
+    //                    if (org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.LINKER, sugar) != null) {
+    //                        linker = sugar;
+    //                        sugar = null;
+    //                    }
+    //                }
+    //            }
+
+    //            // 1. sugar (Order does matter)
+    //            if (!scil.Utils.isNullOrEmpty(sugar)) {
+    //                p.x += delta;
+    //                a2 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.SUGAR, sugar, renamedmonomers);
+    //                if (a1 != null)
+    //                    chain.bonds.push(plugin.addBond(a1, a2, 2, 1));
+    //                a1 = a2;
+    //            }
+
+    //            // 2. base
+    //            if (!scil.Utils.isNullOrEmpty(base)) {
+    //                a3 = this.addNode(plugin, chain, chain.bases, org.helm.webeditor.Interface.createPoint(p.x, p.y + delta), org.helm.webeditor.HELM.BASE, base, renamedmonomers);
+
+    //                plugin.addBond(a2, a3, 3, 1);
+    //                a3.bio.id = ++n;
+    //            }
+
+    //            // 3. linker
+    //            if (!scil.Utils.isNullOrEmpty(linker)) {
+    //                p.x += delta;
+    //                a0 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.LINKER, linker, renamedmonomers);
+    //                chain.bonds.push(plugin.addBond(a1, a0, 2, 1));
+    //                a1 = a0;
+    //            }
+    //        }
+
+    //        return n;
+    //    },
 
     addRNAs: function (plugin, ss, chain, origin, sugar, linker) {
         var n = 0;
@@ -3828,7 +3915,7 @@ org.helm.webeditor.IO = {
                     p.x += delta;
                     var a0 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.LINKER, linker);
                     chain.bonds.push(plugin.addBond(a1, a0, 2, 1));
-                    
+
                     chain.bonds.push(plugin.addBond(a0, firstatom, 2, 1));
                 }
                 break;

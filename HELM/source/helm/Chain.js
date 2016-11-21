@@ -528,8 +528,11 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             a._aaid = ++aaid;
             chn.push(a);
 
-            if (aaid > 1 && !(i > 0 && a.biotype() == org.helm.webeditor.HELM.LINKER && this.atoms[i - 1].biotype() == org.helm.webeditor.HELM.SUGAR))
+            if (aaid > 1 && !(i > 0 && a.biotype() == org.helm.webeditor.HELM.LINKER && this.atoms[i - 1].biotype() == org.helm.webeditor.HELM.SUGAR)) {
                 sequence += ".";
+                //if (a.biotype() == org.helm.webeditor.HELM.LINKER)
+                //    sequence += "()";
+            }
             sequence += org.helm.webeditor.IO.getCode(a, highlightselection);
 
             if (this.bases[i] != null) {
