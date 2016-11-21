@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-11-21",
+    kVersion: "2.0.0.2016-11-21s",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -2334,34 +2334,23 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             }
         }
 
-        //if (branches != null) {
-        //    var bonds = branches.bonds;
-        //    if (bonds != null) {
-        //        for (var i = 0; i < bonds.length; ++i) {
-        //            var b = bonds[i];
-        //            if (scil.Utils.indexOf(this.atoms, b.a1) >= 0 && scil.Utils.indexOf(this.atoms, b.a2) >= 0) {
-        //                bonds[i] = null;
-        //                var t = org.helm.webeditor.MolViewer.findR(m1, "R" + b.r1, b.a1);
-        //                var s = org.helm.webeditor.MolViewer.findR(m1, "R" + b.r2, b.a2);
-        //                if (t != null && s != null) {
-        //                    m1.atoms.splice(scil.Utils.indexOf(m1.atoms, t.a1), 1);
-        //                    m1.bonds.splice(scil.Utils.indexOf(m1.bonds, t.b), 1);
+        if (this.isCircle()) {
+            var bond = this.bonds[n - 1];
 
-        //                    m1.atoms.splice(scil.Utils.indexOf(m1.atoms, s.a1), 1);
-        //                    m1.bonds.splice(scil.Utils.indexOf(m1.bonds, s.b), 1);
+            // circle
+            var t = org.helm.webeditor.MolViewer.findR(m1, "R" + bond.r1, bond.a1);
+            var s = org.helm.webeditor.MolViewer.findR(m1, "R" + bond.r2, bond.a2);
+            if (t != null && s != null) {
+                m1.atoms.splice(scil.Utils.indexOf(m1.atoms, t.a1), 1);
+                m1.atoms.splice(scil.Utils.indexOf(m1.atoms, s.a1), 1);
+                m1.bonds.splice(scil.Utils.indexOf(m1.bonds, s.b), 1);
 
-        //                    var bond = new JSDraw2.Bond(t.a0, s.a0);
-        //                    m1.addBond(bond);
-        //                }
-        //            }
-        //        }
-
-        //        for (var i = 0; i < n; ++i) {
-        //            var a = this.atoms[i];
-        //            this.connectBranches(m1, a, branches, plugin);
-        //        }
-        //    }
-        //}
+                if (t.b.a1 == t.a1)
+                    t.b.a1 = s.a0;
+                else
+                    t.b.a2 = s.a0;
+            }
+        }
 
         mol.atoms = mol.atoms.concat(m1.atoms);
         mol.bonds = mol.bonds.concat(m1.bonds);

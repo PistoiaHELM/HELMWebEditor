@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-11-21",
+    kVersion: "2.0.0.2016-11-21s",
     atomscale: 2,
     bondscale: 1.6,
 
