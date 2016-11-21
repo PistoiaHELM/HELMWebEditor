@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-11-21s",
+    kVersion: "2.0.0.2016-11-21p",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -5511,6 +5511,9 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.structureview = null;
 
         this.options = options == null ? {} : options;
+
+        if (scil.Utils.isNullOrEmpty(this.options.jsdrawservice))
+            JSDrawServices = { url: this.options.jsdrawservice }; 
 
         if (this.options.rulesurl != null) {
             scil.Utils.ajax(this.options.rulesurl, function (ret) {
