@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-11-14
+// 2.0.0-2016-11-22
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -5512,7 +5512,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
 
         this.options = options == null ? {} : options;
 
-        if (scil.Utils.isNullOrEmpty(this.options.jsdrawservice))
+        if (!scil.Utils.isNullOrEmpty(this.options.jsdrawservice))
             JSDrawServices = { url: this.options.jsdrawservice }; 
 
         if (this.options.rulesurl != null) {
