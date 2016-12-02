@@ -42,7 +42,8 @@ Monomer/Rule Service running on http://localhost:8080
         
         scil.ready(function () {
             new org.helm.webeditor.App("div1", 
-                { monomersurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=helm.monomer.all", 
+                { showabout: false,
+                    monomersurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=helm.monomer.all", 
                     rulesurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=helm.rule.all", 
                     cleanupurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=cleanup", 
                   calculatorurl: "http://localhost:8080/WebService/service/ajaxtool/post?cmd=helm.properties" });
