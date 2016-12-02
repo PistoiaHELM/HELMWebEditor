@@ -163,19 +163,12 @@ org.helm.webeditor.Layout = {
                 }
                 else {
                     // cross-chain connection
-<<<<<<< HEAD
-=======
-                    var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
-                    chains[a2._chainid].move(delta);
-
->>>>>>> origin/master
                     var bonds = m.getNeighborBonds(a1);
                     if (bonds.length == 3) {
                         scil.Utils.delFromArray(bonds, b);
 
                         var p1 = bonds[0].otherAtom(a1).p;
                         var p2 = bonds[1].otherAtom(a1).p;
-<<<<<<< HEAD
                         var p = new JSDraw2.Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
                         if (p.distTo(a1.p) < bondlength / 30) {
                             // p1, a1.p and p2 in a line
@@ -186,8 +179,9 @@ org.helm.webeditor.Layout = {
                             p.rotateAround(a1.p, 180, bondlength * 3);
                         }
 
+                        var chain = chains[a2._chainid];
                         p.offset(-a2.p.x, -a2.p.y);
-                        chains[a2._chainid].move(p);
+                        chain.move(p);
 
                         bonds = m.getNeighborBonds(a2);
                         if (bonds.length == 3) {
@@ -211,17 +205,13 @@ org.helm.webeditor.Layout = {
                                 deg = (ang1 + 180) - ang2;
                             }
 
-                            chains[a2._chainid].rotate(deg, c);
+                            chain.rotate(deg, c);
                         }
                     }
                     else
                     {
                         var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
                         chains[a2._chainid].move(delta);
-=======
-                        var deg = (p1.angleTo(a1.p) + p2.angleTo(a1.p)) / 2;
-                        chains[a2._chainid].rotate(deg - 90, a1.p);
->>>>>>> origin/master
                     }
                 }
 

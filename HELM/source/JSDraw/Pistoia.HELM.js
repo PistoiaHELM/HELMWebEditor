@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-11-22
+// 2.0.0-2016-12-02
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -5528,7 +5528,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             scil.Utils.ajax(this.options.monomersurl, function (ret) {
                 if (ret.monomers != null)
                     ret = ret.monomers;
-                org.helm.webeditor.Monomers.loadDB(ret, this.options.monomerfun);
+                org.helm.webeditor.Monomers.loadDB(ret, me.options.monomerfun);
                 me.init(parent);
             });
         }
@@ -5945,7 +5945,9 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             this.structureview.setMolfile(m.getMolfile());
         }
     }
-});﻿//////////////////////////////////////////////////////////////////////////////////
+});
+
+﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)

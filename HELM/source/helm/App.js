@@ -88,7 +88,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             scil.Utils.ajax(this.options.monomersurl, function (ret) {
                 if (ret.monomers != null)
                     ret = ret.monomers;
-                org.helm.webeditor.Monomers.loadDB(ret, this.options.monomerfun);
+                org.helm.webeditor.Monomers.loadDB(ret, me.options.monomerfun);
                 me.init(parent);
             });
         }
@@ -506,3 +506,4 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     }
 });
+
