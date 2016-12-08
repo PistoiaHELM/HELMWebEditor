@@ -206,6 +206,7 @@ org.helm.webeditor.IO = {
         if (scil.Utils.isNullOrEmpty(s))
             return 0;
 
+        s = s.toUpperCase();
         if (scil.Utils.isNullOrEmpty(format)) {
             if (/^((RNA)|(PEPTIDE)|(CHEM))[0-9]+/.test(s))
                 format = "HELM";
@@ -250,7 +251,7 @@ org.helm.webeditor.IO = {
 
                 p = s.indexOf("{");
                 var sid = s.substr(0, p);
-                var type = sid.replace(/[0-9]+$/, "");
+                var type = sid.replace(/[0-9]+$/, "").toUpperCase();
                 var id = parseInt(sid.substr(type.length));
 
                 var chain = new org.helm.webeditor.Chain(sid);

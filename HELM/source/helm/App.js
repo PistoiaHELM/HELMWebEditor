@@ -73,7 +73,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.options = options == null ? {} : options;
 
         if (!scil.Utils.isNullOrEmpty(this.options.jsdrawservice))
-            JSDrawServices = { url: this.options.jsdrawservice }; 
+            JSDrawServices = { url: this.options.jsdrawservice };
 
         if (this.options.rulesurl != null) {
             scil.Utils.ajax(this.options.rulesurl, function (ret) {
@@ -431,10 +431,25 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return ret;
     },
 
+    selectBondsOfSelectedAtoms: function (m) {
+        var n = 0;
+        for (var i = 0; i < m.bonds.length; ++i) {
+            var b = m.bonds[i];
+            if (!b.selected && b.a1.selected && b.a2.selected) {
+                b.selected = true;
+                ++n;
+            }
+        }
+
+        return n;
+    },
+
     updateStructureView: function () {
         if (this.structureview == null)
             return;
 
+        if (this.selectBondsOfSelectedAtoms(this.canvas.m) > 0)
+            this.canvas.refresh();
         var selected = this.getSelectedAsMol(this.canvas.m);
 
         var m = null;

@@ -353,8 +353,8 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
     getMonomerDictGroupByAnalog: function (type) {
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
-        for (var k in set)
-            set[k].id = k;
+        //for (var k in set)
+        //    set[k].id = k;
 
         var ret = {};
         var aa = type == org.helm.webeditor.HELM.AA;
@@ -392,8 +392,8 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
 
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
-        for (var k in set)
-            set[k].id = k;
+        //for (var k in set)
+        //    set[k].id = k;
         list = scil.Utils.getDictValues(set);
         return this.getMonomerNames(list, addnull);
     },

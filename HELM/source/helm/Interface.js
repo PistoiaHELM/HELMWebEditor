@@ -263,7 +263,7 @@ org.helm.webeditor.Interface = {
             items.push("-");
 
         if (ed.options.helmtoolbar)
-            items.push({ caption: "About HELM Web Editor", key: "abouthelm" });
+            ;//items.push({ caption: "About HELM Web Editor", key: "abouthelm" });
         else
             items.push({ caption: "About JSDraw", key: "about" });
         return items;
