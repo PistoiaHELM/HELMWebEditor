@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-12-08
+// 2.0.0-2016-12-12
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-11-21p",
+    kVersion: "2.0.0.2016-12-12",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -4684,7 +4684,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             var type = src.getAttribute("helm");
             var set = type == org.helm.webeditor.MonomerExplorer.kNucleotide ? org.helm.webeditor.MonomerExplorer.nucleotides : org.helm.webeditor.Monomers.getMonomerSet(type);
             var s = scil.Utils.getInnerText(src);
-            var m = set[s];
+            var m = set[s.toLowerCase()];
             org.helm.webeditor.MolViewer.show(e, type, m, s);
         }
         else {
@@ -5723,7 +5723,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var type = a == null ? null : a.biotype();
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
         var s = a == null ? null : a.elem;
-        var m = set == null ? null : set[s];
+        var m = set == null ? null : set[s.toLowerCase()];
         org.helm.webeditor.MolViewer.show(e, type, m, s);
     },
 

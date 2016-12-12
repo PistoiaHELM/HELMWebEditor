@@ -710,7 +710,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             var type = src.getAttribute("helm");
             var set = type == org.helm.webeditor.MonomerExplorer.kNucleotide ? org.helm.webeditor.MonomerExplorer.nucleotides : org.helm.webeditor.Monomers.getMonomerSet(type);
             var s = scil.Utils.getInnerText(src);
-            var m = set[s];
+            var m = set[s.toLowerCase()];
             org.helm.webeditor.MolViewer.show(e, type, m, s);
         }
         else {

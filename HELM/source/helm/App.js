@@ -284,7 +284,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var type = a == null ? null : a.biotype();
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
         var s = a == null ? null : a.elem;
-        var m = set == null ? null : set[s];
+        var m = set == null ? null : set[s.toLowerCase()];
         org.helm.webeditor.MolViewer.show(e, type, m, s);
     },
 
