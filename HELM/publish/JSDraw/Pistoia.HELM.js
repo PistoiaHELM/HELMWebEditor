@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2016-12-12
+// 2.0.0-2016-12-15
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +34,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2016-12-12",
+    kVersion: "2.0.0.2016-12-15",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -336,7 +336,7 @@ org.helm.webeditor.Interface = {
 
         if (ed.options.helmtoolbar) {
             var a = JSDraw2.Atom.cast(ed.curObject);
-            if (a != null && a.biotype() == scil.helm.HELM.SUGAR && a.bio.annotation != null) {
+            if (a != null && a.biotype() == scil.helm.HELM.SUGAR && a.bio != null) {
                 items.push({ caption: "Set as Sense", key: "helm_set_sense" });
                 items.push({ caption: "Set as Antisense", key: "helm_set_antisense" });
                 items.push({ caption: "Clear Annotation", key: "helm_set_clear" });
@@ -547,8 +547,9 @@ org.helm.webeditor.Monomers = {
         this.loadMonomers(doc);
     },
 
-    loadDB: function (list, makeMon) {
-        this.clear();
+    loadDB: function (list, makeMon, clearall) {
+        if (clearall != false)
+            this.clear();
 
         for (var i = 0; i < list.length; ++i) {
             var x = list[i];
@@ -4985,22 +4986,25 @@ org.helm.webeditor.MolViewer = {
     molscale: 1,
     delay: 800,
 
-    show: function (e, type, m, code) {
+    show: function (e, type, m, code, ed) {
         this.clearTimer();
         var me = this;
-        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code); }, this.delay);
+        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code, ed); }, this.delay);
     },
 
-    clearTimer: function() {
+    clearTimer: function () {
         if (this.tm != null) {
             clearTimeout(this.tm);
             this.tm = null;
         }
     },
 
-    show2: function (xy, type, m, code) {
+    show2: function (xy, type, m, code, ed) {
         this.tm = null;
         if (m == null)
+            return;
+
+        if (ed != null && ed.contextmenu != null && ed.contextmenu.isVisible())
             return;
 
         this.create();
@@ -5021,7 +5025,7 @@ org.helm.webeditor.MolViewer = {
             if (m.at != null) {
                 for (var k in m.at)
                     s += "<tr><td>" + k + "=</td><td>&nbsp;" + m.at[k] + "</td></tr>";
-            } 
+            }
             s += "</table>";
             this.rs.innerHTML = s;
         }
@@ -5030,7 +5034,7 @@ org.helm.webeditor.MolViewer = {
         this.dlg.moveTo(xy.x + scroll.x + 10, xy.y + scroll.y + 10);
     },
 
-    assemblyMol: function(s) {
+    assemblyMol: function (s) {
         var p1 = s.indexOf('(');
         var p2 = s.indexOf(")");
         var sugar = s.substr(0, p1);
@@ -5104,7 +5108,7 @@ org.helm.webeditor.MolViewer = {
             else
                 t.b.a2 = s.a0;
         }
-        
+
         m.atoms = m.atoms.concat(src.atoms);
         m.bonds = m.bonds.concat(src.bonds);
         return m.getMolfile();
@@ -5122,7 +5126,7 @@ org.helm.webeditor.MolViewer = {
         if (this.dlg != null)
             return;
 
-        var fields = { jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true }, rs: { type: "html", viewonly: true, style: {borderTop: "solid 1px gray"} } };
+        var fields = { jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true }, rs: { type: "html", viewonly: true, style: { borderTop: "solid 1px gray"}} };
         this.dlg = scil.Form.createDlgForm("", fields, null, { hidelabel: true, modal: false, noclose: true });
         this.jsd = this.dlg.form.fields.jsd.jsd;
         this.rs = this.dlg.form.fields.rs;
@@ -5724,7 +5728,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
         var s = a == null ? null : a.elem;
         var m = set == null ? null : set[s.toLowerCase()];
-        org.helm.webeditor.MolViewer.show(e, type, m, s);
+        org.helm.webeditor.MolViewer.show(e, type, m, s, ed);
     },
 
     createSequence: function (div, width, height) {
@@ -6116,7 +6120,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         var me = this;
         this.buttons = [
             "-",
-            { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomer XML Library", onclick: function () { me.uploadFile(); } },
+            { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomers", onclick: function () { me.uploadFile(true); } },
             "-",
             { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol/Name", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
             { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
@@ -6169,7 +6173,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
     },
 
     uploadFile: function (duplicatecheck) {
-        scil.Utils.uploadFile("Import Monomer Library", "Select HELM monomer xml file (" + (duplicatecheck ? "with" : "without") + " duplicate check)", this.options.ajaxurl + "helm.monomer.uploadlib",
+        scil.Utils.uploadFile("Import Monomer Library", "Select HELM monomer xml file or SDF file (" + (duplicatecheck ? "with" : "without") + " duplicate check)", this.options.ajaxurl + "helm.monomer.uploadlib",
             function (ret) { scil.Utils.alert(ret.n + " monomers are imported"); }, { duplicatecheck: duplicatecheck });
     }
 });
@@ -6187,7 +6191,9 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
             molfile: { label: "Structure", type: "jsdraw", width: 800, height: 300 },
             r1: { label: "R1", type: "select", items: ["", "H", "OH", "X"] },
             r2: { label: "R2", type: "select", items: ["", "H", "OH", "X"] },
-            r3: { label: "R3", type: "select", items: ["", "H", "OH", "X"] }
+            r3: { label: "R3", type: "select", items: ["", "H", "OH", "X"] },
+            r4: { label: "R4", type: "select", items: ["", "H", "OH", "X"] },
+            r5: { label: "R5", type: "select", items: ["", "H", "OH", "X"] },
         }
     },
 

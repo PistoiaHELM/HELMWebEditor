@@ -247,7 +247,7 @@ org.helm.webeditor.Interface = {
 
         if (ed.options.helmtoolbar) {
             var a = JSDraw2.Atom.cast(ed.curObject);
-            if (a != null && a.biotype() == scil.helm.HELM.SUGAR && a.bio.annotation != null) {
+            if (a != null && a.biotype() == scil.helm.HELM.SUGAR && a.bio != null) {
                 items.push({ caption: "Set as Sense", key: "helm_set_sense" });
                 items.push({ caption: "Set as Antisense", key: "helm_set_antisense" });
                 items.push({ caption: "Clear Annotation", key: "helm_set_clear" });

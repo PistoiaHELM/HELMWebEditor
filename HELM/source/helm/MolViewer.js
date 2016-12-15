@@ -16,22 +16,25 @@ org.helm.webeditor.MolViewer = {
     molscale: 1,
     delay: 800,
 
-    show: function (e, type, m, code) {
+    show: function (e, type, m, code, ed) {
         this.clearTimer();
         var me = this;
-        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code); }, this.delay);
+        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code, ed); }, this.delay);
     },
 
-    clearTimer: function() {
+    clearTimer: function () {
         if (this.tm != null) {
             clearTimeout(this.tm);
             this.tm = null;
         }
     },
 
-    show2: function (xy, type, m, code) {
+    show2: function (xy, type, m, code, ed) {
         this.tm = null;
         if (m == null)
+            return;
+
+        if (ed != null && ed.contextmenu != null && ed.contextmenu.isVisible())
             return;
 
         this.create();
@@ -52,7 +55,7 @@ org.helm.webeditor.MolViewer = {
             if (m.at != null) {
                 for (var k in m.at)
                     s += "<tr><td>" + k + "=</td><td>&nbsp;" + m.at[k] + "</td></tr>";
-            } 
+            }
             s += "</table>";
             this.rs.innerHTML = s;
         }
@@ -61,7 +64,7 @@ org.helm.webeditor.MolViewer = {
         this.dlg.moveTo(xy.x + scroll.x + 10, xy.y + scroll.y + 10);
     },
 
-    assemblyMol: function(s) {
+    assemblyMol: function (s) {
         var p1 = s.indexOf('(');
         var p2 = s.indexOf(")");
         var sugar = s.substr(0, p1);
@@ -135,7 +138,7 @@ org.helm.webeditor.MolViewer = {
             else
                 t.b.a2 = s.a0;
         }
-        
+
         m.atoms = m.atoms.concat(src.atoms);
         m.bonds = m.bonds.concat(src.bonds);
         return m.getMolfile();
@@ -153,7 +156,7 @@ org.helm.webeditor.MolViewer = {
         if (this.dlg != null)
             return;
 
-        var fields = { jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true }, rs: { type: "html", viewonly: true, style: {borderTop: "solid 1px gray"} } };
+        var fields = { jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true }, rs: { type: "html", viewonly: true, style: { borderTop: "solid 1px gray"}} };
         this.dlg = scil.Form.createDlgForm("", fields, null, { hidelabel: true, modal: false, noclose: true });
         this.jsd = this.dlg.form.fields.jsd.jsd;
         this.rs = this.dlg.form.fields.rs;

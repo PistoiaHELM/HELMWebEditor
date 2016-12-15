@@ -86,7 +86,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         var me = this;
         this.buttons = [
             "-",
-            { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomer XML Library", onclick: function () { me.uploadFile(); } },
+            { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomers", onclick: function () { me.uploadFile(true); } },
             "-",
             { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol/Name", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
             { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
@@ -139,7 +139,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
     },
 
     uploadFile: function (duplicatecheck) {
-        scil.Utils.uploadFile("Import Monomer Library", "Select HELM monomer xml file (" + (duplicatecheck ? "with" : "without") + " duplicate check)", this.options.ajaxurl + "helm.monomer.uploadlib",
+        scil.Utils.uploadFile("Import Monomer Library", "Select HELM monomer xml file or SDF file (" + (duplicatecheck ? "with" : "without") + " duplicate check)", this.options.ajaxurl + "helm.monomer.uploadlib",
             function (ret) { scil.Utils.alert(ret.n + " monomers are imported"); }, { duplicatecheck: duplicatecheck });
     }
 });
@@ -157,7 +157,9 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
             molfile: { label: "Structure", type: "jsdraw", width: 800, height: 300 },
             r1: { label: "R1", type: "select", items: ["", "H", "OH", "X"] },
             r2: { label: "R2", type: "select", items: ["", "H", "OH", "X"] },
-            r3: { label: "R3", type: "select", items: ["", "H", "OH", "X"] }
+            r3: { label: "R3", type: "select", items: ["", "H", "OH", "X"] },
+            r4: { label: "R4", type: "select", items: ["", "H", "OH", "X"] },
+            r5: { label: "R5", type: "select", items: ["", "H", "OH", "X"] },
         }
     },
 

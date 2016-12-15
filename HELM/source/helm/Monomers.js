@@ -130,8 +130,9 @@ org.helm.webeditor.Monomers = {
         this.loadMonomers(doc);
     },
 
-    loadDB: function (list, makeMon) {
-        this.clear();
+    loadDB: function (list, makeMon, clearall) {
+        if (clearall != false)
+            this.clear();
 
         for (var i = 0; i < list.length; ++i) {
             var x = list[i];
