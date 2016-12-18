@@ -743,7 +743,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         if (this.inputSeqDlg == null) {
             var fields = {
                 type: { label: "Sequence Type", type: "select", items: ["HELM", "Peptide", "RNA"] },
-                sequence: { label: "Sequence", type: "textarea", width: 800, height: 50 }
+                sequence: { label: "Sequence", type: "textarea", width: 800, height: 50 },
+                separator: { label: "Separator", width: 100, str: "(Legacy sequences with dedicated separator, e.g. dC.dA.xE)" }
             };
 
             var me = this;
@@ -758,7 +759,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
     importSequence: function (append) {
         var data = this.inputSeqDlg.form.getData();
-        if (this.setSequence(data.sequence, data.type, null, null, append))
+        if (this.setSequence(data.sequence, data.type, null, null, append, data.separator))
             this.inputSeqDlg.hide();
     },
 
@@ -771,7 +772,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
     * @param {string} linker - the linker for RNA
     * @param {bool} append - set the sequence in appending mode or overwriting mode
     */
-    setSequence: function (seq, format, sugar, linker, append) {
+    setSequence: function (seq, format, sugar, linker, append, separator) {
         var seq = scil.Utils.trim(seq);
         if (/^[a-z]+$/.test(seq))
             seq = seq.toUpperCase();
@@ -780,7 +781,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         var cloned = this.jsd.clone();
         this.jsd.clear();
         try {
-            n = org.helm.webeditor.IO.read(this, seq, format, null, sugar, linker);
+            n = org.helm.webeditor.IO.read(this, seq, format, null, sugar, linker, separator);
         }
         catch (e) {
             this.jsd.restoreClone(cloned);

@@ -128,6 +128,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             for (var i = 0; i < parent.childNodes.length; ++i) {
                 var d = parent.childNodes[i];
                 var name = scil.Utils.getInnerText(d);
+                var html = scil.Utils.isNullOrEmpty(name) ? d.innerHTML : null;
                 var f = 1;
                 if (s != null) {
                     if (scil.Utils.startswith(name.toLowerCase(), s))
@@ -139,9 +140,9 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                 }
 
                 if (f == 1)
-                    startingwith.push({ id: name, div: d });
+                    startingwith.push({ id: name, div: d, html: html });
                 else if (f == 2)
-                    containing.push({ id: name, div: d });
+                    containing.push({ id: name, div: d, html: html });
                 else
                     hidden.push(d);
             }
@@ -160,7 +161,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                 if (s != null)
                     d.div.firstChild.firstChild.innerHTML = this.highlightString(d.id, s);
                 else
-                    d.div.firstChild.firstChild.innerHTML = d.id;
+                    d.div.firstChild.firstChild.innerHTML = d.html != null ? d.html : d.id;
                 d.div.style.display = "table";
             }
 
@@ -911,6 +912,10 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
     compareMonomers: function (a, b) {
         if (a.id == b.id)
             return 0;
+        else if (a.id == null)
+            return -1;
+        else if (b.id == null)
+            return 1;
         else if (a.id.length != b.id.length && (a.id.length == 1 || b.id.length == 1))
             return a.id.length > b.id.length ? 1 : -1;
         else
