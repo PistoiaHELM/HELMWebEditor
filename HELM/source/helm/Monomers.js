@@ -134,6 +134,9 @@ org.helm.webeditor.Monomers = {
         if (clearall != false)
             this.clear();
 
+        if (list.length == null && list.list != null)
+            list = list.list;
+
         for (var i = 0; i < list.length; ++i) {
             var x = list[i];
 
