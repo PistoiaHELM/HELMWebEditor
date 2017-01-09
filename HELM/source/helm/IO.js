@@ -202,17 +202,17 @@ org.helm.webeditor.IO = {
         return null;
     },
 
-    read: function (plugin, s, format, renamedmonomers, sugar, linker) {
+    read: function (plugin, s, format, renamedmonomers, sugar, linker, separator) {
         if (scil.Utils.isNullOrEmpty(s))
             return 0;
 
-        s = s.toUpperCase();
+        var s2 = s.toUpperCase();
         if (scil.Utils.isNullOrEmpty(format)) {
-            if (/^((RNA)|(PEPTIDE)|(CHEM))[0-9]+/.test(s))
+            if (/^((RNA)|(PEPTIDE)|(CHEM))[0-9]+/.test(s2))
                 format = "HELM";
-            else if (/^[A|G|T|C|U]+[>]?$/.test(s))
+            else if (/^[A|G|T|C|U]+[>]?$/.test(s2))
                 format = "RNA";
-            else if (/^[A|C-I|K-N|P-T|V|W|Y|Z]+[>]?$/.test(s))
+            else if (/^[A|C-I|K-N|P-T|V|W|Y|Z]+[>]?$/.test(s2))
                 format = "Peptide";
             else
                 throw "Cannot detect the format using nature monomer names";
@@ -224,12 +224,17 @@ org.helm.webeditor.IO = {
         }
         else if (format == "Peptide") {
             var chain = new org.helm.webeditor.Chain();
-            var ss = this.splitChars(s);
+            var circle = scil.Utils.endswith(s, ">");
+            if (circle)
+                s = s.substr(0, s.length - 1);
+            var ss = this.splitChars(s, separator);
+            if (circle)
+                ss.push(">");
             return this.addAAs(plugin, ss, chain, origin);
         }
         else if (format == "RNA") {
             var chain = new org.helm.webeditor.Chain();
-            var ss = this.splitChars(s);
+            var ss = this.splitChars(s, separator);
             return this.addRNAs(plugin, ss, chain, origin, sugar, linker);
         }
 
@@ -402,10 +407,15 @@ org.helm.webeditor.IO = {
         return { chain1: tt[0], chain2: tt[1], a1: parseInt(c1[0]), r1: c1[1], a2: parseInt(c2[0]), r2: c2[1] };
     },
 
-    splitChars: function (s) {
+    splitChars: function (s, separator) {
         var ss = [];
-        for (var i = 0; i < s.length; ++i)
-            ss.push(s.substr(i, 1));
+        if (separator == null) {
+            for (var i = 0; i < s.length; ++i)
+                ss.push(s.substr(i, 1));
+        }
+        else {
+            ss = s.split(separator);
+        }
         return ss;
     },
 
