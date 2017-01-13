@@ -3,7 +3,7 @@
 // Pistoia HELM
 // Copyright (C) 2017 Pistoia (www.pistoiaalliance.org)
 // Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2017-01-09s
+// 2.0.0-2017-01-13
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -4253,9 +4253,9 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             var na = m.na;
             if (aa) {
                 if (m.at.R1 == null)
-                    na = "C-Term";
-                else if (m.at.R2 == null)
                     na = "N-Term";
+                else if (m.at.R2 == null)
+                    na = "C-Term";
             }
             if (scil.Utils.isNullOrEmpty(na))
                 na = "X";

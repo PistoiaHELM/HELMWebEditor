@@ -369,9 +369,9 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             var na = m.na;
             if (aa) {
                 if (m.at.R1 == null)
-                    na = "C-Term";
-                else if (m.at.R2 == null)
                     na = "N-Term";
+                else if (m.at.R2 == null)
+                    na = "C-Term";
             }
             if (scil.Utils.isNullOrEmpty(na))
                 na = "X";
