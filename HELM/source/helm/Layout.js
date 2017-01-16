@@ -1,16 +1,36 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * Layout class
 * @class org.helm.webeditor.Layout
 */
 org.helm.webeditor.Layout = {
+    /**
+    * Clean/lay out a molecule
+    * @function clean
+    */
     clean: function (m, bondlength, a) {
         m.clearFlag();
         var chains = org.helm.webeditor.Chain._getChains(m, a);
@@ -42,12 +62,20 @@ org.helm.webeditor.Layout = {
         org.helm.webeditor.Chain._removeChainID(m.atoms);
     },
 
-    resetIDs: function(m) {
+    /**
+    * Reset Monomer IDs (internal use)
+    * @function resetIDs
+    */
+    resetIDs: function (m) {
         var chains = org.helm.webeditor.Chain._getChains(m);
         for (var i = 0; i < chains.length; ++i)
             chains[i].resetIDs();
     },
 
+    /**
+    * Lay out inner circle (internal use)
+    * @function layoutInnerCircle
+    */
     layoutInnerCircle: function (chain, bondlength, m, chainid) {
         var pairs = [];
         for (var i = 0; i < m.bonds.length; ++i) {
@@ -98,7 +126,11 @@ org.helm.webeditor.Layout = {
         return true;
     },
 
-    layoutCircle: function(atoms, bondlength, startdeg) {
+    /**
+    * Lay out circle (internal use)
+    * @function layoutCircle
+    */
+    layoutCircle: function (atoms, bondlength, startdeg) {
         var rect = this.getRect(atoms);
         var origin = rect.center();
         
@@ -115,6 +147,10 @@ org.helm.webeditor.Layout = {
             atoms[i].p = atoms[i - 1].p.clone().rotateAround(origin, -deg);
     },
 
+    /**
+    * Lay out cross-chain bonds (internal use)
+    * @function layoutCrossChainBonds
+    */
     layoutCrossChainBonds: function (m, chains, bondlength) {
         var fixed = {};
         for (var i = 0; i < m.bonds.length; ++i) {
@@ -221,6 +257,10 @@ org.helm.webeditor.Layout = {
         }
     },
 
+    /**
+    * Layout branches (internal use)
+    * @function layoutBranches
+    */
     layoutBranches: function (m) {
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
@@ -273,6 +313,10 @@ org.helm.webeditor.Layout = {
         }
     },
 
+    /**
+    * Get rectangle (internal use)
+    * @function getRect
+    */
     getRect: function (atoms) {
         var a = atoms[0];
         var x1 = a.p.x;

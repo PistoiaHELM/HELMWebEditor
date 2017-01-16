@@ -1,10 +1,26 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * IO class
@@ -13,6 +29,10 @@
 org.helm.webeditor.IO = {
     kVersion: "V2.0",
 
+    /**
+    * Get HELM Notation
+    * @function getHelm
+    */
     getHelm: function (m, highlightselection) {
         var branches = {};
         var chains = org.helm.webeditor.Chain.getChains(m, branches);
@@ -87,6 +107,10 @@ org.helm.webeditor.IO = {
         return s + this.kVersion;
     },
 
+    /**
+    * Get the natural sequence of the molecule
+    * @function getSequence
+    */
     getSequence: function (m, highlightselection) {
         var branches = {};
         var chains = org.helm.webeditor.Chain.getChains(m, branches);
@@ -106,6 +130,10 @@ org.helm.webeditor.IO = {
         return s;
     },
 
+    /**
+    * Get XHELM
+    * @function getXHelm
+    */
     getXHelm: function (m) {
         var s = this.getHelm(m);
         if (scil.Utils.isNullOrEmpty(s))
@@ -124,6 +152,10 @@ org.helm.webeditor.IO = {
         return s;
     },
 
+    /**
+    * Get all monomers of a molecule
+    * @function getMonomers
+    */
     getMonomers: function (m) {
         var ret = {};
         var atoms = m.atoms;
@@ -165,6 +197,10 @@ org.helm.webeditor.IO = {
         return ret;
     },
 
+    /**
+    * Get HELM Code of a monomer (internal use)
+    * @function getCode
+    */
     getCode: function (a, highlightselection, bracket) {
         var s;
         if (typeof (a) == "string") {
@@ -193,6 +229,10 @@ org.helm.webeditor.IO = {
         return s;
     },
 
+    /**
+    * Find the chain ID based on monomer (internal use)
+    * @function findChainID
+    */
     findChainID: function (chains, a) {
         for (var k in chains) {
             var atoms = chains[k];
@@ -202,6 +242,10 @@ org.helm.webeditor.IO = {
         return null;
     },
 
+    /**
+    * Read a generic string (internal use)
+    * @function read
+    */
     read: function (plugin, s, format, renamedmonomers, sugar, linker, separator) {
         if (scil.Utils.isNullOrEmpty(s))
             return 0;
@@ -241,6 +285,10 @@ org.helm.webeditor.IO = {
         return 0;
     },
 
+    /**
+    * Parse a HELM string (internal use)
+    * @function parseHelm
+    */
     parseHelm: function (plugin, s, origin, renamedmonomers) {
         var n = 0;
         var sections = this.split(s, '$');
@@ -355,6 +403,10 @@ org.helm.webeditor.IO = {
         return n;
     },
 
+    /**
+    * Split components (internal use)
+    * @function split
+    */
     split: function (s, sep) {
         var ret = [];
         // PEPTIDE1{G.[C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|].T}$$$$
@@ -390,6 +442,10 @@ org.helm.webeditor.IO = {
         return ret;
     },
 
+    /**
+    * Parse HELM connection (internal use)
+    * @function parseConnection
+    */
     parseConnection: function (s) {
         var tt = s.split(',');
         if (tt.length != 3)
@@ -407,6 +463,10 @@ org.helm.webeditor.IO = {
         return { chain1: tt[0], chain2: tt[1], a1: parseInt(c1[0]), r1: c1[1], a2: parseInt(c2[0]), r2: c2[1] };
     },
 
+    /**
+    * Split chars (internal use)
+    * @function splitChars
+    */
     splitChars: function (s, separator) {
         var ss = [];
         if (separator == null) {
@@ -419,12 +479,20 @@ org.helm.webeditor.IO = {
         return ss;
     },
 
+    /**
+    * Remove bracket (internal use)
+    * @function trimBracket
+    */
     trimBracket: function (s) {
         if (s != null && scil.Utils.startswith(s, "[") && scil.Utils.endswith(s, "]"))
             return s.substr(1, s.length - 2);
         return s;
     },
 
+    /**
+    * Make a renamed monomer (internal use)
+    * @function getRenamedMonomer
+    */
     getRenamedMonomer: function (type, elem, monomers) {
         if (monomers == null || monomers.length == 0)
             return elem;
@@ -438,6 +506,10 @@ org.helm.webeditor.IO = {
         return elem;
     },
 
+    /**
+    * Remove annotation (internal use)
+    * @function detachAnnotation
+    */
     detachAnnotation: function (s) {
         var tag = null;
         if (scil.Utils.endswith(s, '\"')) {
@@ -459,6 +531,10 @@ org.helm.webeditor.IO = {
         return { tag: tag, str: s };
     },
 
+    /**
+    * Add a monomer (internal use)
+    * @function addNode
+    */
     addNode: function (plugin, chain, atoms, p, type, elem, renamedmonomers) {
         var e = this.detachAnnotation(elem);
         a2 = plugin.addNode(p, type, this.getRenamedMonomer(type, e.str, renamedmonomers));
@@ -471,11 +547,19 @@ org.helm.webeditor.IO = {
         return a2;
     },
 
+    /**
+    * Add a CHEM node (internal use)
+    * @function addChem
+    */
     addChem: function (plugin, name, chain, origin, renamedmonomers) {
         this.addNode(plugin, chain, chain.atoms, origin.clone(), org.helm.webeditor.HELM.CHEM, name, renamedmonomers);
         return 1;
     },
 
+    /**
+    * Add Amino Acid (internal use)
+    * @function addAAs
+    */
     addAAs: function (plugin, ss, chain, origin, renamedmonomers) {
         var n = 0;
 
@@ -508,6 +592,10 @@ org.helm.webeditor.IO = {
         return n;
     },
 
+    /**
+    * Split a RNA Combo (internal use)
+    * @function splitCombo
+    */
     splitCombo: function (s) {
         var ret = [];
 
@@ -542,6 +630,10 @@ org.helm.webeditor.IO = {
         return ret;
     },
 
+    /**
+    * Add RNA HELM string (internal use)
+    * @function addHELMRNAs
+    */
     addHELMRNAs: function (plugin, ss, chain, origin, renamedmonomers) {
         var n = 0;
         var a1 = null;
@@ -592,92 +684,10 @@ org.helm.webeditor.IO = {
         return n;
     },
 
-    //    addHELMRNAs: function (plugin, ss, chain, origin, renamedmonomers) {
-    //        var n = 0;
-    //        var a1 = null;
-    //        var a2 = null;
-    //        var m = plugin.jsd.m;
-    //        var delta = org.helm.webeditor.bondscale * plugin.jsd.bondlength;
-    //        var p = origin.clone();
-    //        for (var i = 0; i < ss.length; ++i) {
-    //            var s = ss[i];
-    //            var sugar = null;
-    //            var base = null;
-    //            var linker = null;
-
-    //            // handle all cases:
-    //            // RNA1{RP.[fR]P.[fR](A)P.[fR](A)}$$$$
-    //            // RNA1{R.P.[fR].P.[fR](A)P.[fR](A)}$$$$
-    //            // RNA1{R()P.[fR]()P.[fR](A)P.[fR](A)}$$$$
-    //            // RNA1{[xX](G)[xY].[xX]()[xY].[xX]().()[xY]}$$$$
-    //            var k1 = s.indexOf('(');
-    //            var k2 = s.indexOf(')');
-    //            if (k1 >= 0 && k2 >= 0) {
-    //                sugar = s.substr(0, k1);
-    //                base = s.substr(k1 + 1, k2 - k1 - 1);
-    //                linker = s.substr(k2 + 1);
-    //            }
-    //            else {
-    //                if (s.substr(0, 1) == "[") {
-    //                    var k = s.indexOf("]");
-    //                    if (k > 0) {
-    //                        sugar = s.substr(0, k + 1);
-    //                        linker = s.substr(k + 1);
-    //                    }
-    //                    else {
-    //                        sugar = s;
-    //                    }
-    //                }
-    //                else {
-    //                    sugar = s.substr(0, 1);
-    //                    linker = s.substr(1);
-    //                }
-    //            }
-
-    //            if (scil.Utils.isNullOrEmpty(base)) {
-    //                if (scil.Utils.isNullOrEmpty(sugar) && !scil.Utils.isNullOrEmpty(linker)) {
-    //                    if (org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.SUGAR, linker) != null) {
-    //                        sugar = linker;
-    //                        linker = null;
-    //                    }
-    //                }
-    //                else if (scil.Utils.isNullOrEmpty(linker) && !scil.Utils.isNullOrEmpty(sugar)) {
-    //                    if (org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.LINKER, sugar) != null) {
-    //                        linker = sugar;
-    //                        sugar = null;
-    //                    }
-    //                }
-    //            }
-
-    //            // 1. sugar (Order does matter)
-    //            if (!scil.Utils.isNullOrEmpty(sugar)) {
-    //                p.x += delta;
-    //                a2 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.SUGAR, sugar, renamedmonomers);
-    //                if (a1 != null)
-    //                    chain.bonds.push(plugin.addBond(a1, a2, 2, 1));
-    //                a1 = a2;
-    //            }
-
-    //            // 2. base
-    //            if (!scil.Utils.isNullOrEmpty(base)) {
-    //                a3 = this.addNode(plugin, chain, chain.bases, org.helm.webeditor.Interface.createPoint(p.x, p.y + delta), org.helm.webeditor.HELM.BASE, base, renamedmonomers);
-
-    //                plugin.addBond(a2, a3, 3, 1);
-    //                a3.bio.id = ++n;
-    //            }
-
-    //            // 3. linker
-    //            if (!scil.Utils.isNullOrEmpty(linker)) {
-    //                p.x += delta;
-    //                a0 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.LINKER, linker, renamedmonomers);
-    //                chain.bonds.push(plugin.addBond(a1, a0, 2, 1));
-    //                a1 = a0;
-    //            }
-    //        }
-
-    //        return n;
-    //    },
-
+    /**
+    * Add RNA sequence (internal use)
+    * @function addRNAs
+    */
     addRNAs: function (plugin, ss, chain, origin, sugar, linker) {
         var n = 0;
 
@@ -733,7 +743,10 @@ org.helm.webeditor.IO = {
         return n;
     },
 
-
+    /**
+    * Compress a string using Pako (internal use)
+    * @function compressGz
+    */
     compressGz: function (s) {
         if (scil.Utils.isNullOrEmpty(s))
             return null;
@@ -749,6 +762,10 @@ org.helm.webeditor.IO = {
         return null;
     },
 
+    /**
+    * Decompress a string using pako (internal use)
+    * @function uncompressGz
+    */
     uncompressGz: function (b64Data) {
         if (scil.Utils.isNullOrEmpty(b64Data))
             return null;

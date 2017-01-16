@@ -1,10 +1,26 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * MonomerLibApp class
@@ -78,6 +94,10 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         this.init(parent);
     },
 
+    /**
+    * Initialize the manager (internal use)
+    * @function init
+    */
     init: function (parent) {
         var me = this;
 
@@ -130,14 +150,26 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         this.monomers.refresh();
     },
 
+    /**
+    * Refresh the list (internal use)
+    * @function refresh
+    */
     refresh: function (view) {
         this.monomers.refresh();
     },
 
+    /**
+    * Event handler before refreshing (internal use)
+    * @function onbeforerefresh
+    */
     onbeforerefresh: function (args) {
         scil.Form.getButtonValuesByKey(this.buttons, ["status", "polymertype", "monomertype", "status", "symbol", "countperpage"], args);
     },
 
+    /**
+    * Import from file (internal use)
+    * @function uploadFile
+    */
     uploadFile: function (duplicatecheck) {
         scil.Utils.uploadFile("Import Monomer Library", "Select HELM monomer xml file or SDF file (" + (duplicatecheck ? "with" : "without") + " duplicate check)", this.options.ajaxurl + "helm.monomer.uploadlib",
             function (ret) { scil.Utils.alert(ret.n + " monomers are imported"); }, { duplicatecheck: duplicatecheck });
@@ -145,6 +177,10 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
 });
 
 scil.apply(org.helm.webeditor.MonomerLibApp, {
+    /**
+    * Get all supported fields (internal use)
+    * @function getFields
+    */
     getFields: function() {
         return {
             id: { type: "hidden" },
@@ -163,6 +199,10 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
         }
     },
 
+    /**
+    * Tool function (internal use)
+    * @function getValueByKey
+    */
     getValueByKey: function (list, key) {
         for (var i = 0; i < list.length; ++i) {
             if (list[i].key == key)
@@ -171,14 +211,26 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
         return null;
     },
 
+    /**
+    * List polymer types (internal use)
+    * @function getPolymerTypes
+    */
     getPolymerTypes: function () {
         return ["", "RNA", "CHEM", "PEPTIDE"];
     },
 
+    /**
+    * List monomer types (internal use)
+    * @function getMonomerTypes
+    */
     getMonomerTypes: function () {
         return ["", "Backbone", "Branch", "Undefined"]
     },
 
+    /**
+    * List of statuses (internal use)
+    * @function getStatuses
+    */
     getStatuses: function () {
         return ["", "New", "Approved", "Retired"]
     }

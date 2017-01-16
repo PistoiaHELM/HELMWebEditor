@@ -1,16 +1,38 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * MonomerExplorer class
 * @class org.helm.webeditor.MonomerExplorer
 */
 org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
+    /**
+    * @constructor MonomerExplorer
+    * @param {DOM} parent - The parent element
+    * @param {Plugin} plugin - The Plugin object
+    * @param {dict} options - options on how to render the Monomer Explorer
+    */
     constructor: function (parent, plugin, options) {
         this.plugin = plugin;
         this.options = options == null ? {} : options;
@@ -76,6 +98,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         org.helm.webeditor.MonomerExplorer.loadNucleotides();
     },
 
+    /**
+    * Add Monomer Tabs (internal use)
+    * @function addMonomerTabs
+    */
     addMonomerTabs: function (tabs) {
         if (this.options.mexfavoritetab != false)
             tabs.push({ caption: "Favorite", tabkey: "favorite" });
@@ -85,10 +111,18 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         tabs.push({ caption: "RNA", tabkey: "rna" });
     },
 
+    /**
+    * Find and replace monomer (internal use)
+    * @function findReplace
+    */
     findReplace: function () {
         this.plugin.replaceAll(this.findinput.value, this.findreplace.value, this.findtype.value);
     },
 
+    /**
+    * Filter monomers (internal use)
+    * @function filter
+    */
     filter: function (e) {
         var key = this.tabs.currentTabKey();
         if (key == "rule") {
@@ -114,6 +148,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         //this.filterGroup(tab.clientarea, this.filterInput.value);
     },
 
+    /**
+    * Filter a group (internal use)
+    * @function filterGroup
+    */
     filterGroup: function (s) {
         if (s == "")
             s = null;
@@ -170,6 +208,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Highlight search string (internal use)
+    * @function highlightString
+    */
     highlightString: function (s, q) {
         var p = s.toLowerCase().indexOf(q);
         if (p < 0)
@@ -178,6 +220,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return s.substr(0, p) + "<span style='background:yellow'>" + s.substr(p, q.length) + "</span>" + s.substr(p + q.length);
     },
 
+    /**
+    * Reload a tab (internal use)
+    * @function reloadTab
+    */
     reloadTab: function (type) {
         var key = null;
         switch (type) {
@@ -213,6 +259,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.onShowTab(td, true);
     },
 
+    /**
+    * Reload all tabs (internal use)
+    * @function reloadTabs
+    */
     reloadTabs: function () {
         var list = this.tabs.tr.childNodes;
         for (var i = 0; i < list.length; ++i) {
@@ -224,6 +274,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         this.onShowTab(this.tabs.currenttab);
     },
 
+    /**
+    * resize Monomer Explorer (internal use)
+    * @function resize
+    */
     resize: function (height) {
         this.height = height;
 
@@ -240,6 +294,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.rnatabs.resizeClientarea(0, this.getHeight("RNA"));
     },
 
+    /**
+    * Get the height of the Monomer Explorer (internal use)
+    * @function getHeight
+    */
     getHeight: function (key) {
         var d1 = this.options.mexmonomerstab ? 0 : 14;
         var d2 = this.options.mexmonomerstab ? 0 : 47;
@@ -260,6 +318,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return this.height;
     },
 
+    /**
+    * Event handler when showing a tab (internal use)
+    * @function onShowTab
+    */
     onShowTab: function (td, forcerecreate) {
         if (td == null)
             return;
@@ -352,6 +414,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
     },
 
+    /**
+    * Get monomers by natural analog (internal use)
+    * @function getMonomerDictGroupByAnalog
+    */
     getMonomerDictGroupByAnalog: function (type) {
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
         //for (var k in set)
@@ -386,6 +452,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return ret;
     },
 
+    /**
+    * Get monomer list of a monomer type (internal use)
+    * @function getMonomerList
+    */
     getMonomerList: function (list, type, addnull) {
         if (list != null) {
             list.sort();
@@ -399,6 +469,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return this.getMonomerNames(list, addnull);
     },
 
+    /**
+    * Get monomer names (internal use)
+    * @function getMonomerNames
+    */
     getMonomerNames: function (list, addnull) {
         var ret = [];
         if (addnull)
@@ -411,6 +485,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return ret;
     },
 
+    /**
+    * Create a monomer group (internal use)
+    * @function createMonomerGroup
+    */
     createMonomerGroup: function (div, type, list, addnull) {
         var me = this;
         list = this.getMonomerList(list, type, addnull);
@@ -420,6 +498,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         dojo.connect(div, "ondblclick", function (e) { me.dblclick(e); });
     },
 
+    /**
+    * inner loop creating a monomer group (internal use)
+    * @function createMonomerGroup3
+    */
     createMonomerGroup3: function (div, group, i, createbar) {
         var me = this;
         var parent = scil.Utils.createElement(div, "div");
@@ -467,11 +549,19 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         //}
     },
 
+    /**
+    * Create RNA Tab caption (internal use)
+    * @function 
+    */
     createRNATabCaption: function (type, label) {
         var half = " style='font-size: 80%;padding-left:20px;background-repeat:no-repeat;background-position:left center;background-image:";
         return "<div title='Nucleotide (Combined)' " + half + scil.Utils.imgSrc("img/helm_" + type.toLowerCase() + ".gif", true) + "'>" + label + "</div>";
     },
 
+    /**
+    * Event handler when pinning a Combo (internal use)
+    * @function onPinMenu
+    */
     onPinMenu: function (e) {
         if (this.pinmenu == null) {
             var me = this;
@@ -481,6 +571,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         this.pinmenu.show(e.clientX, e.clientY);
     },
 
+    /**
+    * Inner loop creating a monomer group (internal use)
+    * @function createMonomerGroup4
+    */
     createMonomerGroup4: function (div, type, list, addnull, groupbyanalog) {
         if (groupbyanalog) {
             var dict = this.getMonomerDictGroupByAnalog(type);
@@ -527,6 +621,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Add a nucleotide (internal use)
+    * @function addNucleotide
+    */
     addNucleotide: function (tab) {
         var notation = this.getCombo();
         var dict = org.helm.webeditor.MonomerExplorer.nucleotides;
@@ -545,6 +643,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         });
     },
 
+    /**
+    * Inner loop listing all monomer of a monomer type (internal use)
+    * @function 
+    */
     _listMonomer2: function (div, k, list, type, width) {
         if (list.length == 0)
             return;
@@ -557,6 +659,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         this._listMonomers(right, list, type);
     },
 
+    /**
+    * Create favorite monomer group (internal use)
+    * @function createMonomerGroupFav
+    */
     createMonomerGroupFav: function (div, caption, type) {
         var list = org.helm.webeditor.MonomerExplorer.favorites.getList(type);
         if (list == null || list.length == 0)
@@ -572,6 +678,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         dojo.connect(d, "ondblclick", function (e) { me.dblclick(e); });
     },
 
+    /**
+    * List a monomer group (internal use)
+    * @function _listMonomers
+    */
     _listMonomers: function (div, list, type, mexfavoritefirst) {
         div.className = "filtergroup";
 
@@ -593,6 +703,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Recreate favorite monomers (internal use)
+    * @function 
+    */
     recreateFavorites: function (d) {
         this.createMonomerGroupFav(d, "Nucleotide", org.helm.webeditor.MonomerExplorer.kNucleotide);
         this.createMonomerGroupFav(d, "Base", org.helm.webeditor.HELM.BASE);
@@ -602,6 +716,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         this.createMonomerGroupFav(d, "Peptide", org.helm.webeditor.HELM.AA);
     },
 
+    /**
+    * Create a monomer block (internal use)
+    * @function createMonomerDiv
+    */
     createMonomerDiv: function (parent, name, type, style, star) {
         var fav = org.helm.webeditor.MonomerExplorer.favorites.contains(name, type);
 
@@ -635,6 +753,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return div;
     },
 
+    /**
+    * Set monomer block background (internal use)
+    * @function setMonomerBackground
+    */
     setMonomerBackground: function (div, f) {
         var type = div.getAttribute("helm");
         if (scil.Utils.isNullOrEmpty(type))
@@ -646,6 +768,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         div.style.backgroundImage = scil.Utils.imgSrc("img/mon-" + bk + f + ".png", true);
     },
 
+    /**
+    * Get the monomer block (internal use)
+    * @function getMonomerDiv
+    */
     getMonomerDiv: function (e) {
         var div = e.target || e.srcElement;
         if (div == null || div.tagName == null)
@@ -662,6 +788,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return scil.Utils.isNullOrEmpty(type) ? null : div;
     },
 
+    /**
+    * Enable DnD (internal use)
+    * @function createDnD
+    */
     createDnD: function (div) {
         var me = this;
         return new scil.DnD(div, {
@@ -708,6 +838,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         });
     },
 
+    /**
+    * Show structure popup (internal use)
+    * @function showMol
+    */
     showMol: function (e) {
         var src = this.getMonomerDiv(e);
         if (src != null && !this.dnd.isDragging()) {
@@ -724,6 +858,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Tool to split a list (internal use)
+    * @function splitLists
+    */
     splitLists: function (set) {
         var lists = [[], [], [], []];
         for (var k in set) {
@@ -741,6 +879,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return lists;
     },
 
+    /**
+    * Change favorites (internal use)
+    * @function changeFavorite
+    */
     changeFavorite: function (div) {
         var f = div.getAttribute("star") != "1";
 
@@ -760,6 +902,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         //this.reloadTab(type);
     },
 
+    /**
+    * Select a monomer (internal use)
+    * @function select
+    */
     select: function (e) {
         var div = this.getMonomerDiv(e);
         if (div != null) {
@@ -872,6 +1018,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Get the RNA combo (internal use)
+    * @function getCombo
+    */
     getCombo: function () {
         var sugar = this.selected[org.helm.webeditor.HELM.SUGAR];
         var linker = this.selected[org.helm.webeditor.HELM.LINKER];
@@ -886,6 +1036,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return s;
     },
 
+    /**
+    * Event of double click (internal use)
+    * @function dblclick
+    */
     dblclick: function (e) {
         var div = this.getMonomerDiv(e);
         var helm = div == null ? null : div.getAttribute("helm");
@@ -913,6 +1067,10 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         U: "R(U)P"
     },
 
+    /**
+    * Compare if two monomers are same (internal use)
+    * @function compareMonomers
+    */
     compareMonomers: function (a, b) {
         if (a.id == b.id)
             return 0;
@@ -926,6 +1084,10 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
             return a.id.toLowerCase() > b.id.toLowerCase() ? 1 : -1;
     },
 
+    /**
+    * Event handler on adding favorite (internal use)
+    * @function onAddFavorite
+    */
     onAddFavorite: function (name, f, type) {
         if (!f && type == "nucleotide" && this.customnucleotides != null && this.customnucleotides[name] != null) {
             delete this.customnucleotides[name];
@@ -933,6 +1095,10 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         }
     },
 
+    /**
+    * Create a custom RNA combo (internal use)
+    * @function addCustomNucleotide
+    */
     addCustomNucleotide: function (name, notation) {
         name = scil.Utils.trim(name);
         if (scil.Utils.isNullOrEmpty(name)) {
@@ -956,11 +1122,19 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         return true;
     },
 
+    /**
+    * Save custom RNA Combos(internal use)
+    * @function saveNucleotides
+    */
     saveNucleotides: function () {
         var s = scil.Utils.json2str(this.customnucleotides);
         scil.Utils.createCookie("scil_helm_nucleotides", s);
     },
 
+    /**
+    * Read all saved custom RNA Combo (internal use)
+    * @function loadNucleotides
+    */
     loadNucleotides: function () {
         if (this._nucleotidesloaded)
             return this.nucleotides;
@@ -984,12 +1158,20 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         return this.nucleotides;
     },
 
+    /**
+    * Show Monomer Explorer as a dialog (internal use)
+    * @function showDlg
+    */
     showDlg: function (jsd) {
         this.createDlg(jsd);
         this.dlg.show2({ owner: jsd, modal: false });
         jsd.helm.monomerexplorer = this.mex;
     },
 
+    /**
+    * Create Monomer Explorer dialog (internal use)
+    * @function createDlg
+    */
     createDlg: function (jsd) {
         if (this.dlg != null)
             return;

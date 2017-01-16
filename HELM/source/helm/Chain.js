@@ -1,16 +1,36 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * Chain class
 * @class org.helm.webeditor.Chain
 */
 org.helm.webeditor.Chain = scil.extend(scil._base, {
+    /**
+    * Contructor of Chain
+    * @constructor Chain
+    */
     constructor: function (id) {
         this.id = id;
         this.bonds = [];
@@ -19,6 +39,11 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         this.bases = [];
     },
 
+    /**
+    * Get the complementary of a given node
+    * @function getComplementary
+    * @param {Atom} a - the input Node
+    */
     getComplementary: function (a) {
         var m = org.helm.webeditor.Monomers.getMonomer(a);
         switch (m.na) {
@@ -36,6 +61,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Create the complementary strand (internal use)
+    * @function makeComplementaryStrand
+    */
     makeComplementaryStrand: function (m, bondlength) {
         var n = 0;
         var lasta2 = null;
@@ -88,6 +117,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return n > 0;
     },
 
+    /**
+    * Get separated polymer from this fragment(chain) (internal use)
+    * @function _getPolymers
+    */
     _getPolymers: function () {
         var ret = [];
 
@@ -129,6 +162,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return ret;
     },
 
+    /**
+    * Get whole chain as an expanded molecule (internal use)
+    * @function getMol
+    */
     getMol: function (a, plugin) {
         var mon = org.helm.webeditor.Monomers.getMonomer(a);
         var molfile = org.helm.webeditor.monomers.getMolfile(mon);
@@ -147,6 +184,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return m;
     },
 
+    /**
+    * Expaned backbond (internal use)
+    * @function _expandBackbone
+    */
     _expandBackbone: function (mol, plugin) {
         var m1 = null;
         var m2 = null;
@@ -209,6 +250,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         mol.bonds = mol.bonds.concat(m1.bonds);
     },
 
+    /**
+    * Connect branches to the backbone (internal use)
+    * @function _connectBranches
+    */
     _connectBranches: function (m, plugin, branches) {
         if (branches == null || branches.bonds == null)
             return;
@@ -224,6 +269,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Inner loop of connecting branches (internal use)
+    * @function _connectBranches2
+    */
     _connectBranches2: function (m, a, branches, plugin) {
         var r1 = null;
         var r2 = null;
@@ -260,10 +309,18 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         org.helm.webeditor.MolViewer.mergeMol(m, "R" + r1, m2, "R" + r2, a, a2);
     },
 
+    /**
+    * Check if this chain is a circle
+    * @function isCircle
+    */
     isCircle: function () {
         return this.atoms.length >= 3 && this.atoms[0] == this.atoms[this.atoms.length - 1];
     },
 
+    /**
+    * Reset chain monomer IDs
+    * @function resetIDs
+    */
     resetIDs: function () {
         var aaid = 0;
         var baseid = 0;
@@ -300,6 +357,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Set internal flags for all nodes and bonds (internal use)
+    * @function setFlag
+    */
     setFlag: function (f) {
         for (var i = 0; i < this.atoms.length; ++i)
             this.atoms[i].f = f;
@@ -307,10 +368,18 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             this.bonds[i].f = f;
     },
 
+    /**
+    * Test if the chain contains a node (internal use)
+    * @function containsAtom
+    */
     containsAtom: function (a) {
         return scil.Utils.indexOf(this.atoms, a) != -1;
     },
 
+    /**
+    * Layout the chain as a line (internal use)
+    * @function layoutLine
+    */
     layoutLine: function (bondlength) {
         var rect = this.getRect();
 
@@ -324,6 +393,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Layout the chain as a circle (internal use)
+    * @function layoutCircle
+    */
     layoutCircle: function (bondlength) {
         org.helm.webeditor.Layout.layoutCircle(this.atoms, bondlength, 0);
         //var delta = org.helm.webeditor.bondscale * bondlength;
@@ -336,6 +409,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         //    this.atoms[i].p = this.atoms[i - 1].p.clone().rotateAround(origin, -deg);
     },
 
+    /**
+    * Rotate chain (internal use)
+    * @function rotate
+    */
     rotate: function (deg, origin) {
         if (deg == 0)
             return;
@@ -357,6 +434,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Move chain's coordinates (internal use)
+    * @function move
+    */
     move: function (delta) {
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
         for (var i = 0; i < n; ++i) {
@@ -367,6 +448,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Layout bases in a RNA chain (internal use)
+    * @function layoutBases
+    */
     layoutBases: function () {
         var circle = this.isCircle();
         var n = circle ? this.atoms.length - 1 : this.atoms.length;
@@ -409,10 +494,18 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Get the rectangle of the chain (internal use)
+    * @function getRect
+    */
     getRect: function () {
         return org.helm.webeditor.Layout.getRect(this.atoms);
     },
 
+    /**
+    * Get the sequence of natural analog of the chain
+    * @function getSequence
+    */
     getSequence: function (highlightselection) {
         var s = "";
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
@@ -453,6 +546,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return s;
     },
 
+    /**
+    * Get HELM notation (internal use)
+    * @function getHelm
+    */
     getHelm: function (ret, highlightselection) {
         var sequence = "";
         var aaid = 0;
@@ -554,6 +651,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Get a node by its Monomer ID (internal use)
+    * @function getAtomByAAID
+    */
     getAtomByAAID: function (aaid) {
         if (!(aaid > 0))
             return null;
@@ -572,6 +673,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
 });
 
 scil.apply(org.helm.webeditor.Chain, {
+    /**
+    * Get the chain of a given node (internal use)
+    * @function getChain
+    */
     getChain: function (m, startatom) {
         if (startatom == null)
             return null;
@@ -579,10 +684,18 @@ scil.apply(org.helm.webeditor.Chain, {
         return chains == null ? null : chains[0];
     },
 
+    /**
+    * Get all chains (internal use)
+    * @function getChains
+    */
     getChains: function (m, branchcollection) {
         return this._getChains(m, null, branchcollection);
     },
 
+    /**
+    * Set Chain ID (internal use)
+    * @function _setChainID
+    */
     _setChainID: function (chain, chainid) {
         for (var k = 0; k < chain.atoms.length; ++k) {
             chain.atoms[k]._chainid = chainid;
@@ -591,11 +704,19 @@ scil.apply(org.helm.webeditor.Chain, {
         }
     },
 
+    /**
+    * Remove Chain ID (internal use)
+    * @function _removeChainID
+    */
     _removeChainID: function (atoms) {
         for (var i = 0; i < atoms.length; ++i)
             delete atoms[i]._chainid;
     },
 
+    /**
+    * Inner loop getting chains (internal use)
+    * @function _getChains
+    */
     _getChains: function (m, startatom, branchcollection) {
         var b0 = null;
         var bonds = [];

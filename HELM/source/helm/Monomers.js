@@ -1,10 +1,26 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 
 /**
@@ -14,6 +30,10 @@
 org.helm.webeditor.Monomers = {
     defaultmonomers: { HELM_BASE: null, HELM_SUGAR: null, HELM_LINKER: null, HELM_AA: null, HELM_CHEM: null },
 
+    /**
+    * Clear monomer database (internal use)
+    * @function clear
+    */
     clear: function () {
         this.sugars = {};
         this.linkers = {};
@@ -22,6 +42,10 @@ org.helm.webeditor.Monomers = {
         this.chems = {};
     },
 
+    /**
+    * Get the default monomer of a given monomer type (internal use)
+    * @function getDefaultMonomer
+    */
     getDefaultMonomer: function (monomertype) {
         var r = this.defaultmonomers[monomertype];
         if (r != null)
@@ -40,6 +64,10 @@ org.helm.webeditor.Monomers = {
         return "?";
     },
 
+    /**
+    * Tool function (internal use)
+    * @function _getFirstKey
+    */
     _getFirstKey: function (set, key1, key2) {
         if (key1 != null && set[key1.toLowerCase()] != null)
             return set[key1.toLowerCase()].id;
@@ -51,6 +79,10 @@ org.helm.webeditor.Monomers = {
         return "?";
     },
 
+    /**
+    * Save monomers as text database (internal use)
+    * @function saveTextDB
+    */
     saveTextDB: function (url) {
         var cols = ["id", "symbol", "name", "naturalanalog", "molfile", "smiles", "polymertype", "monomertype", "r1", "r2", "r3", "r4", "r5", "author", "createddate"];
         var s = "";
@@ -69,6 +101,10 @@ org.helm.webeditor.Monomers = {
         scil.Utils.post(url, args, "_blank");
     },
 
+    /**
+    * Save monomers into xml string (internal use)
+    * @function saveMonomerDB
+    */
     saveMonomerDB: function (url) {
         var s = "<MONOMER_DB>\n";
         s += "<PolymerList>\n";
@@ -97,6 +133,10 @@ org.helm.webeditor.Monomers = {
         scil.Utils.post(url, args, "_blank");
     },
 
+    /**
+    * Save all monomers into a text file
+    * @function saveMonomersAsText
+    */
     saveMonomersAsText: function (set, type, mt, cols, n) {
         var ret = "";
         for (var id in set) {
@@ -107,6 +147,10 @@ org.helm.webeditor.Monomers = {
         return ret;
     },
 
+    /**
+    * Save all Monomers into xml 
+    * @function saveMonomers
+    */
     saveMonomers: function (set, type, mt) {
         var s = "";
         for (var id in set)
@@ -114,6 +158,10 @@ org.helm.webeditor.Monomers = {
         return s;
     },
 
+    /**
+    * Load monomer from a web service
+    * @function loadFromUrl
+    */
     loadFromUrl: function (url, callback) {
         var fn = function (xml) {
             org.helm.webeditor.monomers.loadFromXml(xml);
@@ -123,6 +171,10 @@ org.helm.webeditor.Monomers = {
         scil.Utils.download(url, fn);
     },
 
+    /**
+    * Load monomer from xml string 
+    * @function loadFromXml
+    */
     loadFromXml: function (s) {
         var doc = scil.Utils.parseXml(s);
         if (doc == null)
@@ -130,6 +182,10 @@ org.helm.webeditor.Monomers = {
         this.loadMonomers(doc);
     },
 
+    /**
+    * Load monomer from json array coming from database
+    * @function loadDB
+    */
     loadDB: function (list, makeMon, clearall) {
         if (clearall != false)
             this.clear();
@@ -162,6 +218,10 @@ org.helm.webeditor.Monomers = {
         }
     },
 
+    /**
+    * Load monomer from XML 
+    * @function loadMonomers
+    */
     loadMonomers: function (doc, callback) {
         var list = doc.getElementsByTagName("Monomer");
         if (list == null || list.length == 0)
@@ -202,6 +262,10 @@ org.helm.webeditor.Monomers = {
         });
     },
 
+    /**
+    * Rename a monomer (internal use)
+    * @function renameNextMonomer
+    */
     renameNextMonomer: function (newmonomers, overlapped, callback) {
         if (overlapped.length == 0) {
             callback();
@@ -226,6 +290,10 @@ org.helm.webeditor.Monomers = {
         });
     },
 
+    /**
+    * Get the monomer set by its type (internal use)
+    * @function getMonomerSet
+    */
     getMonomerSet: function (a) {
         if (a == null)
             return null;
@@ -244,6 +312,10 @@ org.helm.webeditor.Monomers = {
         return null;
     },
 
+    /**
+    * Get all monomer colors (internal use)
+    * @function getMonomerColors
+    */
     getMonomerColors: function (a) {
         if (a == null)
             return null;
@@ -262,6 +334,10 @@ org.helm.webeditor.Monomers = {
         return null;
     },
 
+    /**
+    * Get monomer list of a type (internal use)
+    * @function getMonomerList
+    */
     getMonomerList: function (a) {
         var set = this.getMonomerSet(a);
         if (set == null)
@@ -274,6 +350,10 @@ org.helm.webeditor.Monomers = {
         return ret;
     },
 
+    /**
+    * Get a monomer by an object or its name (internal use)
+    * @function getMonomer
+    */
     getMonomer: function (a, name) {
         if (a == null && name == null)
             return null;
@@ -296,11 +376,19 @@ org.helm.webeditor.Monomers = {
         return set == null ? null : set[s.toLowerCase()];
     },
 
+    /**
+    * Check if the monomer have a R group (internal use)
+    * @function hasR
+    */
     hasR: function (type, name, r) {
         var m = this.getMonomer(type, name);
         return m != null && m.at != null && m.at[r] != null;
     },
 
+    /**
+    * Get monomer color by a monomer object (internal use)
+    * @function getColor
+    */
     getColor: function (a) {
         var m = this.getMonomer(a, a.elem);
         if (m == null)
@@ -319,6 +407,10 @@ org.helm.webeditor.Monomers = {
         };
     },
 
+    /**
+    * Get monomer color by type by name (internal use)
+    * @function getColor2
+    */
     getColor2: function (type, name) {
         var m = this.getMonomer(type, name);
         if (m == null)
@@ -337,12 +429,20 @@ org.helm.webeditor.Monomers = {
         };
     },
 
+    /**
+    * Get the molfile of a monomer (internal use)
+    * @function getMolfile
+    */
     getMolfile: function (m) {
         if (m != null && m.m == null && m.mz != null)
             m.m = org.helm.webeditor.IO.uncompressGz(m.mz);
         return m == null ? null : m.m;
     },
 
+    /**
+    * Convert XML type to HELM Editor type (internal use)
+    * @function helm2Type
+    */
     helm2Type: function (m) {
         if (m.type == "PEPTIDE")
             return org.helm.webeditor.HELM.AA;
@@ -411,6 +511,10 @@ org.helm.webeditor.Monomers = {
         return ret;
     },
 
+    /**
+    * add one monomer to HELM Editor (internal use)
+    * @function addOneMonomer
+    */
     addOneMonomer: function (m) {
         var set = this.getMonomerSet(this.helm2Type(m));
         if (set == null)
@@ -423,6 +527,10 @@ org.helm.webeditor.Monomers = {
         return true;
     },
 
+    /**
+    * Write one monomer into text file (internal use)
+    * @function writeOneAsText
+    */
     writeOneAsText: function (m, cols) {
         var molfile = m.m.mz;
         if (scil.Utils.isNullOrEmpty(molfile) && m.m.m != null)
@@ -444,6 +552,10 @@ org.helm.webeditor.Monomers = {
         return s;
     },
 
+    /**
+    * Save one monomer into xml (internal use)
+    * @function writeOne
+    */
     writeOne: function (m) {
         var molfile = this.getMolfile(m.m);
         if (molfile != null) {
@@ -476,6 +588,10 @@ org.helm.webeditor.Monomers = {
         return s;
     },
 
+    /**
+    * Read one monomer from XML (internal use)
+    * @function readOne
+    */
     readOne: function (e) {
         var s = this.readValue(e, "MonomerMolFile");
         var m = null;
@@ -515,6 +631,10 @@ org.helm.webeditor.Monomers = {
         return m;
     },
 
+    /**
+    * Tool function to ready XML text (internal use)
+    * @function readValue
+    */
     readValue: function (e, name) {
         var list = e.getElementsByTagName(name);
         if (list == null || list.length == 0)

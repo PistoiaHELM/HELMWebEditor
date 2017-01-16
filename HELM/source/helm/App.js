@@ -1,10 +1,26 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * HELM Editor App class
@@ -97,6 +113,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Calculate layout sizes (internal use)
+    * @function calculateSizes
+    */
     calculateSizes: function () {
         var d = dojo.window.getBox();
         if (this.options.topmargin > 0)
@@ -118,6 +138,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return ret;
     },
 
+    /**
+    * Intialize the App (internal use)
+    * @function init
+    */
     init: function (parent) {
         var me = this;
 
@@ -189,6 +213,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         scil.connect(window, "onresize", function (e) { me.resizeWindow(); });
     },
 
+    /**
+    * Resize Window (internal use)
+    * @function resizeWindow
+    */
     resizeWindow: function () {
         var sizes = this.calculateSizes();
         this.canvas.resize(sizes.rightwidth, sizes.topheight - 70);
@@ -205,6 +233,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.mex.resize(sizes.height);
     },
 
+    /**
+    * Swap canvas and sequence view (internal use)
+    * @function swapCanvasSequence
+    */
     swapCanvasSequence: function () {
         var a = this.canvasform.form.dom;
         var h = this.handle;
@@ -219,6 +251,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Event handler when change window size (internal use)
+    * @function onresize
+    */
     onresize: function (delta) {
         if (this.handle.nextSibling == this.tabs.tabs.dom) {
             var top = this.canvas.dimension.y;
@@ -247,6 +283,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return false;
     },
 
+    /**
+    * create monomer explorer (internal use)
+    * @function createPalette
+    */
     createPalette: function (div, width, height) {
         var opt = scil.clone(this.options);
         opt.width = width;
@@ -254,6 +294,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.mex = new org.helm.webeditor.MonomerExplorer(div, null, opt);
     },
 
+    /**
+    * create drawing canvas (internal use)
+    * @function createCanvas
+    */
     createCanvas: function (div, width, height) {
         div.style.border = "solid 1px #eee";
 
@@ -275,6 +319,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         };
     },
 
+    /**
+    * Event handler when selecting an object (internal use)
+    * @function onselectcurrent
+    */
     onselectcurrent: function (e, obj, ed) {
         var a = JSDraw2.Atom.cast(obj);
         if (a == null || ed.start != null || ed.contextmenu != null && ed.contextmenu.isVisible()) {
@@ -288,6 +336,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         org.helm.webeditor.MolViewer.show(e, type, m, s, ed);
     },
 
+    /**
+    * Create sequence view (internal use)
+    * @function createSequence
+    */
     createSequence: function (div, width, height) {
         var atts = {};
         if (!this.options.sequenceviewonly)
@@ -295,6 +347,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.sequence = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll" }, atts);
     },
 
+    /**
+    * create notation view (internal use)
+    * @function createNotation
+    */
     createNotation: function (div, width, height) {
         var atts = {};
         if (!this.options.sequenceviewonly)
@@ -302,6 +358,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.notation = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll" }, atts);
     },
 
+    /**
+    * Create property window (internal use)
+    * @function createProperties
+    */
     createProperties: function (div, width, height) {
         var d = scil.Utils.createElement(div, "div", null, { width: width, overflow: "scroll", height: height + this.toolbarheight });
 
@@ -314,11 +374,19 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.properties.render(d, fields, { immediately: true });
     },
 
+    /**
+    * Create structure view (internal use)
+    * @function createStructureView
+    */
     createStructureView: function (div, width, height) {
         var d = scil.Utils.createElement(div, "div", null, { width: width, height: height + this.toolbarheight });
         this.structureview = new JSDraw2.Editor(d, { viewonly: true })
     },
 
+    /**
+    * Resize Window (internal use)
+    * @function resize
+    */
     resize: function () {
         var d = dojo.window.getBox();
         var width = d.w;
@@ -327,6 +395,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var top = d.t;
     },
 
+    /**
+    * Update Canvas from sequence/notation view (internal use)
+    * @function updateCanvas
+    */
     updateCanvas: function (key, append) {
         var format = null;
         if (this.sequencebuttons != null)
@@ -347,6 +419,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         plugin.setSequence(s, format, plugin.getDefaultNodeType(org.helm.webeditor.HELM.SUGAR), plugin.getDefaultNodeType(org.helm.webeditor.HELM.LINKER), append);
     },
 
+    /**
+    * Tool function to get item by using its key (internal use)
+    * @function getValueByKey
+    */
     getValueByKey: function (list, key) {
         for (var i = 0; i < list.length; ++i) {
             if (list[i].key == key)
@@ -355,6 +431,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return null;
     },
 
+    /**
+    * update helm properties (internal use)
+    * @function updateProperties
+    */
     updateProperties: function () {
         switch (this.tabs.tabs.currentTabKey()) {
             case "sequence":
@@ -374,6 +454,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Event handler when selection is changed (internal use)
+    * @function onselectionchanged
+    */
     onselectionchanged: function () {
         switch (this.tabs.tabs.currentTabKey()) {
             case "sequence":
@@ -391,6 +475,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Calaulte helm structure properties (internal use)
+    * @function calculateProperties
+    */
     calculateProperties: function () {
         if (this.properties == null)
             return;
@@ -414,6 +502,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Get selection as a molfile (internal use)
+    * @function getSelectedAsMol
+    */
     getSelectedAsMol: function (m) {
         var ret = new JSDraw2.Mol();
         for (var i = 0; i < m.atoms.length; ++i) {
@@ -431,6 +523,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return ret;
     },
 
+    /**
+    * Tool function to select bonds of all selected atoms (internal use)
+    * @function selectBondsOfSelectedAtoms
+    */
     selectBondsOfSelectedAtoms: function (m) {
         var n = 0;
         for (var i = 0; i < m.bonds.length; ++i) {
@@ -444,6 +540,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return n;
     },
 
+    /**
+    * Update structure view from Canvas (internal use)
+    * @function updateStructureView
+    */
     updateStructureView: function () {
         if (this.structureview == null)
             return;

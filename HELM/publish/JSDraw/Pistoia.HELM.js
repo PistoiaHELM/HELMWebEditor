@@ -1,12 +1,28 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2017 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-// 2.0.0-2017-01-13
-//
-//////////////////////////////////////////////////////////////////////////////////
-
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+*  Version 2.0.0.2017-01-16
+* 
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 // https://github.com/PistoiaHELM/HELMEditor/blob/master/resources/conf/DefaultMonomerCategorizationTemplate.xml
 // 
@@ -46,6 +62,10 @@ org.helm.webeditor = {
         CHEM: "HELM_CHEM"
     },
 
+    /**
+    * Test if a node is HELM monomer
+    * @function isHelmNode
+    */
     isHelmNode: function (a) {
         if (a == null)
             return false;
@@ -55,7 +75,11 @@ org.helm.webeditor = {
             biotype == org.helm.webeditor.HELM.AA || biotype == org.helm.webeditor.HELM.CHEM;
     },
 
-    monomerTypeList: function() {
+    /**
+    * List HELM Monomer Types
+    * @function monomerTypeList
+    */
+    monomerTypeList: function () {
         var monomertypes = { "": "" };
         monomertypes[org.helm.webeditor.HELM.BASE] = "Base";
         monomertypes[org.helm.webeditor.HELM.SUGAR] = "Sugar";
@@ -65,6 +89,10 @@ org.helm.webeditor = {
         return monomertypes;
     },
 
+    /**
+    * Show about box
+    * @function about
+    */
     about: function () {
         var me = this;
         if (this.aboutDlg == null) {
@@ -87,13 +115,29 @@ org.helm.webeditor = {
 };
 
 scil.helm = org.helm.webeditor;
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * Interface class
@@ -357,13 +401,29 @@ org.helm.webeditor.Interface = {
             items.push({ caption: "About JSDraw", key: "about" });
         return items;
     }
-};﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+};﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * MonomerColors class
@@ -415,13 +475,29 @@ org.helm.webeditor.MonomerColors = {
         R: "#eeeeee",
     }
 };
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 
 /**
@@ -431,6 +507,10 @@ org.helm.webeditor.MonomerColors = {
 org.helm.webeditor.Monomers = {
     defaultmonomers: { HELM_BASE: null, HELM_SUGAR: null, HELM_LINKER: null, HELM_AA: null, HELM_CHEM: null },
 
+    /**
+    * Clear monomer database (internal use)
+    * @function clear
+    */
     clear: function () {
         this.sugars = {};
         this.linkers = {};
@@ -439,6 +519,10 @@ org.helm.webeditor.Monomers = {
         this.chems = {};
     },
 
+    /**
+    * Get the default monomer of a given monomer type (internal use)
+    * @function getDefaultMonomer
+    */
     getDefaultMonomer: function (monomertype) {
         var r = this.defaultmonomers[monomertype];
         if (r != null)
@@ -457,6 +541,10 @@ org.helm.webeditor.Monomers = {
         return "?";
     },
 
+    /**
+    * Tool function (internal use)
+    * @function _getFirstKey
+    */
     _getFirstKey: function (set, key1, key2) {
         if (key1 != null && set[key1.toLowerCase()] != null)
             return set[key1.toLowerCase()].id;
@@ -468,6 +556,10 @@ org.helm.webeditor.Monomers = {
         return "?";
     },
 
+    /**
+    * Save monomers as text database (internal use)
+    * @function saveTextDB
+    */
     saveTextDB: function (url) {
         var cols = ["id", "symbol", "name", "naturalanalog", "molfile", "smiles", "polymertype", "monomertype", "r1", "r2", "r3", "r4", "r5", "author", "createddate"];
         var s = "";
@@ -486,6 +578,10 @@ org.helm.webeditor.Monomers = {
         scil.Utils.post(url, args, "_blank");
     },
 
+    /**
+    * Save monomers into xml string (internal use)
+    * @function saveMonomerDB
+    */
     saveMonomerDB: function (url) {
         var s = "<MONOMER_DB>\n";
         s += "<PolymerList>\n";
@@ -514,6 +610,10 @@ org.helm.webeditor.Monomers = {
         scil.Utils.post(url, args, "_blank");
     },
 
+    /**
+    * Save all monomers into a text file
+    * @function saveMonomersAsText
+    */
     saveMonomersAsText: function (set, type, mt, cols, n) {
         var ret = "";
         for (var id in set) {
@@ -524,6 +624,10 @@ org.helm.webeditor.Monomers = {
         return ret;
     },
 
+    /**
+    * Save all Monomers into xml 
+    * @function saveMonomers
+    */
     saveMonomers: function (set, type, mt) {
         var s = "";
         for (var id in set)
@@ -531,6 +635,10 @@ org.helm.webeditor.Monomers = {
         return s;
     },
 
+    /**
+    * Load monomer from a web service
+    * @function loadFromUrl
+    */
     loadFromUrl: function (url, callback) {
         var fn = function (xml) {
             org.helm.webeditor.monomers.loadFromXml(xml);
@@ -540,6 +648,10 @@ org.helm.webeditor.Monomers = {
         scil.Utils.download(url, fn);
     },
 
+    /**
+    * Load monomer from xml string 
+    * @function loadFromXml
+    */
     loadFromXml: function (s) {
         var doc = scil.Utils.parseXml(s);
         if (doc == null)
@@ -547,6 +659,10 @@ org.helm.webeditor.Monomers = {
         this.loadMonomers(doc);
     },
 
+    /**
+    * Load monomer from json array coming from database
+    * @function loadDB
+    */
     loadDB: function (list, makeMon, clearall) {
         if (clearall != false)
             this.clear();
@@ -579,6 +695,10 @@ org.helm.webeditor.Monomers = {
         }
     },
 
+    /**
+    * Load monomer from XML 
+    * @function loadMonomers
+    */
     loadMonomers: function (doc, callback) {
         var list = doc.getElementsByTagName("Monomer");
         if (list == null || list.length == 0)
@@ -619,6 +739,10 @@ org.helm.webeditor.Monomers = {
         });
     },
 
+    /**
+    * Rename a monomer (internal use)
+    * @function renameNextMonomer
+    */
     renameNextMonomer: function (newmonomers, overlapped, callback) {
         if (overlapped.length == 0) {
             callback();
@@ -643,6 +767,10 @@ org.helm.webeditor.Monomers = {
         });
     },
 
+    /**
+    * Get the monomer set by its type (internal use)
+    * @function getMonomerSet
+    */
     getMonomerSet: function (a) {
         if (a == null)
             return null;
@@ -661,6 +789,10 @@ org.helm.webeditor.Monomers = {
         return null;
     },
 
+    /**
+    * Get all monomer colors (internal use)
+    * @function getMonomerColors
+    */
     getMonomerColors: function (a) {
         if (a == null)
             return null;
@@ -679,6 +811,10 @@ org.helm.webeditor.Monomers = {
         return null;
     },
 
+    /**
+    * Get monomer list of a type (internal use)
+    * @function getMonomerList
+    */
     getMonomerList: function (a) {
         var set = this.getMonomerSet(a);
         if (set == null)
@@ -691,6 +827,10 @@ org.helm.webeditor.Monomers = {
         return ret;
     },
 
+    /**
+    * Get a monomer by an object or its name (internal use)
+    * @function getMonomer
+    */
     getMonomer: function (a, name) {
         if (a == null && name == null)
             return null;
@@ -713,11 +853,19 @@ org.helm.webeditor.Monomers = {
         return set == null ? null : set[s.toLowerCase()];
     },
 
+    /**
+    * Check if the monomer have a R group (internal use)
+    * @function hasR
+    */
     hasR: function (type, name, r) {
         var m = this.getMonomer(type, name);
         return m != null && m.at != null && m.at[r] != null;
     },
 
+    /**
+    * Get monomer color by a monomer object (internal use)
+    * @function getColor
+    */
     getColor: function (a) {
         var m = this.getMonomer(a, a.elem);
         if (m == null)
@@ -736,6 +884,10 @@ org.helm.webeditor.Monomers = {
         };
     },
 
+    /**
+    * Get monomer color by type by name (internal use)
+    * @function getColor2
+    */
     getColor2: function (type, name) {
         var m = this.getMonomer(type, name);
         if (m == null)
@@ -754,12 +906,20 @@ org.helm.webeditor.Monomers = {
         };
     },
 
+    /**
+    * Get the molfile of a monomer (internal use)
+    * @function getMolfile
+    */
     getMolfile: function (m) {
         if (m != null && m.m == null && m.mz != null)
             m.m = org.helm.webeditor.IO.uncompressGz(m.mz);
         return m == null ? null : m.m;
     },
 
+    /**
+    * Convert XML type to HELM Editor type (internal use)
+    * @function helm2Type
+    */
     helm2Type: function (m) {
         if (m.type == "PEPTIDE")
             return org.helm.webeditor.HELM.AA;
@@ -828,6 +988,10 @@ org.helm.webeditor.Monomers = {
         return ret;
     },
 
+    /**
+    * add one monomer to HELM Editor (internal use)
+    * @function addOneMonomer
+    */
     addOneMonomer: function (m) {
         var set = this.getMonomerSet(this.helm2Type(m));
         if (set == null)
@@ -840,6 +1004,10 @@ org.helm.webeditor.Monomers = {
         return true;
     },
 
+    /**
+    * Write one monomer into text file (internal use)
+    * @function writeOneAsText
+    */
     writeOneAsText: function (m, cols) {
         var molfile = m.m.mz;
         if (scil.Utils.isNullOrEmpty(molfile) && m.m.m != null)
@@ -861,6 +1029,10 @@ org.helm.webeditor.Monomers = {
         return s;
     },
 
+    /**
+    * Save one monomer into xml (internal use)
+    * @function writeOne
+    */
     writeOne: function (m) {
         var molfile = this.getMolfile(m.m);
         if (molfile != null) {
@@ -893,6 +1065,10 @@ org.helm.webeditor.Monomers = {
         return s;
     },
 
+    /**
+    * Read one monomer from XML (internal use)
+    * @function readOne
+    */
     readOne: function (e) {
         var s = this.readValue(e, "MonomerMolFile");
         var m = null;
@@ -932,6 +1108,10 @@ org.helm.webeditor.Monomers = {
         return m;
     },
 
+    /**
+    * Tool function to ready XML text (internal use)
+    * @function readValue
+    */
     readValue: function (e, name) {
         var list = e.getElementsByTagName(name);
         if (list == null || list.length == 0)
@@ -982,13 +1162,29 @@ scil.helm.Monomers.bases = {
 scil.helm.Monomers.chems = {
     'example': { id: 'Example', n: 'Symmetric Doubler', na: null, m: '\n  Marvin  09241011262D          \n\n 23 22  0  0  0  0            999 V2000\n   -3.8304    2.5045    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.8304    1.6795    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1159    1.2670    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.4014    1.6795    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6869    1.2670    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9725    1.6795    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2580    1.2670    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4565    1.6795    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4565    2.5045    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6869    0.4420    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1709    2.9170    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1709    3.7420    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.8854    4.1545    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.8854    4.9795    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.5448    2.9170    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.5448    3.7420    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.2593    4.1545    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.2593    4.9795    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1709    1.2670    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.5448    1.2670    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0994   -0.2725    0.0000 R#  0  0  0  0  0  0  0  0  0  0  0  0\n   -5.9738    5.3920    0.0000 R#  0  0  0  0  0  0  0  0  0  0  0  0\n    2.5999    5.3920    0.0000 R#  0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  1  0  0  0  0\n  4  5  1  0  0  0  0\n  5  6  1  0  0  0  0\n  6  7  1  0  0  0  0\n  7  8  1  0  0  0  0\n  8  9  1  0  0  0  0\n  5 10  1  0  0  0  0\n  9 11  1  0  0  0  0\n 11 12  1  0  0  0  0\n 12 13  1  0  0  0  0\n 13 14  1  0  0  0  0\n  1 15  1  0  0  0  0\n 15 16  1  0  0  0  0\n 16 17  1  0  0  0  0\n 17 18  1  0  0  0  0\n  8 19  2  0  0  0  0\n  2 20  2  0  0  0  0\n 10 21  1  0  0  0  0\n 18 22  1  0  0  0  0\n 14 23  1  0  0  0  0\nM  RGP  3  21   1  22   2  23   3\nM  END\n\n$$$$\n', rs: 3, at: { R1: 'H', R2: 'H', R3: 'H'} },
     'r': { id: 'R', n: 'R', na: null, m: null, rs: 0, at: {}}
-};﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+};﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * HELM Editor Plugin class
@@ -2043,19 +2239,39 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         return true;
     }
 });
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * Chain class
 * @class org.helm.webeditor.Chain
 */
 org.helm.webeditor.Chain = scil.extend(scil._base, {
+    /**
+    * Contructor of Chain
+    * @constructor Chain
+    */
     constructor: function (id) {
         this.id = id;
         this.bonds = [];
@@ -2064,6 +2280,11 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         this.bases = [];
     },
 
+    /**
+    * Get the complementary of a given node
+    * @function getComplementary
+    * @param {Atom} a - the input Node
+    */
     getComplementary: function (a) {
         var m = org.helm.webeditor.Monomers.getMonomer(a);
         switch (m.na) {
@@ -2081,6 +2302,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Create the complementary strand (internal use)
+    * @function makeComplementaryStrand
+    */
     makeComplementaryStrand: function (m, bondlength) {
         var n = 0;
         var lasta2 = null;
@@ -2133,6 +2358,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return n > 0;
     },
 
+    /**
+    * Get separated polymer from this fragment(chain) (internal use)
+    * @function _getPolymers
+    */
     _getPolymers: function () {
         var ret = [];
 
@@ -2174,6 +2403,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return ret;
     },
 
+    /**
+    * Get whole chain as an expanded molecule (internal use)
+    * @function getMol
+    */
     getMol: function (a, plugin) {
         var mon = org.helm.webeditor.Monomers.getMonomer(a);
         var molfile = org.helm.webeditor.monomers.getMolfile(mon);
@@ -2192,6 +2425,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return m;
     },
 
+    /**
+    * Expaned backbond (internal use)
+    * @function _expandBackbone
+    */
     _expandBackbone: function (mol, plugin) {
         var m1 = null;
         var m2 = null;
@@ -2254,6 +2491,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         mol.bonds = mol.bonds.concat(m1.bonds);
     },
 
+    /**
+    * Connect branches to the backbone (internal use)
+    * @function _connectBranches
+    */
     _connectBranches: function (m, plugin, branches) {
         if (branches == null || branches.bonds == null)
             return;
@@ -2269,6 +2510,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Inner loop of connecting branches (internal use)
+    * @function _connectBranches2
+    */
     _connectBranches2: function (m, a, branches, plugin) {
         var r1 = null;
         var r2 = null;
@@ -2305,10 +2550,18 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         org.helm.webeditor.MolViewer.mergeMol(m, "R" + r1, m2, "R" + r2, a, a2);
     },
 
+    /**
+    * Check if this chain is a circle
+    * @function isCircle
+    */
     isCircle: function () {
         return this.atoms.length >= 3 && this.atoms[0] == this.atoms[this.atoms.length - 1];
     },
 
+    /**
+    * Reset chain monomer IDs
+    * @function resetIDs
+    */
     resetIDs: function () {
         var aaid = 0;
         var baseid = 0;
@@ -2345,6 +2598,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Set internal flags for all nodes and bonds (internal use)
+    * @function setFlag
+    */
     setFlag: function (f) {
         for (var i = 0; i < this.atoms.length; ++i)
             this.atoms[i].f = f;
@@ -2352,10 +2609,18 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             this.bonds[i].f = f;
     },
 
+    /**
+    * Test if the chain contains a node (internal use)
+    * @function containsAtom
+    */
     containsAtom: function (a) {
         return scil.Utils.indexOf(this.atoms, a) != -1;
     },
 
+    /**
+    * Layout the chain as a line (internal use)
+    * @function layoutLine
+    */
     layoutLine: function (bondlength) {
         var rect = this.getRect();
 
@@ -2369,6 +2634,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Layout the chain as a circle (internal use)
+    * @function layoutCircle
+    */
     layoutCircle: function (bondlength) {
         org.helm.webeditor.Layout.layoutCircle(this.atoms, bondlength, 0);
         //var delta = org.helm.webeditor.bondscale * bondlength;
@@ -2381,6 +2650,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         //    this.atoms[i].p = this.atoms[i - 1].p.clone().rotateAround(origin, -deg);
     },
 
+    /**
+    * Rotate chain (internal use)
+    * @function rotate
+    */
     rotate: function (deg, origin) {
         if (deg == 0)
             return;
@@ -2402,6 +2675,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Move chain's coordinates (internal use)
+    * @function move
+    */
     move: function (delta) {
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
         for (var i = 0; i < n; ++i) {
@@ -2412,6 +2689,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Layout bases in a RNA chain (internal use)
+    * @function layoutBases
+    */
     layoutBases: function () {
         var circle = this.isCircle();
         var n = circle ? this.atoms.length - 1 : this.atoms.length;
@@ -2454,10 +2735,18 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Get the rectangle of the chain (internal use)
+    * @function getRect
+    */
     getRect: function () {
         return org.helm.webeditor.Layout.getRect(this.atoms);
     },
 
+    /**
+    * Get the sequence of natural analog of the chain
+    * @function getSequence
+    */
     getSequence: function (highlightselection) {
         var s = "";
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
@@ -2498,6 +2787,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         return s;
     },
 
+    /**
+    * Get HELM notation (internal use)
+    * @function getHelm
+    */
     getHelm: function (ret, highlightselection) {
         var sequence = "";
         var aaid = 0;
@@ -2599,6 +2892,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Get a node by its Monomer ID (internal use)
+    * @function getAtomByAAID
+    */
     getAtomByAAID: function (aaid) {
         if (!(aaid > 0))
             return null;
@@ -2617,6 +2914,10 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
 });
 
 scil.apply(org.helm.webeditor.Chain, {
+    /**
+    * Get the chain of a given node (internal use)
+    * @function getChain
+    */
     getChain: function (m, startatom) {
         if (startatom == null)
             return null;
@@ -2624,10 +2925,18 @@ scil.apply(org.helm.webeditor.Chain, {
         return chains == null ? null : chains[0];
     },
 
+    /**
+    * Get all chains (internal use)
+    * @function getChains
+    */
     getChains: function (m, branchcollection) {
         return this._getChains(m, null, branchcollection);
     },
 
+    /**
+    * Set Chain ID (internal use)
+    * @function _setChainID
+    */
     _setChainID: function (chain, chainid) {
         for (var k = 0; k < chain.atoms.length; ++k) {
             chain.atoms[k]._chainid = chainid;
@@ -2636,11 +2945,19 @@ scil.apply(org.helm.webeditor.Chain, {
         }
     },
 
+    /**
+    * Remove Chain ID (internal use)
+    * @function _removeChainID
+    */
     _removeChainID: function (atoms) {
         for (var i = 0; i < atoms.length; ++i)
             delete atoms[i]._chainid;
     },
 
+    /**
+    * Inner loop getting chains (internal use)
+    * @function _getChains
+    */
     _getChains: function (m, startatom, branchcollection) {
         var b0 = null;
         var bonds = [];
@@ -2815,19 +3132,39 @@ scil.apply(org.helm.webeditor.Chain, {
 
         return chains;
     }
-});﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+});﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * Layout class
 * @class org.helm.webeditor.Layout
 */
 org.helm.webeditor.Layout = {
+    /**
+    * Clean/lay out a molecule
+    * @function clean
+    */
     clean: function (m, bondlength, a) {
         m.clearFlag();
         var chains = org.helm.webeditor.Chain._getChains(m, a);
@@ -2859,12 +3196,20 @@ org.helm.webeditor.Layout = {
         org.helm.webeditor.Chain._removeChainID(m.atoms);
     },
 
-    resetIDs: function(m) {
+    /**
+    * Reset Monomer IDs (internal use)
+    * @function resetIDs
+    */
+    resetIDs: function (m) {
         var chains = org.helm.webeditor.Chain._getChains(m);
         for (var i = 0; i < chains.length; ++i)
             chains[i].resetIDs();
     },
 
+    /**
+    * Lay out inner circle (internal use)
+    * @function layoutInnerCircle
+    */
     layoutInnerCircle: function (chain, bondlength, m, chainid) {
         var pairs = [];
         for (var i = 0; i < m.bonds.length; ++i) {
@@ -2915,7 +3260,11 @@ org.helm.webeditor.Layout = {
         return true;
     },
 
-    layoutCircle: function(atoms, bondlength, startdeg) {
+    /**
+    * Lay out circle (internal use)
+    * @function layoutCircle
+    */
+    layoutCircle: function (atoms, bondlength, startdeg) {
         var rect = this.getRect(atoms);
         var origin = rect.center();
         
@@ -2932,6 +3281,10 @@ org.helm.webeditor.Layout = {
             atoms[i].p = atoms[i - 1].p.clone().rotateAround(origin, -deg);
     },
 
+    /**
+    * Lay out cross-chain bonds (internal use)
+    * @function layoutCrossChainBonds
+    */
     layoutCrossChainBonds: function (m, chains, bondlength) {
         var fixed = {};
         for (var i = 0; i < m.bonds.length; ++i) {
@@ -3038,6 +3391,10 @@ org.helm.webeditor.Layout = {
         }
     },
 
+    /**
+    * Layout branches (internal use)
+    * @function layoutBranches
+    */
     layoutBranches: function (m) {
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
@@ -3090,6 +3447,10 @@ org.helm.webeditor.Layout = {
         }
     },
 
+    /**
+    * Get rectangle (internal use)
+    * @function getRect
+    */
     getRect: function (atoms) {
         var a = atoms[0];
         var x1 = a.p.x;
@@ -3112,13 +3473,29 @@ org.helm.webeditor.Layout = {
         return org.helm.webeditor.Interface.createRect(x1, y1, x2 - x1, y2 - y1);
     }
 };
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * IO class
@@ -3127,6 +3504,10 @@ org.helm.webeditor.Layout = {
 org.helm.webeditor.IO = {
     kVersion: "V2.0",
 
+    /**
+    * Get HELM Notation
+    * @function getHelm
+    */
     getHelm: function (m, highlightselection) {
         var branches = {};
         var chains = org.helm.webeditor.Chain.getChains(m, branches);
@@ -3201,6 +3582,10 @@ org.helm.webeditor.IO = {
         return s + this.kVersion;
     },
 
+    /**
+    * Get the natural sequence of the molecule
+    * @function getSequence
+    */
     getSequence: function (m, highlightselection) {
         var branches = {};
         var chains = org.helm.webeditor.Chain.getChains(m, branches);
@@ -3220,6 +3605,10 @@ org.helm.webeditor.IO = {
         return s;
     },
 
+    /**
+    * Get XHELM
+    * @function getXHelm
+    */
     getXHelm: function (m) {
         var s = this.getHelm(m);
         if (scil.Utils.isNullOrEmpty(s))
@@ -3238,6 +3627,10 @@ org.helm.webeditor.IO = {
         return s;
     },
 
+    /**
+    * Get all monomers of a molecule
+    * @function getMonomers
+    */
     getMonomers: function (m) {
         var ret = {};
         var atoms = m.atoms;
@@ -3279,6 +3672,10 @@ org.helm.webeditor.IO = {
         return ret;
     },
 
+    /**
+    * Get HELM Code of a monomer (internal use)
+    * @function getCode
+    */
     getCode: function (a, highlightselection, bracket) {
         var s;
         if (typeof (a) == "string") {
@@ -3307,6 +3704,10 @@ org.helm.webeditor.IO = {
         return s;
     },
 
+    /**
+    * Find the chain ID based on monomer (internal use)
+    * @function findChainID
+    */
     findChainID: function (chains, a) {
         for (var k in chains) {
             var atoms = chains[k];
@@ -3316,6 +3717,10 @@ org.helm.webeditor.IO = {
         return null;
     },
 
+    /**
+    * Read a generic string (internal use)
+    * @function read
+    */
     read: function (plugin, s, format, renamedmonomers, sugar, linker, separator) {
         if (scil.Utils.isNullOrEmpty(s))
             return 0;
@@ -3355,6 +3760,10 @@ org.helm.webeditor.IO = {
         return 0;
     },
 
+    /**
+    * Parse a HELM string (internal use)
+    * @function parseHelm
+    */
     parseHelm: function (plugin, s, origin, renamedmonomers) {
         var n = 0;
         var sections = this.split(s, '$');
@@ -3469,6 +3878,10 @@ org.helm.webeditor.IO = {
         return n;
     },
 
+    /**
+    * Split components (internal use)
+    * @function split
+    */
     split: function (s, sep) {
         var ret = [];
         // PEPTIDE1{G.[C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|].T}$$$$
@@ -3504,6 +3917,10 @@ org.helm.webeditor.IO = {
         return ret;
     },
 
+    /**
+    * Parse HELM connection (internal use)
+    * @function parseConnection
+    */
     parseConnection: function (s) {
         var tt = s.split(',');
         if (tt.length != 3)
@@ -3521,6 +3938,10 @@ org.helm.webeditor.IO = {
         return { chain1: tt[0], chain2: tt[1], a1: parseInt(c1[0]), r1: c1[1], a2: parseInt(c2[0]), r2: c2[1] };
     },
 
+    /**
+    * Split chars (internal use)
+    * @function splitChars
+    */
     splitChars: function (s, separator) {
         var ss = [];
         if (separator == null) {
@@ -3533,12 +3954,20 @@ org.helm.webeditor.IO = {
         return ss;
     },
 
+    /**
+    * Remove bracket (internal use)
+    * @function trimBracket
+    */
     trimBracket: function (s) {
         if (s != null && scil.Utils.startswith(s, "[") && scil.Utils.endswith(s, "]"))
             return s.substr(1, s.length - 2);
         return s;
     },
 
+    /**
+    * Make a renamed monomer (internal use)
+    * @function getRenamedMonomer
+    */
     getRenamedMonomer: function (type, elem, monomers) {
         if (monomers == null || monomers.length == 0)
             return elem;
@@ -3552,6 +3981,10 @@ org.helm.webeditor.IO = {
         return elem;
     },
 
+    /**
+    * Remove annotation (internal use)
+    * @function detachAnnotation
+    */
     detachAnnotation: function (s) {
         var tag = null;
         if (scil.Utils.endswith(s, '\"')) {
@@ -3573,6 +4006,10 @@ org.helm.webeditor.IO = {
         return { tag: tag, str: s };
     },
 
+    /**
+    * Add a monomer (internal use)
+    * @function addNode
+    */
     addNode: function (plugin, chain, atoms, p, type, elem, renamedmonomers) {
         var e = this.detachAnnotation(elem);
         a2 = plugin.addNode(p, type, this.getRenamedMonomer(type, e.str, renamedmonomers));
@@ -3585,11 +4022,19 @@ org.helm.webeditor.IO = {
         return a2;
     },
 
+    /**
+    * Add a CHEM node (internal use)
+    * @function addChem
+    */
     addChem: function (plugin, name, chain, origin, renamedmonomers) {
         this.addNode(plugin, chain, chain.atoms, origin.clone(), org.helm.webeditor.HELM.CHEM, name, renamedmonomers);
         return 1;
     },
 
+    /**
+    * Add Amino Acid (internal use)
+    * @function addAAs
+    */
     addAAs: function (plugin, ss, chain, origin, renamedmonomers) {
         var n = 0;
 
@@ -3622,6 +4067,10 @@ org.helm.webeditor.IO = {
         return n;
     },
 
+    /**
+    * Split a RNA Combo (internal use)
+    * @function splitCombo
+    */
     splitCombo: function (s) {
         var ret = [];
 
@@ -3656,6 +4105,10 @@ org.helm.webeditor.IO = {
         return ret;
     },
 
+    /**
+    * Add RNA HELM string (internal use)
+    * @function addHELMRNAs
+    */
     addHELMRNAs: function (plugin, ss, chain, origin, renamedmonomers) {
         var n = 0;
         var a1 = null;
@@ -3706,92 +4159,10 @@ org.helm.webeditor.IO = {
         return n;
     },
 
-    //    addHELMRNAs: function (plugin, ss, chain, origin, renamedmonomers) {
-    //        var n = 0;
-    //        var a1 = null;
-    //        var a2 = null;
-    //        var m = plugin.jsd.m;
-    //        var delta = org.helm.webeditor.bondscale * plugin.jsd.bondlength;
-    //        var p = origin.clone();
-    //        for (var i = 0; i < ss.length; ++i) {
-    //            var s = ss[i];
-    //            var sugar = null;
-    //            var base = null;
-    //            var linker = null;
-
-    //            // handle all cases:
-    //            // RNA1{RP.[fR]P.[fR](A)P.[fR](A)}$$$$
-    //            // RNA1{R.P.[fR].P.[fR](A)P.[fR](A)}$$$$
-    //            // RNA1{R()P.[fR]()P.[fR](A)P.[fR](A)}$$$$
-    //            // RNA1{[xX](G)[xY].[xX]()[xY].[xX]().()[xY]}$$$$
-    //            var k1 = s.indexOf('(');
-    //            var k2 = s.indexOf(')');
-    //            if (k1 >= 0 && k2 >= 0) {
-    //                sugar = s.substr(0, k1);
-    //                base = s.substr(k1 + 1, k2 - k1 - 1);
-    //                linker = s.substr(k2 + 1);
-    //            }
-    //            else {
-    //                if (s.substr(0, 1) == "[") {
-    //                    var k = s.indexOf("]");
-    //                    if (k > 0) {
-    //                        sugar = s.substr(0, k + 1);
-    //                        linker = s.substr(k + 1);
-    //                    }
-    //                    else {
-    //                        sugar = s;
-    //                    }
-    //                }
-    //                else {
-    //                    sugar = s.substr(0, 1);
-    //                    linker = s.substr(1);
-    //                }
-    //            }
-
-    //            if (scil.Utils.isNullOrEmpty(base)) {
-    //                if (scil.Utils.isNullOrEmpty(sugar) && !scil.Utils.isNullOrEmpty(linker)) {
-    //                    if (org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.SUGAR, linker) != null) {
-    //                        sugar = linker;
-    //                        linker = null;
-    //                    }
-    //                }
-    //                else if (scil.Utils.isNullOrEmpty(linker) && !scil.Utils.isNullOrEmpty(sugar)) {
-    //                    if (org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.LINKER, sugar) != null) {
-    //                        linker = sugar;
-    //                        sugar = null;
-    //                    }
-    //                }
-    //            }
-
-    //            // 1. sugar (Order does matter)
-    //            if (!scil.Utils.isNullOrEmpty(sugar)) {
-    //                p.x += delta;
-    //                a2 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.SUGAR, sugar, renamedmonomers);
-    //                if (a1 != null)
-    //                    chain.bonds.push(plugin.addBond(a1, a2, 2, 1));
-    //                a1 = a2;
-    //            }
-
-    //            // 2. base
-    //            if (!scil.Utils.isNullOrEmpty(base)) {
-    //                a3 = this.addNode(plugin, chain, chain.bases, org.helm.webeditor.Interface.createPoint(p.x, p.y + delta), org.helm.webeditor.HELM.BASE, base, renamedmonomers);
-
-    //                plugin.addBond(a2, a3, 3, 1);
-    //                a3.bio.id = ++n;
-    //            }
-
-    //            // 3. linker
-    //            if (!scil.Utils.isNullOrEmpty(linker)) {
-    //                p.x += delta;
-    //                a0 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.LINKER, linker, renamedmonomers);
-    //                chain.bonds.push(plugin.addBond(a1, a0, 2, 1));
-    //                a1 = a0;
-    //            }
-    //        }
-
-    //        return n;
-    //    },
-
+    /**
+    * Add RNA sequence (internal use)
+    * @function addRNAs
+    */
     addRNAs: function (plugin, ss, chain, origin, sugar, linker) {
         var n = 0;
 
@@ -3847,7 +4218,10 @@ org.helm.webeditor.IO = {
         return n;
     },
 
-
+    /**
+    * Compress a string using Pako (internal use)
+    * @function compressGz
+    */
     compressGz: function (s) {
         if (scil.Utils.isNullOrEmpty(s))
             return null;
@@ -3863,6 +4237,10 @@ org.helm.webeditor.IO = {
         return null;
     },
 
+    /**
+    * Decompress a string using pako (internal use)
+    * @function uncompressGz
+    */
     uncompressGz: function (b64Data) {
         if (scil.Utils.isNullOrEmpty(b64Data))
             return null;
@@ -3882,19 +4260,41 @@ org.helm.webeditor.IO = {
         }
     }
 };
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * MonomerExplorer class
 * @class org.helm.webeditor.MonomerExplorer
 */
 org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
+    /**
+    * @constructor MonomerExplorer
+    * @param {DOM} parent - The parent element
+    * @param {Plugin} plugin - The Plugin object
+    * @param {dict} options - options on how to render the Monomer Explorer
+    */
     constructor: function (parent, plugin, options) {
         this.plugin = plugin;
         this.options = options == null ? {} : options;
@@ -3960,6 +4360,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         org.helm.webeditor.MonomerExplorer.loadNucleotides();
     },
 
+    /**
+    * Add Monomer Tabs (internal use)
+    * @function addMonomerTabs
+    */
     addMonomerTabs: function (tabs) {
         if (this.options.mexfavoritetab != false)
             tabs.push({ caption: "Favorite", tabkey: "favorite" });
@@ -3969,10 +4373,18 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         tabs.push({ caption: "RNA", tabkey: "rna" });
     },
 
+    /**
+    * Find and replace monomer (internal use)
+    * @function findReplace
+    */
     findReplace: function () {
         this.plugin.replaceAll(this.findinput.value, this.findreplace.value, this.findtype.value);
     },
 
+    /**
+    * Filter monomers (internal use)
+    * @function filter
+    */
     filter: function (e) {
         var key = this.tabs.currentTabKey();
         if (key == "rule") {
@@ -3998,6 +4410,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         //this.filterGroup(tab.clientarea, this.filterInput.value);
     },
 
+    /**
+    * Filter a group (internal use)
+    * @function filterGroup
+    */
     filterGroup: function (s) {
         if (s == "")
             s = null;
@@ -4054,6 +4470,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Highlight search string (internal use)
+    * @function highlightString
+    */
     highlightString: function (s, q) {
         var p = s.toLowerCase().indexOf(q);
         if (p < 0)
@@ -4062,6 +4482,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return s.substr(0, p) + "<span style='background:yellow'>" + s.substr(p, q.length) + "</span>" + s.substr(p + q.length);
     },
 
+    /**
+    * Reload a tab (internal use)
+    * @function reloadTab
+    */
     reloadTab: function (type) {
         var key = null;
         switch (type) {
@@ -4097,6 +4521,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.onShowTab(td, true);
     },
 
+    /**
+    * Reload all tabs (internal use)
+    * @function reloadTabs
+    */
     reloadTabs: function () {
         var list = this.tabs.tr.childNodes;
         for (var i = 0; i < list.length; ++i) {
@@ -4108,6 +4536,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         this.onShowTab(this.tabs.currenttab);
     },
 
+    /**
+    * resize Monomer Explorer (internal use)
+    * @function resize
+    */
     resize: function (height) {
         this.height = height;
 
@@ -4124,6 +4556,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             this.rnatabs.resizeClientarea(0, this.getHeight("RNA"));
     },
 
+    /**
+    * Get the height of the Monomer Explorer (internal use)
+    * @function getHeight
+    */
     getHeight: function (key) {
         var d1 = this.options.mexmonomerstab ? 0 : 14;
         var d2 = this.options.mexmonomerstab ? 0 : 47;
@@ -4144,6 +4580,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return this.height;
     },
 
+    /**
+    * Event handler when showing a tab (internal use)
+    * @function onShowTab
+    */
     onShowTab: function (td, forcerecreate) {
         if (td == null)
             return;
@@ -4236,6 +4676,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
     },
 
+    /**
+    * Get monomers by natural analog (internal use)
+    * @function getMonomerDictGroupByAnalog
+    */
     getMonomerDictGroupByAnalog: function (type) {
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
         //for (var k in set)
@@ -4270,6 +4714,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return ret;
     },
 
+    /**
+    * Get monomer list of a monomer type (internal use)
+    * @function getMonomerList
+    */
     getMonomerList: function (list, type, addnull) {
         if (list != null) {
             list.sort();
@@ -4283,6 +4731,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return this.getMonomerNames(list, addnull);
     },
 
+    /**
+    * Get monomer names (internal use)
+    * @function getMonomerNames
+    */
     getMonomerNames: function (list, addnull) {
         var ret = [];
         if (addnull)
@@ -4295,6 +4747,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return ret;
     },
 
+    /**
+    * Create a monomer group (internal use)
+    * @function createMonomerGroup
+    */
     createMonomerGroup: function (div, type, list, addnull) {
         var me = this;
         list = this.getMonomerList(list, type, addnull);
@@ -4304,6 +4760,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         dojo.connect(div, "ondblclick", function (e) { me.dblclick(e); });
     },
 
+    /**
+    * inner loop creating a monomer group (internal use)
+    * @function createMonomerGroup3
+    */
     createMonomerGroup3: function (div, group, i, createbar) {
         var me = this;
         var parent = scil.Utils.createElement(div, "div");
@@ -4351,11 +4811,19 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         //}
     },
 
+    /**
+    * Create RNA Tab caption (internal use)
+    * @function 
+    */
     createRNATabCaption: function (type, label) {
         var half = " style='font-size: 80%;padding-left:20px;background-repeat:no-repeat;background-position:left center;background-image:";
         return "<div title='Nucleotide (Combined)' " + half + scil.Utils.imgSrc("img/helm_" + type.toLowerCase() + ".gif", true) + "'>" + label + "</div>";
     },
 
+    /**
+    * Event handler when pinning a Combo (internal use)
+    * @function onPinMenu
+    */
     onPinMenu: function (e) {
         if (this.pinmenu == null) {
             var me = this;
@@ -4365,6 +4833,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         this.pinmenu.show(e.clientX, e.clientY);
     },
 
+    /**
+    * Inner loop creating a monomer group (internal use)
+    * @function createMonomerGroup4
+    */
     createMonomerGroup4: function (div, type, list, addnull, groupbyanalog) {
         if (groupbyanalog) {
             var dict = this.getMonomerDictGroupByAnalog(type);
@@ -4411,6 +4883,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Add a nucleotide (internal use)
+    * @function addNucleotide
+    */
     addNucleotide: function (tab) {
         var notation = this.getCombo();
         var dict = org.helm.webeditor.MonomerExplorer.nucleotides;
@@ -4429,6 +4905,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         });
     },
 
+    /**
+    * Inner loop listing all monomer of a monomer type (internal use)
+    * @function 
+    */
     _listMonomer2: function (div, k, list, type, width) {
         if (list.length == 0)
             return;
@@ -4441,6 +4921,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         this._listMonomers(right, list, type);
     },
 
+    /**
+    * Create favorite monomer group (internal use)
+    * @function createMonomerGroupFav
+    */
     createMonomerGroupFav: function (div, caption, type) {
         var list = org.helm.webeditor.MonomerExplorer.favorites.getList(type);
         if (list == null || list.length == 0)
@@ -4456,6 +4940,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         dojo.connect(d, "ondblclick", function (e) { me.dblclick(e); });
     },
 
+    /**
+    * List a monomer group (internal use)
+    * @function _listMonomers
+    */
     _listMonomers: function (div, list, type, mexfavoritefirst) {
         div.className = "filtergroup";
 
@@ -4477,6 +4965,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Recreate favorite monomers (internal use)
+    * @function 
+    */
     recreateFavorites: function (d) {
         this.createMonomerGroupFav(d, "Nucleotide", org.helm.webeditor.MonomerExplorer.kNucleotide);
         this.createMonomerGroupFav(d, "Base", org.helm.webeditor.HELM.BASE);
@@ -4486,6 +4978,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         this.createMonomerGroupFav(d, "Peptide", org.helm.webeditor.HELM.AA);
     },
 
+    /**
+    * Create a monomer block (internal use)
+    * @function createMonomerDiv
+    */
     createMonomerDiv: function (parent, name, type, style, star) {
         var fav = org.helm.webeditor.MonomerExplorer.favorites.contains(name, type);
 
@@ -4519,6 +5015,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return div;
     },
 
+    /**
+    * Set monomer block background (internal use)
+    * @function setMonomerBackground
+    */
     setMonomerBackground: function (div, f) {
         var type = div.getAttribute("helm");
         if (scil.Utils.isNullOrEmpty(type))
@@ -4530,6 +5030,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         div.style.backgroundImage = scil.Utils.imgSrc("img/mon-" + bk + f + ".png", true);
     },
 
+    /**
+    * Get the monomer block (internal use)
+    * @function getMonomerDiv
+    */
     getMonomerDiv: function (e) {
         var div = e.target || e.srcElement;
         if (div == null || div.tagName == null)
@@ -4546,6 +5050,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return scil.Utils.isNullOrEmpty(type) ? null : div;
     },
 
+    /**
+    * Enable DnD (internal use)
+    * @function createDnD
+    */
     createDnD: function (div) {
         var me = this;
         return new scil.DnD(div, {
@@ -4592,6 +5100,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         });
     },
 
+    /**
+    * Show structure popup (internal use)
+    * @function showMol
+    */
     showMol: function (e) {
         var src = this.getMonomerDiv(e);
         if (src != null && !this.dnd.isDragging()) {
@@ -4608,6 +5120,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Tool to split a list (internal use)
+    * @function splitLists
+    */
     splitLists: function (set) {
         var lists = [[], [], [], []];
         for (var k in set) {
@@ -4625,6 +5141,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return lists;
     },
 
+    /**
+    * Change favorites (internal use)
+    * @function changeFavorite
+    */
     changeFavorite: function (div) {
         var f = div.getAttribute("star") != "1";
 
@@ -4644,6 +5164,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         //this.reloadTab(type);
     },
 
+    /**
+    * Select a monomer (internal use)
+    * @function select
+    */
     select: function (e) {
         var div = this.getMonomerDiv(e);
         if (div != null) {
@@ -4756,6 +5280,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Get the RNA combo (internal use)
+    * @function getCombo
+    */
     getCombo: function () {
         var sugar = this.selected[org.helm.webeditor.HELM.SUGAR];
         var linker = this.selected[org.helm.webeditor.HELM.LINKER];
@@ -4770,6 +5298,10 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         return s;
     },
 
+    /**
+    * Event of double click (internal use)
+    * @function dblclick
+    */
     dblclick: function (e) {
         var div = this.getMonomerDiv(e);
         var helm = div == null ? null : div.getAttribute("helm");
@@ -4797,6 +5329,10 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         U: "R(U)P"
     },
 
+    /**
+    * Compare if two monomers are same (internal use)
+    * @function compareMonomers
+    */
     compareMonomers: function (a, b) {
         if (a.id == b.id)
             return 0;
@@ -4810,6 +5346,10 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
             return a.id.toLowerCase() > b.id.toLowerCase() ? 1 : -1;
     },
 
+    /**
+    * Event handler on adding favorite (internal use)
+    * @function onAddFavorite
+    */
     onAddFavorite: function (name, f, type) {
         if (!f && type == "nucleotide" && this.customnucleotides != null && this.customnucleotides[name] != null) {
             delete this.customnucleotides[name];
@@ -4817,6 +5357,10 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         }
     },
 
+    /**
+    * Create a custom RNA combo (internal use)
+    * @function addCustomNucleotide
+    */
     addCustomNucleotide: function (name, notation) {
         name = scil.Utils.trim(name);
         if (scil.Utils.isNullOrEmpty(name)) {
@@ -4840,11 +5384,19 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         return true;
     },
 
+    /**
+    * Save custom RNA Combos(internal use)
+    * @function saveNucleotides
+    */
     saveNucleotides: function () {
         var s = scil.Utils.json2str(this.customnucleotides);
         scil.Utils.createCookie("scil_helm_nucleotides", s);
     },
 
+    /**
+    * Read all saved custom RNA Combo (internal use)
+    * @function loadNucleotides
+    */
     loadNucleotides: function () {
         if (this._nucleotidesloaded)
             return this.nucleotides;
@@ -4868,12 +5420,20 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         return this.nucleotides;
     },
 
+    /**
+    * Show Monomer Explorer as a dialog (internal use)
+    * @function showDlg
+    */
     showDlg: function (jsd) {
         this.createDlg(jsd);
         this.dlg.show2({ owner: jsd, modal: false });
         jsd.helm.monomerexplorer = this.mex;
     },
 
+    /**
+    * Create Monomer Explorer dialog (internal use)
+    * @function createDlg
+    */
     createDlg: function (jsd) {
         if (this.dlg != null)
             return;
@@ -4886,13 +5446,29 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         this.dlg.moveCenter();
     }
 });
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * MolViewer class
@@ -4904,12 +5480,20 @@ org.helm.webeditor.MolViewer = {
     molscale: 1,
     delay: 800,
 
+    /**
+    * Show structure view popup
+    * @function show
+    */
     show: function (e, type, m, code, ed) {
         this.clearTimer();
         var me = this;
         this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code, ed); }, this.delay);
     },
 
+    /**
+    * Clear delay timer
+    * @function clearTimer
+    */
     clearTimer: function () {
         if (this.tm != null) {
             clearTimeout(this.tm);
@@ -4917,6 +5501,10 @@ org.helm.webeditor.MolViewer = {
         }
     },
 
+    /**
+    * Inner implementation of display structure dialog (internal use)
+    * @function show2
+    */
     show2: function (xy, type, m, code, ed) {
         this.tm = null;
         if (m == null)
@@ -4952,6 +5540,10 @@ org.helm.webeditor.MolViewer = {
         this.dlg.moveTo(xy.x + scroll.x + 10, xy.y + scroll.y + 10);
     },
 
+    /**
+    * Assembly molecule (internal use)
+    * @function assemblyMol
+    */
     assemblyMol: function (s) {
         var p1 = s.indexOf('(');
         var p2 = s.indexOf(")");
@@ -4973,6 +5565,10 @@ org.helm.webeditor.MolViewer = {
         return m1.getMolfile();
     },
 
+    /**
+    * Cap R group (internal use)
+    * @function capRGroup
+    */
     capRGroup: function (m, r, mon) {
         var cap = mon == null || mon.at == null ? null : mon.at[r];
         if (cap == "OH")
@@ -4992,6 +5588,10 @@ org.helm.webeditor.MolViewer = {
         return false;
     },
 
+    /**
+    * Find R group (internal use)
+    * @function findR
+    */
     findR: function (m, r1, a1) {
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
@@ -5003,6 +5603,10 @@ org.helm.webeditor.MolViewer = {
         return null;
     },
 
+    /**
+    * Merge two molecule (internal use)
+    * @function mergeMol
+    */
     mergeMol: function (m, r1, src, r2, a1, a2) {
         var t = this.findR(m, r1, a1);
         var s = this.findR(src, r2, a2);
@@ -5032,6 +5636,10 @@ org.helm.webeditor.MolViewer = {
         return m.getMolfile();
     },
 
+    /**
+    * Extend a point (internal use)
+    * @function extendDistance
+    */
     extendDistance: function (p0, p, s) {
         var dx = p.x - p0.x;
         var dy = p.y - p0.y;
@@ -5040,6 +5648,10 @@ org.helm.webeditor.MolViewer = {
         p.y = p0.y + s * dy;
     },
 
+    /**
+    * Create the popup dialog (internal use)
+    * @function create
+    */
     create: function () {
         if (this.dlg != null)
             return;
@@ -5055,26 +5667,50 @@ org.helm.webeditor.MolViewer = {
         this.dlg.dialog.titleElement.style.textAlign = "center";
     },
 
+    /**
+    * Hide the dialog (internal use)
+    * @function hide
+    */
     hide: function () {
         this.clearTimer();
         if (this.dlg != null && this.dlg.isVisible()) {
             this.dlg.hide(true);
         }
     }
-};﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+};﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * Formula class
 * @class org.helm.webeditor.Formula
 */
 org.helm.webeditor.Formula = {
-    getMF: function(m, html) {
+    /**
+    * Calculate the MF of a molecule (internal use)
+    * @function getMF
+    */
+    getMF: function (m, html) {
         var stats = this.getAtomStats(m);
 
         var s = "";
@@ -5094,12 +5730,20 @@ org.helm.webeditor.Formula = {
         return s;
     },
 
+    /**
+    * Create subscription (internal use)
+    * @function 
+    */
     subscription: function (n, html) {
         if (n == 1)
             return "";
         return html ? "<sub>" + n + "</sub>" : n;
     },
 
+    /**
+    * Calculate the MW of a molecule (internal use)
+    * @function getMW
+    */
     getMW: function (m) {
         var stats = this.getAtomStats(m);
         var sum = 0;
@@ -5110,6 +5754,10 @@ org.helm.webeditor.Formula = {
         return Math.round(sum * 10000) / 10000.0;
     },
 
+    /**
+    * Calculate atom counts (internal use)
+    * @function getAtomStats
+    */
     getAtomStats: function (m) {
         var atoms = [];
         var list = [];
@@ -5143,6 +5791,10 @@ org.helm.webeditor.Formula = {
         return ret;
     },
 
+    /**
+    * Count monomers (internal use)
+    * @function countMonomer
+    */
     countMonomer: function (ret, m) {
         if (m.stats == null) {
             m.stats = org.helm.webeditor.Interface.molStats(org.helm.webeditor.monomers.getMolfile(m));
@@ -5172,6 +5824,10 @@ org.helm.webeditor.Formula = {
         }
     },
 
+    /**
+    * Deduct R group (internal use)
+    * @function deduceR
+    */
     deduceR: function (ret, m, r) {
         if (m.at == null)
             return;
@@ -5185,51 +5841,29 @@ org.helm.webeditor.Formula = {
             --ret["O"];
         }
     }
-};﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
-
-
-//org.helm.webeditor.Editor = scil.extend(scil._base, {
-//    constructor: function (parent, options) {
-//        if (typeof parent == "string")
-//            parent = scil.byId(parent);
-//        this.canvas = null;
-
-//        var tr = scil.Utils.createElement(scil.Utils.createTable(parent, 0, 0), "tr");
-//        var left = scil.Utils.createElement(tr, "td", null, null, { valign: "top" });
-//        var right = scil.Utils.createElement(tr, "td", null, null, { valign: "top" });
-
-//        var me = this;
-//        var fn = function () {
-//            me.canvas = new JSDraw(right, options);
-//            if (options.showmonomerexplorer) {
-//                me.canvas.helm.monomerexplorer = new org.helm.webeditor.MonomerExplorer(left, me.canvas.helm, { width: 300, height: options.height - 45 });
-//                me.canvas._testdeactivation = function (e, ed) {
-//                    var src = e.target || e.srcElement;
-//                    return scil.Utils.hasAnsestor(src, me.canvas.helm.monomerexplorer.div);
-//                };
-//            }
-//            if (options.onloaded != null)
-//                options.onloaded(me);
-//        };
-
-//        if (options.monomerlibraryxml != null)
-//            org.helm.webeditor.monomers.loadFromUrl(options.monomerlibraryxml, function () { fn(); });
-//        else
-//            fn();
-//    }
-//});﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+};﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * ExtinctionCoefficient class
@@ -5280,7 +5914,11 @@ org.helm.webeditor.ExtinctionCoefficient = {
         TT: 8.61
     },
 
-    calculate: function(m) {
+    /**
+    * Calculate the extinction coefficient of a molecule (internal use)
+    * @function calculate
+    */
+    calculate: function (m) {
         var chains = org.helm.webeditor.Chain.getChains(m);
         if (chains == null || chains.length == 0)
             return "";
@@ -5300,6 +5938,10 @@ org.helm.webeditor.ExtinctionCoefficient = {
         return sum;
     },
 
+    /**
+    * Calculate the extinction coefficient of a peptide (internal use)
+    * @function _calculatePeptide
+    */
     _calculatePeptide: function (atoms) {
         if (atoms == null || atoms.length == 0)
             return 0;
@@ -5323,6 +5965,10 @@ org.helm.webeditor.ExtinctionCoefficient = {
         return result / 1000.0;
     },
 
+    /**
+    * Calculate the extinction coefficient of a RNA (internal use)
+    * @function _calculateRNA
+    */
     _calculateRNA: function (atoms) {
         if (atoms == null || atoms.length == 0)
             return 0;
@@ -5359,13 +6005,29 @@ org.helm.webeditor.ExtinctionCoefficient = {
             result += this.rna[k] * counts[k];
         return result;
     } 
-};﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+};﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * HELM Editor App class
@@ -5458,6 +6120,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Calculate layout sizes (internal use)
+    * @function calculateSizes
+    */
     calculateSizes: function () {
         var d = dojo.window.getBox();
         if (this.options.topmargin > 0)
@@ -5479,6 +6145,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return ret;
     },
 
+    /**
+    * Intialize the App (internal use)
+    * @function init
+    */
     init: function (parent) {
         var me = this;
 
@@ -5550,6 +6220,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         scil.connect(window, "onresize", function (e) { me.resizeWindow(); });
     },
 
+    /**
+    * Resize Window (internal use)
+    * @function resizeWindow
+    */
     resizeWindow: function () {
         var sizes = this.calculateSizes();
         this.canvas.resize(sizes.rightwidth, sizes.topheight - 70);
@@ -5566,6 +6240,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.mex.resize(sizes.height);
     },
 
+    /**
+    * Swap canvas and sequence view (internal use)
+    * @function swapCanvasSequence
+    */
     swapCanvasSequence: function () {
         var a = this.canvasform.form.dom;
         var h = this.handle;
@@ -5580,6 +6258,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Event handler when change window size (internal use)
+    * @function onresize
+    */
     onresize: function (delta) {
         if (this.handle.nextSibling == this.tabs.tabs.dom) {
             var top = this.canvas.dimension.y;
@@ -5608,6 +6290,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return false;
     },
 
+    /**
+    * create monomer explorer (internal use)
+    * @function createPalette
+    */
     createPalette: function (div, width, height) {
         var opt = scil.clone(this.options);
         opt.width = width;
@@ -5615,6 +6301,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.mex = new org.helm.webeditor.MonomerExplorer(div, null, opt);
     },
 
+    /**
+    * create drawing canvas (internal use)
+    * @function createCanvas
+    */
     createCanvas: function (div, width, height) {
         div.style.border = "solid 1px #eee";
 
@@ -5636,6 +6326,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         };
     },
 
+    /**
+    * Event handler when selecting an object (internal use)
+    * @function onselectcurrent
+    */
     onselectcurrent: function (e, obj, ed) {
         var a = JSDraw2.Atom.cast(obj);
         if (a == null || ed.start != null || ed.contextmenu != null && ed.contextmenu.isVisible()) {
@@ -5649,6 +6343,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         org.helm.webeditor.MolViewer.show(e, type, m, s, ed);
     },
 
+    /**
+    * Create sequence view (internal use)
+    * @function createSequence
+    */
     createSequence: function (div, width, height) {
         var atts = {};
         if (!this.options.sequenceviewonly)
@@ -5656,6 +6354,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.sequence = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll" }, atts);
     },
 
+    /**
+    * create notation view (internal use)
+    * @function createNotation
+    */
     createNotation: function (div, width, height) {
         var atts = {};
         if (!this.options.sequenceviewonly)
@@ -5663,6 +6365,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.notation = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll" }, atts);
     },
 
+    /**
+    * Create property window (internal use)
+    * @function createProperties
+    */
     createProperties: function (div, width, height) {
         var d = scil.Utils.createElement(div, "div", null, { width: width, overflow: "scroll", height: height + this.toolbarheight });
 
@@ -5675,11 +6381,19 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         this.properties.render(d, fields, { immediately: true });
     },
 
+    /**
+    * Create structure view (internal use)
+    * @function createStructureView
+    */
     createStructureView: function (div, width, height) {
         var d = scil.Utils.createElement(div, "div", null, { width: width, height: height + this.toolbarheight });
         this.structureview = new JSDraw2.Editor(d, { viewonly: true })
     },
 
+    /**
+    * Resize Window (internal use)
+    * @function resize
+    */
     resize: function () {
         var d = dojo.window.getBox();
         var width = d.w;
@@ -5688,6 +6402,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var top = d.t;
     },
 
+    /**
+    * Update Canvas from sequence/notation view (internal use)
+    * @function updateCanvas
+    */
     updateCanvas: function (key, append) {
         var format = null;
         if (this.sequencebuttons != null)
@@ -5708,6 +6426,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         plugin.setSequence(s, format, plugin.getDefaultNodeType(org.helm.webeditor.HELM.SUGAR), plugin.getDefaultNodeType(org.helm.webeditor.HELM.LINKER), append);
     },
 
+    /**
+    * Tool function to get item by using its key (internal use)
+    * @function getValueByKey
+    */
     getValueByKey: function (list, key) {
         for (var i = 0; i < list.length; ++i) {
             if (list[i].key == key)
@@ -5716,6 +6438,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return null;
     },
 
+    /**
+    * update helm properties (internal use)
+    * @function updateProperties
+    */
     updateProperties: function () {
         switch (this.tabs.tabs.currentTabKey()) {
             case "sequence":
@@ -5735,6 +6461,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Event handler when selection is changed (internal use)
+    * @function onselectionchanged
+    */
     onselectionchanged: function () {
         switch (this.tabs.tabs.currentTabKey()) {
             case "sequence":
@@ -5752,6 +6482,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Calaulte helm structure properties (internal use)
+    * @function calculateProperties
+    */
     calculateProperties: function () {
         if (this.properties == null)
             return;
@@ -5775,6 +6509,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Get selection as a molfile (internal use)
+    * @function getSelectedAsMol
+    */
     getSelectedAsMol: function (m) {
         var ret = new JSDraw2.Mol();
         for (var i = 0; i < m.atoms.length; ++i) {
@@ -5792,6 +6530,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return ret;
     },
 
+    /**
+    * Tool function to select bonds of all selected atoms (internal use)
+    * @function selectBondsOfSelectedAtoms
+    */
     selectBondsOfSelectedAtoms: function (m) {
         var n = 0;
         for (var i = 0; i < m.bonds.length; ++i) {
@@ -5805,6 +6547,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return n;
     },
 
+    /**
+    * Update structure view from Canvas (internal use)
+    * @function updateStructureView
+    */
     updateStructureView: function () {
         if (this.structureview == null)
             return;
@@ -5883,14 +6629,29 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     }
 });
 
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
-
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * AppToolbar class
@@ -5936,6 +6697,10 @@ org.helm.webeditor.AppToolbar = scil.extend(scil._base, {
 });
 
 
+/**
+* Resources class
+* @class org.helm.webeditor.AppToolbar.Resources
+*/
 org.helm.webeditor.AppToolbar.Resources = {
     img: function (key) {
         var s = this[key];
@@ -5950,13 +6715,29 @@ org.helm.webeditor.AppToolbar.Resources = {
     'monomers-2.png': 'iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAIAAABKoV4MAAAACXBIWXMAAAsTAAALEwEAmpwYAAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAAF2+SX8VGAAADiElEQVR42mJ89+4dw8ABgABiYhhQABBAA2w9QAANsPUAATTA1gME0ABbDxBAA2w9QAANsPUAATTA1gME0ABbDxBAA2w9QAANsPUAATTA1gMEEGnW////nxg1//79I9JAgAAiwfq/f/8+efIEWEPid8SDBw/u3LlDpJkAAYTF+t+/f6OJfPjw4fLly3/+/GFjY/v58+f79++vX7/+69cvNF1XrlwBOk5RUVFYWBio5cKFC1++fMFvPUAAsqdQBYAQiqE8UTC8aFDB5v//h9XgF4hiMQjGGxeu3No2tvdGf6m1xswhBCHEvRcUu621RBRjPOfMOffepRTnXEpJSonFvXellNaaX6y1UFVrRTDnDAuvjDG898aY79YjgBixNje+f/9+6dKlb9++AcNZQEBAS0tLRESEmZkZ6Kf79+8DFQgJCQHDAMgGigCtB3I1NTWB/gaqgRsCTAGPHj0ChhPQxUBzDAwMxMTE0CwCCCBGPK2d3bt3q6qqKikpAX0AtAMeyM+ePQMmAj4wuHbtGtAaZ2dnZD8hA2BkHTp0CBgdysrKmLIAAYQv6QG9ArQYGAxAj8IFgcEoLy9vZGQE9ArQKZycnMAEgctuIABGB1AB3PVoACCAmIhJ8JhJHWgrMOKBYU5hvgcIIMLWAxMg5YUBLkMAAoiJ8qKGoPvwAIAAYsEjZ2dnB0nJaFELTE1Pnz4F5klgBiO+KMQqDhBA+KwH5hkuLi5gigWSEBFgyQNM9sAsDhSRkJAA5ihgxgP6HpjLgTkTqyHAnAVUxsvLi1UWIAAfdXACAAzCUHQO919KhEzgEn2nnkrvSowk/yfPHA0COINC4ra7TIOPsiWBB++R7e52ELxoyl03OTOIpCxV9ZQ4AoiRYC8HGM7A0grIAAYDsAgCGgr0PTDf8/DwAN0E8TTQ9/fu3QOGjYqKCrCoAIoAS6Tbt28DGUA1UlJSuNIHQAAxEtPJAvoSaBzQx0ALgHkdmI+BtgI9hJybgbJAZwEDDJhQgDENTB9ANwGLWKDX8ZgMEECMxPfxIF4EBgCw2AEGOJ4aD2g9sAAmxkyAAGIkqYsJNBrob2CwU6u5ARBApDU3gBbj8TcZACCASLOe+GYMkQAggFhIUg0s5IG1PhWtBwgg0nxPXbuBACCABrilCxBAA2w9QAANsPUAATTA1gME0ABbDxBAA2w9QAANsPUAATTA1gMEGAAj0m/VIoHc6gAAAABJRU5ErkJggg==',
     'settings-1.png': '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',
     'settings-2.png': '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'
-};﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+};﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * MonomerLibApp class
@@ -6030,6 +6811,10 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         this.init(parent);
     },
 
+    /**
+    * Initialize the manager (internal use)
+    * @function init
+    */
     init: function (parent) {
         var me = this;
 
@@ -6082,14 +6867,26 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         this.monomers.refresh();
     },
 
+    /**
+    * Refresh the list (internal use)
+    * @function refresh
+    */
     refresh: function (view) {
         this.monomers.refresh();
     },
 
+    /**
+    * Event handler before refreshing (internal use)
+    * @function onbeforerefresh
+    */
     onbeforerefresh: function (args) {
         scil.Form.getButtonValuesByKey(this.buttons, ["status", "polymertype", "monomertype", "status", "symbol", "countperpage"], args);
     },
 
+    /**
+    * Import from file (internal use)
+    * @function uploadFile
+    */
     uploadFile: function (duplicatecheck) {
         scil.Utils.uploadFile("Import Monomer Library", "Select HELM monomer xml file or SDF file (" + (duplicatecheck ? "with" : "without") + " duplicate check)", this.options.ajaxurl + "helm.monomer.uploadlib",
             function (ret) { scil.Utils.alert(ret.n + " monomers are imported"); }, { duplicatecheck: duplicatecheck });
@@ -6097,6 +6894,10 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
 });
 
 scil.apply(org.helm.webeditor.MonomerLibApp, {
+    /**
+    * Get all supported fields (internal use)
+    * @function getFields
+    */
     getFields: function() {
         return {
             id: { type: "hidden" },
@@ -6115,6 +6916,10 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
         }
     },
 
+    /**
+    * Tool function (internal use)
+    * @function getValueByKey
+    */
     getValueByKey: function (list, key) {
         for (var i = 0; i < list.length; ++i) {
             if (list[i].key == key)
@@ -6123,25 +6928,52 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
         return null;
     },
 
+    /**
+    * List polymer types (internal use)
+    * @function getPolymerTypes
+    */
     getPolymerTypes: function () {
         return ["", "RNA", "CHEM", "PEPTIDE"];
     },
 
+    /**
+    * List monomer types (internal use)
+    * @function getMonomerTypes
+    */
     getMonomerTypes: function () {
         return ["", "Backbone", "Branch", "Undefined"]
     },
 
+    /**
+    * List of statuses (internal use)
+    * @function getStatuses
+    */
     getStatuses: function () {
         return ["", "New", "Approved", "Retired"]
     }
-});﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
-
+});﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * RuleSet class
@@ -6389,13 +7221,29 @@ org.helm.webeditor.RuleSet = {
 
         callback(f, error);
     }
-};﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+};﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * RuleSetApp class

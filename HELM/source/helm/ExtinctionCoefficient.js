@@ -1,10 +1,26 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * ExtinctionCoefficient class
@@ -55,7 +71,11 @@ org.helm.webeditor.ExtinctionCoefficient = {
         TT: 8.61
     },
 
-    calculate: function(m) {
+    /**
+    * Calculate the extinction coefficient of a molecule (internal use)
+    * @function calculate
+    */
+    calculate: function (m) {
         var chains = org.helm.webeditor.Chain.getChains(m);
         if (chains == null || chains.length == 0)
             return "";
@@ -75,6 +95,10 @@ org.helm.webeditor.ExtinctionCoefficient = {
         return sum;
     },
 
+    /**
+    * Calculate the extinction coefficient of a peptide (internal use)
+    * @function _calculatePeptide
+    */
     _calculatePeptide: function (atoms) {
         if (atoms == null || atoms.length == 0)
             return 0;
@@ -98,6 +122,10 @@ org.helm.webeditor.ExtinctionCoefficient = {
         return result / 1000.0;
     },
 
+    /**
+    * Calculate the extinction coefficient of a RNA (internal use)
+    * @function _calculateRNA
+    */
     _calculateRNA: function (atoms) {
         if (atoms == null || atoms.length == 0)
             return 0;

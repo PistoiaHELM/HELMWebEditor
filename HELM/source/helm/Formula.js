@@ -1,17 +1,37 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * Formula class
 * @class org.helm.webeditor.Formula
 */
 org.helm.webeditor.Formula = {
-    getMF: function(m, html) {
+    /**
+    * Calculate the MF of a molecule (internal use)
+    * @function getMF
+    */
+    getMF: function (m, html) {
         var stats = this.getAtomStats(m);
 
         var s = "";
@@ -31,12 +51,20 @@ org.helm.webeditor.Formula = {
         return s;
     },
 
+    /**
+    * Create subscription (internal use)
+    * @function 
+    */
     subscription: function (n, html) {
         if (n == 1)
             return "";
         return html ? "<sub>" + n + "</sub>" : n;
     },
 
+    /**
+    * Calculate the MW of a molecule (internal use)
+    * @function getMW
+    */
     getMW: function (m) {
         var stats = this.getAtomStats(m);
         var sum = 0;
@@ -47,6 +75,10 @@ org.helm.webeditor.Formula = {
         return Math.round(sum * 10000) / 10000.0;
     },
 
+    /**
+    * Calculate atom counts (internal use)
+    * @function getAtomStats
+    */
     getAtomStats: function (m) {
         var atoms = [];
         var list = [];
@@ -80,6 +112,10 @@ org.helm.webeditor.Formula = {
         return ret;
     },
 
+    /**
+    * Count monomers (internal use)
+    * @function countMonomer
+    */
     countMonomer: function (ret, m) {
         if (m.stats == null) {
             m.stats = org.helm.webeditor.Interface.molStats(org.helm.webeditor.monomers.getMolfile(m));
@@ -109,6 +145,10 @@ org.helm.webeditor.Formula = {
         }
     },
 
+    /**
+    * Deduct R group (internal use)
+    * @function deduceR
+    */
     deduceR: function (ret, m, r) {
         if (m.at == null)
             return;

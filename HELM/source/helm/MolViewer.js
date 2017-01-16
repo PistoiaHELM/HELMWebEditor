@@ -1,10 +1,26 @@
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// Pistoia HELM
-// Copyright (C) 2016 Pistoia (www.pistoiaalliance.org)
-// Created by Scilligence, built on JSDraw.Lite
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿/*******************************************************************************
+* Copyright C 2017, The Pistoia Alliance
+* Created by Scilligence, built on JSDraw.Lite
+* 
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the
+* "Software"), to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to the 
+* following conditions:
+* 
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+* 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*******************************************************************************/
 
 /**
 * MolViewer class
@@ -16,12 +32,20 @@ org.helm.webeditor.MolViewer = {
     molscale: 1,
     delay: 800,
 
+    /**
+    * Show structure view popup
+    * @function show
+    */
     show: function (e, type, m, code, ed) {
         this.clearTimer();
         var me = this;
         this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code, ed); }, this.delay);
     },
 
+    /**
+    * Clear delay timer
+    * @function clearTimer
+    */
     clearTimer: function () {
         if (this.tm != null) {
             clearTimeout(this.tm);
@@ -29,6 +53,10 @@ org.helm.webeditor.MolViewer = {
         }
     },
 
+    /**
+    * Inner implementation of display structure dialog (internal use)
+    * @function show2
+    */
     show2: function (xy, type, m, code, ed) {
         this.tm = null;
         if (m == null)
@@ -64,6 +92,10 @@ org.helm.webeditor.MolViewer = {
         this.dlg.moveTo(xy.x + scroll.x + 10, xy.y + scroll.y + 10);
     },
 
+    /**
+    * Assembly molecule (internal use)
+    * @function assemblyMol
+    */
     assemblyMol: function (s) {
         var p1 = s.indexOf('(');
         var p2 = s.indexOf(")");
@@ -85,6 +117,10 @@ org.helm.webeditor.MolViewer = {
         return m1.getMolfile();
     },
 
+    /**
+    * Cap R group (internal use)
+    * @function capRGroup
+    */
     capRGroup: function (m, r, mon) {
         var cap = mon == null || mon.at == null ? null : mon.at[r];
         if (cap == "OH")
@@ -104,6 +140,10 @@ org.helm.webeditor.MolViewer = {
         return false;
     },
 
+    /**
+    * Find R group (internal use)
+    * @function findR
+    */
     findR: function (m, r1, a1) {
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
@@ -115,6 +155,10 @@ org.helm.webeditor.MolViewer = {
         return null;
     },
 
+    /**
+    * Merge two molecule (internal use)
+    * @function mergeMol
+    */
     mergeMol: function (m, r1, src, r2, a1, a2) {
         var t = this.findR(m, r1, a1);
         var s = this.findR(src, r2, a2);
@@ -144,6 +188,10 @@ org.helm.webeditor.MolViewer = {
         return m.getMolfile();
     },
 
+    /**
+    * Extend a point (internal use)
+    * @function extendDistance
+    */
     extendDistance: function (p0, p, s) {
         var dx = p.x - p0.x;
         var dy = p.y - p0.y;
@@ -152,6 +200,10 @@ org.helm.webeditor.MolViewer = {
         p.y = p0.y + s * dy;
     },
 
+    /**
+    * Create the popup dialog (internal use)
+    * @function create
+    */
     create: function () {
         if (this.dlg != null)
             return;
@@ -167,6 +219,10 @@ org.helm.webeditor.MolViewer = {
         this.dlg.dialog.titleElement.style.textAlign = "center";
     },
 
+    /**
+    * Hide the dialog (internal use)
+    * @function hide
+    */
     hide: function () {
         this.clearTimer();
         if (this.dlg != null && this.dlg.isVisible()) {
