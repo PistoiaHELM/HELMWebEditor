@@ -37,13 +37,16 @@
 <body>
 
     <h2 style="margin-bottom:0">HELM Web Editor</h2>
-    <div style="color:red">(Release 1, Jan 30, 2017)</div>
+    <div style="color:red">(Release 1, Feb 1st, 2017)</div>
 
     <p>HELM Web Editor is an editor to draw and display macro molecules, built with 100% 
         javascript, depending on 
         JSDraw.Lite, 
     <a href="https://dojotoolkit.org" target="_blank">dojo toolkit</a> and 
     <a href="https://nodeca.github.io/pako/" target="_blank">pako.js</a>.</p>
+    <p>Please visit
+        <a href="https://pistoiaalliance.atlassian.net/wiki/display/PUB/New...+HELM+web-editor">
+        HELM Web Editor</a> page for more information.</p>
 
     <H4>Examples</H4>
     <ul>
@@ -66,24 +69,6 @@
         <li><a href="https://pistoiaalliance.atlassian.net/wiki/display/PUB/Installation+guide">Manual for IT</a></li>
         <li><a href="http://www.scilligence.com/sdk/helm/">API Documentation</a></li>
     </ul>
-    <h4>Download Binary</h4>
-    <p>1. Download HELM Web Service for Tomcat</p>
-    <p><a href="https://oss.sonatype.org/content/repositories/releases/org/pistoiaalliance/helm/helm2-webservice/2.0.0/helm2-webservice-2.0.0.war">helm2-webservice-2.0.0.war</a></p>
-    <p>
-        To deploy it on Tomcat, rename the war file to WebService.war, then copy WebService.war file to Tomcat webapps folder (e.g.
-        C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps)
-    </p>
-    <p>
-        The editor can be loaded in browser by using URL:
-        http://localhost:8008/WebService/hwe
-    </p>
-    <p>2. For IIS web server, please contact Scilligence.</p>
-
-    <h4>Attention for Deployment</h4>
-    <ul>
-        <li>This war build supports Tomcat 8 and later version, but not support Tomcat 7</li>
-        <li>In order to be able to open files in HELM Web Editor, this line should be manually configured in web.xml:<br>&lt;location&gt;c:\temp&lt;/location&gt;</li>
-    </ul>    
 
     <h4>Source Code</h4>
     <ul>
