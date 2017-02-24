@@ -969,7 +969,7 @@ org.helm.webeditor.Monomers = {
         for (var i = 1; i <= 5; ++i) {
             var s2 = s.replace(new RegExp("\\[R" + i + "\\]"), "");
             if (s2.length == s.length)
-                break;
+                continue;
             s = s2;
             ret.push("R" + i);
         }
@@ -979,7 +979,7 @@ org.helm.webeditor.Monomers = {
             for (var i = 1; i <= 5; ++i) {
                 var s2 = s.replace(new RegExp("_R" + i), "");
                 if (s2.length == s.length)
-                    break;
+                    continue;
                 s = s2;
                 ret.push("R" + i);
             }
@@ -3689,7 +3689,7 @@ org.helm.webeditor.IO = {
                 s = a.elem;
         }
 
-        if (s == "?")
+        if (s == "?" && a.bio != null)
             s = a.bio.ambiguity;
         else if (s.length > 1)
             s = "[" + s + "]";
@@ -4784,7 +4784,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
             var tabs = [
                     { caption: this.createRNATabCaption("nucleotide", "R(A)P"), tabkey: "nucleotide", onmenu: this.options.mexrnapinontab ? function (e) { me.onPinMenu(e); } : null },
-                    { caption:this.createRNATabCaption("base", base), tabkey: "base" },
+                    { caption: this.createRNATabCaption("base", base), tabkey: "base" },
                     { caption: this.createRNATabCaption("sugar", sugar), tabkey: "sugar" },
                     { caption: this.createRNATabCaption("linker", linker), tabkey: "linker" }
                 ];
@@ -5087,6 +5087,11 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                     return;
 
                 me.dnd.floatingbox.style.display = "none";
+
+                var src = e.target || e.srcElement;
+                if (!scil.Utils.hasAnsestor(src, me.plugin.jsd.div))
+                    return;
+
                 var type = me.dnd.floatingbox.getAttribute("helm");
                 me.plugin.dropMonomer(type, scil.Utils.getInnerText(me.dnd.floatingbox), e);
             },
@@ -5796,6 +5801,9 @@ org.helm.webeditor.Formula = {
     * @function countMonomer
     */
     countMonomer: function (ret, m) {
+        if (m == null)
+            return;
+
         if (m.stats == null) {
             m.stats = org.helm.webeditor.Interface.molStats(org.helm.webeditor.monomers.getMolfile(m));
             for (var r in m.at) {
@@ -6825,6 +6833,8 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             "-",
             { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomers", onclick: function () { me.uploadFile(true); } },
             "-",
+            { type: "a", src: scil.Utils.imgSrc("img/save.gif"), title: "Export Monomers as JSON", onclick: function () { me.exportJson(); } },
+            "-",
             { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol/Name", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
             { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
             { type: "select", key: "monomertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), label: "Monomer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
@@ -6890,6 +6900,10 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
     uploadFile: function (duplicatecheck) {
         scil.Utils.uploadFile("Import Monomer Library", "Select HELM monomer xml file or SDF file (" + (duplicatecheck ? "with" : "without") + " duplicate check)", this.options.ajaxurl + "helm.monomer.uploadlib",
             function (ret) { scil.Utils.alert(ret.n + " monomers are imported"); }, { duplicatecheck: duplicatecheck });
+    },
+
+    exportJson: function() {
+        window.open(this.options.ajaxurl.replace("/post?", "/get?") + "helm.monomer.json", "_blank");
     }
 });
 
@@ -6907,6 +6921,7 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
             polymertype: { label: "Polymer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), width: 100 },
             monomertype: { label: "Monomer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), width: 100 },
             author: { label: "Author", width: 100 },
+            smiles: { label: "SMILES", width: 800, height: 300 },
             molfile: { label: "Structure", type: "jsdraw", width: 800, height: 300 },
             r1: { label: "R1", type: "select", items: ["", "H", "OH", "X"] },
             r2: { label: "R2", type: "select", items: ["", "H", "OH", "X"] },
