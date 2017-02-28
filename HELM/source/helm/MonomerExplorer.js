@@ -389,7 +389,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             scil.connect(this.rules_category, "onchange", function () { org.helm.webeditor.RuleSet.filterRules(me.rules, me.filterInput.value, me.rules_category.value) });
 
             this.divRule = scil.Utils.createElement(div, "div", null, { width: "100%", height: this.getHeight(key), overflowY: "scroll" });
-            this.rules = org.helm.webeditor.RuleSet.listRules(this.divRule, function (script) { me.plugin.applyRule(script); }, function (scripts) { me.plugin.applyRules(scripts); });
+            this.listRules();
         }
         else if (key == "monomers") {
             var d = scil.Utils.createElement(div, "div", null, { paddingTop: "5px" });
@@ -411,7 +411,8 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
     },
 
     listRules: function () {
-
+        var me = this;
+        this.rules = org.helm.webeditor.RuleSet.listRules(this, function (script) { me.plugin.applyRule(script); }, function (scripts) { me.plugin.applyRules(scripts); });
     },
 
     /**
@@ -522,7 +523,7 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
             var tabs = [
                     { caption: this.createRNATabCaption("nucleotide", "R(A)P"), tabkey: "nucleotide", onmenu: this.options.mexrnapinontab ? function (e) { me.onPinMenu(e); } : null },
-                    { caption:this.createRNATabCaption("base", base), tabkey: "base" },
+                    { caption: this.createRNATabCaption("base", base), tabkey: "base" },
                     { caption: this.createRNATabCaption("sugar", sugar), tabkey: "sugar" },
                     { caption: this.createRNATabCaption("linker", linker), tabkey: "linker" }
                 ];
@@ -825,6 +826,11 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                     return;
 
                 me.dnd.floatingbox.style.display = "none";
+
+                var src = e.target || e.srcElement;
+                if (!scil.Utils.hasAnsestor(src, me.plugin.jsd.div))
+                    return;
+
                 var type = me.dnd.floatingbox.getAttribute("helm");
                 me.plugin.dropMonomer(type, scil.Utils.getInnerText(me.dnd.floatingbox), e);
             },

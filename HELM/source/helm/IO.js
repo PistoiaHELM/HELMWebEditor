@@ -40,7 +40,7 @@ org.helm.webeditor.IO = {
         for (var i = 0; i < m.atoms.length; ++i)
             m.atoms[i]._aaid = null;
 
-        var ret = { chainid: { RNA: 0, PEPTIDE: 0, CHEM: 0 }, sequences: {}, connections: [], chains: {}, annotations: [] };
+        var ret = { chainid: { RNA: 0, PEPTIDE: 0, CHEM: 0 }, sequences: {}, connections: [], chains: {}, annotations: {} };
         for (var i = 0; i < chains.length; ++i) {
             var chain = chains[i];
             chain.getHelm(ret, highlightselection);
@@ -100,8 +100,8 @@ org.helm.webeditor.IO = {
         s += "$";
 
         //RNA1{R(C)P.R(A)P.R(T)}$$$RNA1{ss}$
-        for (var i = 0; i < ret.annotations.length; ++i)
-            s += (i > 0 ? "|" : "") + ret.annotations[i];
+        var ann = scil.Utils.json2str(ret.annotations, null, true);
+        s += ann == "null" ? "" : ann;
 
         s += "$";
         return s + this.kVersion;
@@ -214,7 +214,7 @@ org.helm.webeditor.IO = {
                 s = a.elem;
         }
 
-        if (s == "?")
+        if (s == "?" && a.bio != null)
             s = a.bio.ambiguity;
         else if (s.length > 1)
             s = "[" + s + "]";
@@ -386,16 +386,31 @@ org.helm.webeditor.IO = {
         // annotation
         s = sections[3];
         if (!scil.Utils.isNullOrEmpty(s)) {
-            var ss = s == "" ? [] : this.split(s, '|');
-            for (var i = 0; i < ss.length; ++i) {
-                var s = ss[i];
-                p = s.indexOf("{");
-                var chn = s.substr(0, p);
-                s = s.substr(p);
-                if (s == "{ss}" || s == "{as}") {
-                    var chain = chains[chn];
-                    if (chain != null && chain.type == "RNA")
-                        chain.atoms[0].bio.annotation = "5'" + s.substr(1, s.length - 2);
+            var ann = scil.Utils.eval(s);
+            if (ann != null) {
+                // HELM 2.0
+                for (var k in ann) {
+                    var chain = chains[k];
+                    if (chain != null && chain.type == "RNA") {
+                        var strandtype = ann[k].strandtype;
+                        if (strandtype == "ss" || strandtype == "as")
+                            chain.atoms[0].bio.annotation = "5'" + strandtype;
+                    }
+                }
+            }
+            else {
+                // HELM 1.0
+                var ss = this.split(s, '|');
+                for (var i = 0; i < ss.length; ++i) {
+                    var s = ss[i];
+                    p = s.indexOf("{");
+                    var chn = s.substr(0, p);
+                    s = s.substr(p);
+                    if (s == "{ss}" || s == "{as}") {
+                        var chain = chains[chn];
+                        if (chain != null && chain.type == "RNA")
+                            chain.atoms[0].bio.annotation = "5'" + s.substr(1, s.length - 2);
+                    }
                 }
             }
         }

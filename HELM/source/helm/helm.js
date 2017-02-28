@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright C 2017, The Pistoia Alliance
-*  Version 2.0.0.2017-01-16
+*  Version 2.0.1.2017-02-28
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -29,7 +29,7 @@
 
 /**
 @project HELM Web Editor
-@version 2.0.0
+@version 2.0.1
 @description HELM Web Editor built on JSDraw.Lite
 */
 

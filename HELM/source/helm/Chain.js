@@ -576,10 +576,8 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 seqid = seqid + (++ret.chainid[seqid]);
 
                 if (i == 0 && a.biotype() == org.helm.webeditor.HELM.SUGAR) {
-                    if (a.bio.annotation == "5'ss")
-                        ret.annotations.push(seqid + "{ss}");
-                    else if (a.bio.annotation == "5'as")
-                        ret.annotations.push(seqid + "{as}");
+                    if (a.bio.annotation == "5'ss" || a.bio.annotation == "5'as")
+                        ret.annotations[seqid] = { strandtype: a.bio.annotation.substr(2) };
                 }
 
                 if (i > 0) {

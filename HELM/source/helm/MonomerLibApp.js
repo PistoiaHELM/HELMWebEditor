@@ -108,7 +108,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             "-",
             { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomers", onclick: function () { me.uploadFile(true); } },
             "-",
-            { type: "a", src: scil.Utils.imgSrc("img/save.gif"), title: "Export Monomers as JSON", onclick: function () { me.exportJson(); } },
+            { type: "a", src: scil.Utils.imgSrc("img/save.gif"), title: "Export Monomers", items: ["JSON","SDF"], onclick: function (cmd) { me.exportFile(cmd); } },
             "-",
             { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol/Name", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
             { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
@@ -177,8 +177,8 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             function (ret) { scil.Utils.alert(ret.n + " monomers are imported"); }, { duplicatecheck: duplicatecheck });
     },
 
-    exportJson: function() {
-        window.open(this.options.ajaxurl.replace("/post?", "/get?") + "helm.monomer.json", "_blank");
+    exportFile: function(ext) {
+        window.open(this.options.ajaxurl.replace("/post?", "/get?") + "helm.monomer.savefile&wrapper=raw&ext=" + ext, "_blank");
     }
 });
 

@@ -492,7 +492,7 @@ org.helm.webeditor.Monomers = {
         for (var i = 1; i <= 5; ++i) {
             var s2 = s.replace(new RegExp("\\[R" + i + "\\]"), "");
             if (s2.length == s.length)
-                break;
+                continue;
             s = s2;
             ret.push("R" + i);
         }
@@ -502,7 +502,7 @@ org.helm.webeditor.Monomers = {
             for (var i = 1; i <= 5; ++i) {
                 var s2 = s.replace(new RegExp("_R" + i), "");
                 if (s2.length == s.length)
-                    break;
+                    continue;
                 s = s2;
                 ret.push("R" + i);
             }

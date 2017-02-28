@@ -35,7 +35,7 @@ org.helm.webeditor.RuleSet = {
         { id: 3, category: "Test", name: "Replace base A with T", description: "", script: "function(plugin) {var n = plugin.replaceMonomer(org.helm.webeditor.HELM.BASE, 'A', 'T');return n > 0;}" }
     ],
 
-    loadDB: function(list) {
+    loadDB: function (list) {
         this.rules = list;
     },
 
@@ -81,7 +81,7 @@ org.helm.webeditor.RuleSet = {
         this.favorites.add(id, f);
     },
 
-    filterRules: function(tbody, s, category) {
+    filterRules: function (tbody, s, category) {
         s = scil.Utils.trim(s).toLowerCase();
         var list = tbody.childNodes;
         for (var i = 0; i < this.rules.length; ++i) {
@@ -94,7 +94,8 @@ org.helm.webeditor.RuleSet = {
         }
     },
 
-    listRules: function(div, apply, applyall){
+    listRules: function (mex, apply, applyall) {
+        var div = mex.divRule;
         scil.Utils.removeAll(div);
 
         var me = this;
@@ -110,24 +111,25 @@ org.helm.webeditor.RuleSet = {
             var r = this.rules[i];
             var fav = this.favorites.contains(r.id);
             if (this.favorites.contains(r.id))
-                this.listOneRule(tbody, r, ++k, apply, true);
+                this.listOneRule(mex, tbody, r, ++k, apply, true);
             else
                 list.push(r);
         }
 
         for (var i = 0; i < list.length; ++i)
-            this.listOneRule(tbody, list[i], ++k, apply);
+            this.listOneRule(mex, tbody, list[i], ++k, apply);
 
         return tbody;
     },
 
-    listOneRule: function (tbody, r, i, apply, fav) {
+    listOneRule: function (mex, tbody, r, i, apply, fav) {
         var me = this;
         var tr = scil.Utils.createElement(tbody, "tr", null, { background: i % 2 == 1 ? "#eee" : null }, { ruleid: r.id });
         scil.Utils.createElement(scil.Utils.createElement(tr, "td"), "checkbox", null, { display: (this.kApplyAll ? "" : "none"), width: "1%" });
 
         var td = scil.Utils.createElement(tr, "td");
-        scil.Utils.createElement(td, "img", null, { /*width: "1%"*/ }, { star: (fav ? 1 : null), src: scil.Utils.imgSrc("img/star" + (fav ? "" : "0") + ".png") }, function (e) { me.addFavorite(e); });
+        scil.Utils.createElement(td, "img", null, { /*width: "1%"*/
+        }, { star: (fav ? 1 : null), src: scil.Utils.imgSrc("img/star" + (fav ? "" : "0") + ".png") }, function (e) { me.addFavorite(e); mex.listRules(); });
 
         td = scil.Utils.createElement(tr, "td", null, { width: "99%" });
         this.listOneRule2(td, r, apply, i);
@@ -151,7 +153,7 @@ org.helm.webeditor.RuleSet = {
         scil.connect(td, "onmouseout", function (e) { button.style.display = "none"; });
     },
 
-    checkAll: function(tbody) {
+    checkAll: function (tbody) {
         var nodes = tbody.childNodes;
         var f = nodes[0].childNodes[0].childNodes[0].checked;
         for (var i = 1; i < nodes.length; ++i) {
@@ -199,7 +201,7 @@ org.helm.webeditor.RuleSet = {
     },
 
     applyRule: function (plugin, script) {
-        var list = [{ script: script, name: null }];
+        var list = [{ script: script, name: null}];
         var args = { plugin: plugin, n: list.length, changed: 0, list: list, cloned: plugin.jsd.clone() };
         this._applyNextRule(args);
     },
