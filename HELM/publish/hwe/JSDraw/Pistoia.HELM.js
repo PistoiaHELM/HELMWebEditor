@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright C 2017, The Pistoia Alliance
-*  Version 2.0.1.2017-03-10
+*  Version 2.0.1.2017-04-11
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -50,7 +50,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2017-01-09s",
+    kVersion: "2.0.0.2017-04-11",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -6847,13 +6847,13 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             "-",
             { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomers", onclick: function () { me.uploadFile(true); } },
             "-",
-            { type: "a", src: scil.Utils.imgSrc("img/save.gif"), title: "Export Monomers", items: ["JSON","SDF"], onclick: function (cmd) { me.exportFile(cmd); } },
+            { type: "a", src: scil.Utils.imgSrc("img/save.gif"), title: "Export Monomers", items: ["JSON", "SDF"], onclick: function (cmd) { me.exportFile(cmd); } },
             "-",
             { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol/Name", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
             { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
             { type: "select", key: "monomertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), label: "Monomer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
-            //{ type: "select", key: "status", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getStatuses(), label: "Status", styles: { width: 100 }, onchange: function () { me.refresh(); } },
-            { type: "select", key: "countperpage", labelstyle: { fontSize: "90%" }, label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
+        //{ type: "select", key: "status", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getStatuses(), label: "Status", styles: { width: 100 }, onchange: function () { me.refresh(); } },
+            {type: "select", key: "countperpage", labelstyle: { fontSize: "90%" }, label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
         ];
 
         this.monomers = this.page.addForm({
@@ -6863,7 +6863,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             imagewidth: 30,
             buttons: this.buttons,
             onbeforerefresh: function (args) { me.onbeforerefresh(args); },
-            onbeforesave: function (data, args, form) { data.molfile = form.fields.molfile.jsd.getMolfile(); },
+            onbeforesave: function (data, args, form) { return me.onbeforesave(data, args, form); },
             columns: {
                 id: { type: "hidden", iskey: true },
                 symbol: { label: "Symbol", width: 100 },
@@ -6891,6 +6891,24 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         this.monomers.refresh();
     },
 
+    onbeforesave: function (data, args, form) {
+        // check R caps
+        var atoms = form.fields.molfile.jsd.m.atoms;
+        for (var i = 0; i < atoms.length; ++i) {
+            var a = atoms[i];
+            if (a.elem == "R") {
+                var r = a.alias == null ? "R" : a.alias;
+                var cap = data[r.toLowerCase()];
+                if (scil.Utils.isNullOrEmpty(cap)) {
+                    scil.Utils.alert("The cap of " + r + " is not defined yet");
+                    return false;
+                }
+            }
+        }
+
+        data.molfile = form.fields.molfile.jsd.getMolfile();
+    },
+
     /**
     * Refresh the list (internal use)
     * @function refresh
@@ -6916,12 +6934,14 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             function (ret) { scil.Utils.alert(ret.n + " monomers are imported"); }, { duplicatecheck: duplicatecheck });
     },
 
-    exportFile: function(ext) {
+    exportFile: function (ext) {
         window.open(this.options.ajaxurl.replace("/post?", "/get?") + "helm.monomer.savefile&wrapper=raw&ext=" + ext, "_blank");
     }
 });
 
 scil.apply(org.helm.webeditor.MonomerLibApp, {
+    caps: ["", "H", "OH", "X"],
+
     /**
     * Get all supported fields (internal use)
     * @function getFields
@@ -6937,11 +6957,11 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
             author: { label: "Author", width: 100 },
             smiles: { label: "SMILES", width: 800 },
             molfile: { label: "Structure", type: "jsdraw", width: 800, height: 300 },
-            r1: { label: "R1", type: "select", items: ["", "H", "OH", "X"] },
-            r2: { label: "R2", type: "select", items: ["", "H", "OH", "X"] },
-            r3: { label: "R3", type: "select", items: ["", "H", "OH", "X"] },
-            r4: { label: "R4", type: "select", items: ["", "H", "OH", "X"] },
-            r5: { label: "R5", type: "select", items: ["", "H", "OH", "X"] },
+            r1: { label: "R1", type: "select", items: this.caps },
+            r2: { label: "R2", type: "select", items: this.caps },
+            r3: { label: "R3", type: "select", items: this.caps },
+            r4: { label: "R4", type: "select", items: this.caps },
+            r5: { label: "R5", type: "select", items: this.caps }
         }
     },
 
