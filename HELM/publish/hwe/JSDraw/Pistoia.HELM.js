@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright C 2017, The Pistoia Alliance
-*  Version 2.0.1.2017-04-11
+*  Version 2.0.1.2017-04-19
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -50,7 +50,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.0.2017-04-11",
+    kVersion: "2.0.0.2017-04-19",
     atomscale: 2,
     bondscale: 1.6,
 
@@ -6373,7 +6373,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var atts = {};
         if (!this.options.sequenceviewonly)
             atts.contenteditable = "true";
-        this.sequence = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll" }, atts);
+        this.sequence = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll", wordBreak: "break-all" }, atts);
     },
 
     /**
@@ -6384,7 +6384,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var atts = {};
         if (!this.options.sequenceviewonly)
             atts.contenteditable = "true";
-        this.notation = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll" }, atts);
+        this.notation = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll", wordBreak: "break-all" }, atts);
     },
 
     /**
@@ -6892,21 +6892,38 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
     },
 
     onbeforesave: function (data, args, form) {
+        data.molfile = form.fields.molfile.jsd.getMolfile();
+
         // check R caps
+        var ratoms = {};
         var atoms = form.fields.molfile.jsd.m.atoms;
         for (var i = 0; i < atoms.length; ++i) {
             var a = atoms[i];
             if (a.elem == "R") {
-                var r = a.alias == null ? "R" : a.alias;
-                var cap = data[r.toLowerCase()];
-                if (scil.Utils.isNullOrEmpty(cap)) {
-                    scil.Utils.alert("The cap of " + r + " is not defined yet");
+                var r = (a.alias == null ? "R" : a.alias);
+                if (ratoms[r.toLowerCase()] != null) {
+                    scil.Utils.alert("The R cannot be used twice: " + r);
                     return false;
                 }
+                ratoms[r.toLowerCase()] = r;
             }
         }
 
-        data.molfile = form.fields.molfile.jsd.getMolfile();
+        for (var r in ratoms) {
+            var cap = data[r];
+            if (scil.Utils.isNullOrEmpty(cap)) {
+                scil.Utils.alert("The cap of " + ratoms[r] + " is not defined yet");
+                return false;
+            }
+        }
+
+        for (var i = 1; i <= 5; ++i) {
+            var r = "r" + i;
+            if (!scil.Utils.isNullOrEmpty(data[r]) && ratoms[r] == null) {
+                scil.Utils.alert("R" + i + " is defined, but not drawn in the structure");
+                return false;
+            }
+        }
     },
 
     /**
