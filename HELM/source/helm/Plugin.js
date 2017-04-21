@@ -368,10 +368,14 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
                 bt1 = org.helm.webeditor.HELM.SUGAR;
             if (bt2 == org.helm.webeditor.HELM.LINKER)
                 bt2 = org.helm.webeditor.HELM.SUGAR;
+
+            // https://github.com/PistoiaHELM/HELMWebEditor/issues/101
             // prevent head-to-head and tail-to-tail connection
-            if (bt1 == bt2 && (bt1 == org.helm.webeditor.HELM.SUGAR || bt1 == org.helm.webeditor.HELM.AA) && rs1[0] == rs2[0] && (rs1[0] == 1 || rs1[0] == 2)) {
-                scil.Utils.alert("head-to-head / tail-to-tail connection is not allowed");
-                return;
+            if (!org.helm.webeditor.allowHeadToHeadConnection) {
+                if (bt1 == bt2 && (bt1 == org.helm.webeditor.HELM.SUGAR || bt1 == org.helm.webeditor.HELM.AA) && rs1[0] == rs2[0] && (rs1[0] == 1 || rs1[0] == 2)) {
+                    scil.Utils.alert("head-to-head / tail-to-tail connection is not allowed");
+                    return;
+                }
             }
 
             frag = this.jsd.getFragment(a2);
