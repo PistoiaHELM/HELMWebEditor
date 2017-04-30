@@ -191,10 +191,10 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         return n;
     },
 
-    makeComplementaryStand: function (a) {
+    makeComplementaryStrand: function (a) {
         var chain = org.helm.webeditor.Chain.getChain(this.jsd.m, a);
         if (chain == null)
-            return false;
+            return null;
 
         return chain.makeComplementaryStrand(this.jsd.m, this.jsd.bondlength);
     },

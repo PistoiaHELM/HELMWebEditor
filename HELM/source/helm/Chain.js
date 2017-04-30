@@ -66,7 +66,8 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
     * @function makeComplementaryStrand
     */
     makeComplementaryStrand: function (m, bondlength) {
-        var n = 0;
+        var ret = new org.helm.webeditor.Chain(null);
+
         var lasta2 = null;
         var lastsugar = null;
         var d = bondlength * org.helm.webeditor.bondscale;
@@ -75,16 +76,19 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             var b = this.bases[i];
 
             var a2 = a.clone();
+            ret.atoms.splice(0, 0, a2);
             a2.p.y += 3 * d;
             a2.bio.annotation = null;
             m.addAtom(a2);
             if (b != null) {
                 var b2 = b.clone();
+                ret.bases.splice(0, 0, b2);
                 b2.p.y += d;
                 b2.elem = this.getComplementary(b);
                 m.addAtom(b2);
 
                 var bond = new JSDraw2.Bond(a2, b2);
+                ret.basebonds.splice(0, 0, bond);
                 bond.r1 = 3;
                 bond.r2 = 1;
                 m.addBond(bond);
@@ -92,9 +96,13 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                 bond = new JSDraw2.Bond(b, b2, JSDraw2.BONDTYPES.UNKNOWN);
                 m.addBond(bond);
             }
+            else {
+                ret.bases.splice(0, 0, null);
+            }
 
             if (lasta2 != null) {
                 var bond = new JSDraw2.Bond(lasta2, a2);
+                ret.bonds.splice(0, 0, bond);
                 bond.r1 = 1;
                 bond.r2 = 2;
                 m.addBond(bond);
@@ -108,13 +116,13 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             else if (a2.biotype() == org.helm.webeditor.HELM.LINKER) {
                 a2.elem = org.helm.webeditor.Monomers.getDefaultMonomer(org.helm.webeditor.HELM.LINKER);
             }
-            ++n;
         }
 
         if (lastsugar != null)
             lastsugar.bio.annotation = "5'";
 
-        return n > 0;
+        ret.resetIDs();
+        return ret;
     },
 
     /**

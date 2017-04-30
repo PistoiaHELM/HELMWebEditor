@@ -160,6 +160,14 @@ org.helm.webeditor.MolViewer = {
     * @function mergeMol
     */
     mergeMol: function (m, r1, src, r2, a1, a2) {
+        this.joinMol(m, r1, src, r2, a1, a2);
+
+        m.atoms = m.atoms.concat(src.atoms);
+        m.bonds = m.bonds.concat(src.bonds);
+        return m.getMolfile();
+    },
+
+    joinMol: function (m, r1, src, r2, a1, a2) {
         var t = this.findR(m, r1, a1);
         var s = this.findR(src, r2, a2);
 
@@ -182,10 +190,6 @@ org.helm.webeditor.MolViewer = {
             else
                 t.b.a2 = s.a0;
         }
-
-        m.atoms = m.atoms.concat(src.atoms);
-        m.bonds = m.bonds.concat(src.bonds);
-        return m.getMolfile();
     },
 
     /**

@@ -344,7 +344,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var atts = {};
         if (!this.options.sequenceviewonly)
             atts.contenteditable = "true";
-        this.sequence = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll" }, atts);
+        this.sequence = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll", wordBreak: "break-all" }, atts);
     },
 
     /**
@@ -355,7 +355,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var atts = {};
         if (!this.options.sequenceviewonly)
             atts.contenteditable = "true";
-        this.notation = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll" }, atts);
+        this.notation = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll", wordBreak: "break-all" }, atts);
     },
 
     /**
@@ -547,77 +547,93 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     updateStructureView: function () {
         if (this.structureview == null)
             return;
+        this.structureview.clear(true);
+
+        for (var i = 0; i < this.canvas.m.atoms.length; ++i)
+            this.canvas.m.atoms[i].__mol = null;
 
         if (this.selectBondsOfSelectedAtoms(this.canvas.m) > 0)
             this.canvas.refresh();
         var selected = this.getSelectedAsMol(this.canvas.m);
+        if (selected == null || selected.atoms.length == 0)
+            return;
 
-        var m = null;
-        var branches = {};
-        var chains = org.helm.webeditor.Chain.getChains(selected, branches);
-        if (chains == null || chains.length == 0) {
-            if (selected != null && selected.atoms.length == 1) {
-                // only a base selected
-                var a = selected.atoms[0];
-                var mon = org.helm.webeditor.Monomers.getMonomer(a);
-                m = org.helm.webeditor.Interface.createMol(org.helm.webeditor.monomers.getMolfile(mon));
-            }
-        }
-        else {
-            this.canvas.m.clearFlag();
-            org.helm.webeditor.Chain._removeChainID(this.canvas.m.atoms);
-            for (var i = 0; i < chains.length; ++i)
-                org.helm.webeditor.Chain._setChainID(chains[i], i);
+        var atoms = selected.atoms;
+        var bonds = selected.bonds;
 
-            m = new JSDraw2.Mol();
-            // expand backbone
-            for (var i = 0; i < chains.length; ++i)
-                chains[i]._expandBackbone(m, this.canvas.helm);
-
-            if (branches != null) {
-                // expand branches
-                for (var i = 0; i < chains.length; ++i)
-                    chains[i]._connectBranches(m, this.canvas.helm, branches);
-
-                // connect cross chain bonds
-                var bonds = branches.bonds;
-                if (bonds != null) {
-                    for (var i = 0; i < bonds.length; ++i) {
-                        var b = bonds[i];
-                        if (!b.f) {
-                            var t = org.helm.webeditor.MolViewer.findR(m, "R" + b.r1, b.a1);
-                            var s = org.helm.webeditor.MolViewer.findR(m, "R" + b.r2, b.a2);
-                            if (t != null && s != null) {
-                                m.atoms.splice(scil.Utils.indexOf(m.atoms, t.a1), 1);
-                                m.bonds.splice(scil.Utils.indexOf(m.bonds, t.b), 1);
-
-                                m.atoms.splice(scil.Utils.indexOf(m.atoms, s.a1), 1);
-                                m.bonds.splice(scil.Utils.indexOf(m.bonds, s.b), 1);
-
-                                var bond = new JSDraw2.Bond(t.a0, s.a0);
-                                m.addBond(bond);
-                            }
-                        }
-                    }
-                }
-            }
-
-            org.helm.webeditor.Chain._removeChainID(this.canvas.m.atoms);
-            this.canvas.m.clearFlag();
+        var mols = [];
+        for (var i = 0; i < atoms.length; ++i) {
+            var a = atoms[i];
+            var mon = org.helm.webeditor.Monomers.getMonomer(a);
+            var m = org.helm.webeditor.Interface.createMol(org.helm.webeditor.monomers.getMolfile(mon));
+            a.__mol = m;
+            mols.push(m);
         }
 
-        this.structureview.clear(true);
-        if (m == null)
+        while (atoms.length > 0) {
+            var a = atoms[0];
+            atoms.splice(0, 1);
+            this.connectNextMonomer(a, atoms, bonds);
+        }
+
+        var mol = mols[0];
+        for (var i = 1; i < mols.length; ++i)
+            mol.mergeMol(mols[i]);
+
+        if (mol == null)
             return;
 
         if (this.options.cleanupurl != null) {
             var me = this;
             scil.Utils.ajax(this.options.cleanupurl, function (ret) {
                 me.structureview.setMolfile(ret == null ? null : ret.output);
-            }, { input: m.getMolfile(), inputformat: "mol", outputformat: "mol" });
+            }, { input: mol.getMolfile(), inputformat: "mol", outputformat: "mol" });
         }
         else {
-            this.structureview.setMolfile(m.getMolfile());
+            this.structureview.setMolfile(mol.getMolfile());
+        }
+    },
+
+    connectNextMonomer: function (a, atoms, bonds) {
+        var m1 = a.__mol;
+        var oas = [];
+        for (var i = bonds.length - 1; i >= 0; --i) {
+            var b = bonds[i];
+
+            var r1 = null;
+            var r2 = null;
+            var oa = null;
+            if (b.a1 == a) {
+                r1 = b.r1 == null ? null : "R" + b.r1;
+                r2 = b.r2 == null ? null : "R" + b.r2;
+                oa = b.a2;
+            }
+            else if (b.a2 == a) {
+                r1 = b.r2 == null ? null : "R" + b.r2;
+                r2 = b.r1 == null ? null : "R" + b.r1;
+                oa = b.a1;
+            }
+            if (oa == null)
+                continue;
+
+            bonds.splice(i, 1);
+            if (oa.__mol == null)
+                continue;
+
+            var m2 = oa.__mol;
+            if (r1 != null && r2 != null)
+                org.helm.webeditor.MolViewer.joinMol(m1, r1, m2, r2);
+            oas.push(oa);
+        }
+
+        for (var i = 0; i < oas.length; ++i) {
+            var oa = oas[i];
+            var p = scil.Utils.indexOf(atoms, oa);
+            if (p == -1 || p == null)
+                continue;
+
+            atoms.splice(p, 1);
+            this.connectNextMonomer(oa, atoms, bonds);
         }
     }
 });
