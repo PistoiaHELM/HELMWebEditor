@@ -949,7 +949,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         if (/^[0-9]+$/.test(a)) {
             var aaid = parseInt(a);
             for (var i = 0; i < atoms.length; ++i) {
-                if (atoms[i].bio != null && aaid == atoms[i].bio.id && (monomertype == "" || monomertype == atoms[i].biotype())) {
+                if (atoms[i].bio != null && aaid == atoms[i].bio.id && (scil.Utils.isNullOrEmpty(monomertype) || monomertype == atoms[i].biotype())) {
                     ++n;
                     atoms[i].selected = true;
                     atom = atoms[i];

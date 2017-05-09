@@ -153,6 +153,11 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
     },
 
     onbeforesave: function (data, args, form) {
+        if (data.polymertype != "CHEM" && scil.Utils.isNullOrEmpty(data.naturalanalog)) {
+            scil.Utils.alert("Natural Analog cannot be blank");
+            return false;
+        }
+
         data.molfile = form.fields.molfile.jsd.getMolfile();
 
         // check R caps
@@ -208,7 +213,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
     * @function uploadFile
     */
     uploadFile: function (duplicatecheck) {
-        scil.Utils.uploadFile("Import Monomer Library", "Select HELM monomer xml file or SDF file (" + (duplicatecheck ? "with" : "without") + " duplicate check)", this.options.ajaxurl + "helm.monomer.uploadlib",
+        scil.Utils.uploadFile("Import Monomer Library", "Select HELM monomer xml file, json or SDF file (" + (duplicatecheck ? "with" : "without") + " duplicate check)", this.options.ajaxurl + "helm.monomer.uploadlib",
             function (ret) { scil.Utils.alert(ret.n + " monomers are imported"); }, { duplicatecheck: duplicatecheck });
     },
 
@@ -229,9 +234,9 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
             id: { type: "hidden" },
             symbol: { label: "Symbol", required: true },
             name: { label: "Name", required: true, width: 800 },
-            naturalanalog: { label: "Natural Analog", required: true, width: 100 },
             polymertype: { label: "Polymer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), width: 100 },
             monomertype: { label: "Monomer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), width: 100 },
+            naturalanalog: { label: "Natural Analog", width: 100 },
             author: { label: "Author", width: 100 },
             smiles: { label: "SMILES", width: 800 },
             molfile: { label: "Structure", type: "jsdraw", width: 800, height: 300 },
