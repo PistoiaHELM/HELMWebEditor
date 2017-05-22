@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright C 2017, The Pistoia Alliance
-*  Version 2.0.1.2017-04-29
+*  Version 2.0.1.2017-05-21
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -50,7 +50,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.1.2017-05-09",
+    kVersion: "2.0.1.2017-05-21",
     atomscale: 2,
     bondscale: 1.6,
     allowHeadToHeadConnection: true,
@@ -5832,9 +5832,6 @@ org.helm.webeditor.Formula = {
     * @function countMonomer
     */
     countMonomer: function (ret, m) {
-        if (m == null)
-            return;
-
         if (m.stats == null) {
             m.stats = org.helm.webeditor.Interface.molStats(org.helm.webeditor.monomers.getMolfile(m));
             for (var r in m.at) {
@@ -6447,12 +6444,13 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     */
     updateCanvas: function (key, append) {
         var format = null;
-        if (this.sequencebuttons != null)
-            format = this.getValueByKey(this.sequencebuttons, "format");
 
         var plugin = this.canvas.helm;
         var s = null;
         if (key == "sequence") {
+            if (this.sequencebuttons != null)
+                format = this.getValueByKey(this.sequencebuttons, "format");
+
             s = scil.Utils.trim(scil.Utils.getInnerText(this.sequence));
             // fasta
             s = s.replace(/[\n][>|;].*[\r]?[\n]/ig, '').replace(/^[>|;].*[\r]?[\n]/i, '');

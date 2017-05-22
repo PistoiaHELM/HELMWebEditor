@@ -401,12 +401,13 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     */
     updateCanvas: function (key, append) {
         var format = null;
-        if (this.sequencebuttons != null)
-            format = this.getValueByKey(this.sequencebuttons, "format");
 
         var plugin = this.canvas.helm;
         var s = null;
         if (key == "sequence") {
+            if (this.sequencebuttons != null)
+                format = this.getValueByKey(this.sequencebuttons, "format");
+
             s = scil.Utils.trim(scil.Utils.getInnerText(this.sequence));
             // fasta
             s = s.replace(/[\n][>|;].*[\r]?[\n]/ig, '').replace(/^[>|;].*[\r]?[\n]/i, '');

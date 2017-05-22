@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright C 2017, The Pistoia Alliance
-*  Version 2.0.1.2017-05-09
+*  Version 2.0.1.2017-05-21
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -50,7 +50,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.1.2017-05-09",
+    kVersion: "2.0.1.2017-05-21",
     atomscale: 2,
     bondscale: 1.6,
     allowHeadToHeadConnection: true,
