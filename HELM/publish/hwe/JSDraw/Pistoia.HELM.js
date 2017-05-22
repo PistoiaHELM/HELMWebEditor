@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright C 2017, The Pistoia Alliance
-*  Version 2.0.1.2017-05-21
+*  Version 2.0.1.2017-05-21s
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -50,7 +50,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.1.2017-05-21",
+    kVersion: "2.0.1.2017-05-21s",
     atomscale: 2,
     bondscale: 1.6,
     allowHeadToHeadConnection: true,
@@ -4137,6 +4137,7 @@ org.helm.webeditor.IO = {
     */
     addHELMRNAs: function (plugin, ss, chain, origin, renamedmonomers) {
         var n = 0;
+        var count = 0;
         var a1 = null;
         var a2 = null;
         var m = plugin.jsd.m;
@@ -4165,6 +4166,7 @@ org.helm.webeditor.IO = {
                         a3 = this.addNode(plugin, chain, chain.bases, org.helm.webeditor.Interface.createPoint(p.x, p.y + delta), org.helm.webeditor.HELM.BASE, c.base, renamedmonomers);
                         plugin.addBond(a1, a3, 3, 1);
                         a3.bio.id = ++n;
+                        ++count;
                     }
                 }
                 else {
@@ -4177,12 +4179,16 @@ org.helm.webeditor.IO = {
                         a2 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.LINKER, c.symbol, renamedmonomers);
                         chain.bonds.push(plugin.addBond(a1, a2, 2, 1));
                         a1 = a2;
+                        ++count;
+                    }
+                    else {
+                        throw "Unknown monomer: " + c.symbol;
                     }
                 }
             }
         }
 
-        return n;
+        return count;
     },
 
     /**

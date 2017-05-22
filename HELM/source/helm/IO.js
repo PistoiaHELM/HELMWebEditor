@@ -101,7 +101,7 @@ org.helm.webeditor.IO = {
 
         //RNA1{R(C)P.R(A)P.R(T)}$$$RNA1{ss}$
         var ann = scil.Utils.json2str(ret.annotations, null, true);
-        s += ann == "null" ? "" : ann;
+        s += ann == "null" || ann == "{}" ? "" : ann;
 
         s += "$";
         return s + this.kVersion;
@@ -651,6 +651,7 @@ org.helm.webeditor.IO = {
     */
     addHELMRNAs: function (plugin, ss, chain, origin, renamedmonomers) {
         var n = 0;
+        var count = 0;
         var a1 = null;
         var a2 = null;
         var m = plugin.jsd.m;
@@ -679,6 +680,7 @@ org.helm.webeditor.IO = {
                         a3 = this.addNode(plugin, chain, chain.bases, org.helm.webeditor.Interface.createPoint(p.x, p.y + delta), org.helm.webeditor.HELM.BASE, c.base, renamedmonomers);
                         plugin.addBond(a1, a3, 3, 1);
                         a3.bio.id = ++n;
+                        ++count;
                     }
                 }
                 else {
@@ -691,12 +693,16 @@ org.helm.webeditor.IO = {
                         a2 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.LINKER, c.symbol, renamedmonomers);
                         chain.bonds.push(plugin.addBond(a1, a2, 2, 1));
                         a1 = a2;
+                        ++count;
+                    }
+                    else {
+                        throw "Unknown monomer: " + c.symbol;
                     }
                 }
             }
         }
 
-        return n;
+        return count;
     },
 
     /**
