@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright C 2017, The Pistoia Alliance
-*  Version 2.0.1.2017-05-21s
+*  Version 2.0.1.2017-06-08
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 

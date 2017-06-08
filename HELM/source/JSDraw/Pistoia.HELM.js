@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright C 2017, The Pistoia Alliance
-*  Version 2.0.1.2017-05-21s
+*  Version 2.0.1.2017-06-08
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -288,7 +288,7 @@ org.helm.webeditor.Interface = {
         var biotype = a.biotype();
         var c = scil.Utils.isNullOrEmpty(color) ? org.helm.webeditor.Monomers.getColor(a) : color;
         var w = fontsize * org.helm.webeditor.atomscale;
-        var lw = linewidth / 2;//(c.nature ? 1 : 2);
+        var lw = linewidth / 2; //(c.nature ? 1 : 2);
         if (biotype == org.helm.webeditor.HELM.LINKER)
             JSDraw2.Drawer.drawEllipse(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw).setFill(c.backgroundcolor);
         else if (biotype == org.helm.webeditor.HELM.SUGAR)
@@ -299,6 +299,7 @@ org.helm.webeditor.Interface = {
             JSDraw2.Drawer.drawHexgon(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw, linewidth * 3).setFill(c.backgroundcolor);
         else if (biotype == org.helm.webeditor.HELM.CHEM)
             JSDraw2.Drawer.drawRect(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw).setFill(c.backgroundcolor);
+        var pt = p.clone();
         p.offset(0, -1);
         JSDraw2.Drawer.drawLabel(surface, p, a.elem, c.textcolor, fontsize * (a.elem.length > 1 ? 2 / a.elem.length : 1.0), null, null, null, false);
 
@@ -320,6 +321,11 @@ org.helm.webeditor.Interface = {
                 p1.offset(-fontsize * c, -fontsize * 1.5);
                 JSDraw2.Drawer.drawLabel(surface, p1, s, "#FFA500", fontsize, null, "end", null, false);
             }
+        }
+
+        if (!scil.Utils.isNullOrEmpty(a.tag)) {
+            var r = fontsize / 2;
+            JSDraw2.Drawer.drawEllipse(surface, org.helm.webeditor.Interface.createRect(pt.x + r / 2, pt.y - w / 3 - r / 2, r, r), "white", lw).setFill("red");
         }
     },
 
@@ -397,7 +403,7 @@ org.helm.webeditor.Interface = {
             items.push("-");
 
         if (ed.options.helmtoolbar)
-            ;//items.push({ caption: "About HELM Web Editor", key: "abouthelm" });
+            ; //items.push({ caption: "About HELM Web Editor", key: "abouthelm" });
         else
             items.push({ caption: "About JSDraw", key: "about" });
         return items;
@@ -431,6 +437,8 @@ org.helm.webeditor.Interface = {
 * @class org.helm.webeditor.MonomerColors
 */
 org.helm.webeditor.MonomerColors = {
+    unknown: "#FFFF00",
+
     bases: {
         A: "#A0A0FF",
         G: "#FF7070",
@@ -876,6 +884,9 @@ org.helm.webeditor.Monomers = {
         if (mc == null)
             mc = {};
         var color = mc[m.na];
+
+        if (m.backgroundcolor == null && a.elem == "?")
+            m.backgroundcolor = org.helm.webeditor.MonomerColors.unknown;
 
         return {
             linecolor: m.linecolor == null ? "#000" : m.linecolor,
@@ -1325,6 +1336,29 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         a.bio = { type: biotype, id: id };
         a.elem = mon.id;
         return true;
+    },
+
+    setNodeTypeFromGui: function (a, s) {
+        var m = scil.helm.Monomers.getMonomer(a, s);
+        if (m != null) {
+            a.elem = s;
+            return true;
+        }
+
+        var f = this.isAmbiguous(s);
+        if (!f) {
+            s = "(" + s + ")";
+            f = this.isAmbiguous(s);
+        }
+
+        if (f) {
+            a.elem = "?";
+            a.bio.ambiguity = s;
+            return true;
+        }
+
+        scil.Utils.alert("Unknown monomer type: " + s);
+        return false;
     },
 
     cancelDnD: function () {
@@ -3701,7 +3735,7 @@ org.helm.webeditor.IO = {
         }
 
         if (s == "?" && a.bio != null)
-            s = a.bio.ambiguity;
+            s = a.bio.ambiguity == null ? "?" : a.bio.ambiguity;
         else if (s.length > 1)
             s = "[" + s + "]";
 
@@ -4111,7 +4145,11 @@ org.helm.webeditor.IO = {
                 if (p <= i)
                     throw "Invalid combo: " + s;
 
-                ret[ret.length - 1].base = s.substr(i + 1, p - i - 1);
+                if (ret[ret.length - 1].base == null)
+                    ret[ret.length - 1].base = s.substr(i + 1, p - i - 1);
+                else
+                    ret.push({ symbol: s.substr(i, p - i + 1) });
+
                 i = p;
             }
             else if (c == '[') {
@@ -4119,6 +4157,13 @@ org.helm.webeditor.IO = {
                 if (p <= i)
                     throw "Invalid combo: " + s;
                 ret.push({ symbol: s.substr(i, p - i + 1) });
+                i = p;
+            }
+            else if (c == '\"') {
+                var p = s.indexOf('\"', i + 1);
+                if (p <= i)
+                    throw "Invalid combo: " + s;
+                ret[ret.length - 1].tag = s.substr(i + 1, p - i - 1);
                 i = p;
             }
             else {
@@ -4158,9 +4203,9 @@ org.helm.webeditor.IO = {
                     a1 = a2;
 
                     if (!scil.Utils.isNullOrEmpty(c.base)) {
-                        m = org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.BASE, c.base);
-                        if (m == null)
-                            throw "Unknown base: " + c.base;
+                        //m = org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.BASE, c.base);
+                        //if (m == null)
+                        //    throw "Unknown base: " + c.base;
 
                         // base
                         a3 = this.addNode(plugin, chain, chain.bases, org.helm.webeditor.Interface.createPoint(p.x, p.y + delta), org.helm.webeditor.HELM.BASE, c.base, renamedmonomers);
@@ -4170,21 +4215,23 @@ org.helm.webeditor.IO = {
                     }
                 }
                 else {
-                    m = org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.LINKER, c.symbol);
-                    if (m != null) {
-                        if (!scil.Utils.isNullOrEmpty(c.base))
-                            throw "Base attached to Linker: " + s;
-                        // linker
-                        p.x += delta;
-                        a2 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.LINKER, c.symbol, renamedmonomers);
-                        chain.bonds.push(plugin.addBond(a1, a2, 2, 1));
-                        a1 = a2;
-                        ++count;
-                    }
-                    else {
-                        throw "Unknown monomer: " + c.symbol;
-                    }
+                    // m = org.helm.webeditor.Monomers.getMonomer(org.helm.webeditor.HELM.LINKER, c.symbol);
+                    // if (m != null) {
+                    if (!scil.Utils.isNullOrEmpty(c.base))
+                        throw "Base attached to Linker: " + s;
+                    // linker
+                    p.x += delta;
+                    a2 = this.addNode(plugin, chain, chain.atoms, p.clone(), org.helm.webeditor.HELM.LINKER, c.symbol, renamedmonomers);
+                    chain.bonds.push(plugin.addBond(a1, a2, 2, 1));
+                    a1 = a2;
+                    ++count;
+                    // }
+                    // else {
+                    //    throw "Unknown monomer: " + c.symbol;
+                    // }
                 }
+
+                a1.tag = c.tag;
             }
         }
 
@@ -5522,10 +5569,10 @@ org.helm.webeditor.MolViewer = {
     * Show structure view popup
     * @function show
     */
-    show: function (e, type, m, code, ed) {
+    show: function (e, type, m, code, ed, text) {
         this.clearTimer();
         var me = this;
-        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code, ed); }, this.delay);
+        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code, ed, text); }, this.delay);
     },
 
     /**
@@ -5543,9 +5590,9 @@ org.helm.webeditor.MolViewer = {
     * Inner implementation of display structure dialog (internal use)
     * @function show2
     */
-    show2: function (xy, type, m, code, ed) {
+    show2: function (xy, type, m, code, ed, a) {
         this.tm = null;
-        if (m == null)
+        if (m == null && a == null)
             return;
 
         if (ed != null && ed.contextmenu != null && ed.contextmenu.isVisible())
@@ -5556,22 +5603,60 @@ org.helm.webeditor.MolViewer = {
         if (this.cur != (type + "." + code) || !this.dlg.isVisible()) {
             this.cur = type + "." + code;
 
-            if (typeof (m) == "string") {
+            if (m != null && typeof (m) == "string") {
                 var s = m;
                 m = { n: m, m: this.assemblyMol(s) };
             }
 
-            this.dlg.show2({ title: "<div style='font-size:80%'>" + (/*code + ": " + */m.n) + "</div>", modal: false, immediately: true });
+            var name = "";
+            if (m != null) {
+                name = m.n;
+            }
+            else {
+                if (a.bio != null && !scil.Utils.isNullOrEmpty(a.bio.ambiguity))
+                    name = a.bio.ambiguity;
+            }
 
-            this.jsd.setMolfile(org.helm.webeditor.monomers.getMolfile(m));
+            var fields = this.dlg.form.fields;
+            this.dlg.show2({ title: "<div style='font-size:80%'>" + name + "</div>", modal: false, immediately: true });
 
-            var s = "<table cellspacing=0 cellpadding=0 style='font-size:80%'>";
-            if (m.at != null) {
+            var molfile = org.helm.webeditor.monomers.getMolfile(m);
+            if (scil.Utils.isNullOrEmpty(molfile)) {
+                fields.jsd.style.display = "none";
+            }
+            else {
+                fields.jsd.style.display = "";
+                fields.jsd.jsd.setMolfile(molfile);
+            }
+
+            var s = "";
+            if (m != null && m.at != null) {
                 for (var k in m.at)
                     s += "<tr><td>" + k + "=</td><td>&nbsp;" + m.at[k] + "</td></tr>";
             }
-            s += "</table>";
-            this.rs.innerHTML = s;
+
+            if (s == "") {
+                fields.rs.style.display = "none";
+            }
+            else {
+                fields.rs.style.display = "";
+                fields.rs.innerHTML = "<table cellspacing=0 cellpadding=0 style='font-size:80%'>" + s + "</table>";
+            }
+
+            var s = "";
+            if (a != null) {
+                if (!scil.Utils.isNullOrEmpty(a.tag))
+                    s += "<div>" + a.tag + "</div>";
+            }
+            if (s == "") {
+                fields.notes.style.display = "none";
+            }
+            else {
+                fields.notes.style.display = "";
+                fields.notes.innerHTML = s;
+
+                fields.notes.style.borderTop = fields.rs.style.display == "" ? "solid 1px gray" : "";
+            }
         }
 
         var scroll = scil.Utils.scrollOffset();
@@ -5698,10 +5783,12 @@ org.helm.webeditor.MolViewer = {
         if (this.dlg != null)
             return;
 
-        var fields = { jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true }, rs: { type: "html", viewonly: true, style: { borderTop: "solid 1px gray"}} };
+        var fields = {
+            jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true },
+            rs: { type: "html", viewonly: true, style: { borderTop: "solid 1px gray", width: 180} },
+            notes: { type: "html", viewonly: true, style: { width: 180, color: "gray"} }
+        };
         this.dlg = scil.Form.createDlgForm("", fields, null, { hidelabel: true, modal: false, noclose: true });
-        this.jsd = this.dlg.form.fields.jsd.jsd;
-        this.rs = this.dlg.form.fields.rs;
         this.dlg.hide(true);
 
         this.dlg.dialog.style.backgroundColor = "#fff";
@@ -5754,6 +5841,8 @@ org.helm.webeditor.Formula = {
     */
     getMF: function (m, html) {
         var stats = this.getAtomStats(m);
+        if (stats == null)
+            return null;
 
         var s = "";
         if (stats["C"] != null)
@@ -5788,6 +5877,9 @@ org.helm.webeditor.Formula = {
     */
     getMW: function (m) {
         var stats = this.getAtomStats(m);
+        if (stats == null)
+            return null;
+
         var sum = 0;
         for (var e in stats) {
             if (e != "R")
@@ -5805,6 +5897,9 @@ org.helm.webeditor.Formula = {
         var list = [];
         for (var i = 0; i < m.atoms.length; ++i) {
             var a = m.atoms[i];
+            if (a.elem == "?")
+                return null;
+
             if (org.helm.webeditor.isHelmNode(a))
                 list.push(a);
             else
@@ -6382,7 +6477,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
         var s = a == null ? null : a.elem;
         var m = set == null ? null : set[s.toLowerCase()];
-        org.helm.webeditor.MolViewer.show(e, type, m, s, ed);
+        org.helm.webeditor.MolViewer.show(e, type, m, s, ed, a);
     },
 
     /**
@@ -6611,12 +6706,21 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var atoms = selected.atoms;
         var bonds = selected.bonds;
 
+        var bondlength = null;
         var mols = [];
         for (var i = 0; i < atoms.length; ++i) {
             var a = atoms[i];
             var mon = org.helm.webeditor.Monomers.getMonomer(a);
             var m = org.helm.webeditor.Interface.createMol(org.helm.webeditor.monomers.getMolfile(mon));
             a.__mol = m;
+
+            if (m != null && !m.isEmpty()) {
+                var d = m.medBondLength();
+                if (!(bondlength > 0))
+                    bondlength = d;
+                else
+                    m.scale(bondlength / d, new JSDraw2.Point(0, 0));
+            }
             mols.push(m);
         }
 

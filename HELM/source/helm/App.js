@@ -333,7 +333,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
         var s = a == null ? null : a.elem;
         var m = set == null ? null : set[s.toLowerCase()];
-        org.helm.webeditor.MolViewer.show(e, type, m, s, ed);
+        org.helm.webeditor.MolViewer.show(e, type, m, s, ed, a);
     },
 
     /**
@@ -562,12 +562,21 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var atoms = selected.atoms;
         var bonds = selected.bonds;
 
+        var bondlength = null;
         var mols = [];
         for (var i = 0; i < atoms.length; ++i) {
             var a = atoms[i];
             var mon = org.helm.webeditor.Monomers.getMonomer(a);
             var m = org.helm.webeditor.Interface.createMol(org.helm.webeditor.monomers.getMolfile(mon));
             a.__mol = m;
+
+            if (m != null && !m.isEmpty()) {
+                var d = m.medBondLength();
+                if (!(bondlength > 0))
+                    bondlength = d;
+                else
+                    m.scale(bondlength / d, new JSDraw2.Point(0, 0));
+            }
             mols.push(m);
         }
 
