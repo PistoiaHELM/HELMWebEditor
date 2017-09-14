@@ -88,6 +88,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
 
         this.options = options == null ? {} : options;
 
+        if (options.ambiguity != null)
+            org.helm.webeditor.ambiguity = options.ambiguity;
         if (!scil.Utils.isNullOrEmpty(this.options.jsdrawservice))
             JSDrawServices = { url: this.options.jsdrawservice };
 
@@ -333,6 +335,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
         var s = a == null ? null : a.elem;
         var m = set == null ? null : set[s.toLowerCase()];
+        if (m != null && m.m == "" && a != null && a.superatom != null)
+            m.m = a.superatom.getXml();
         org.helm.webeditor.MolViewer.show(e, type, m, s, ed, a);
     },
 
@@ -342,8 +346,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     */
     createSequence: function (div, width, height) {
         var atts = {};
-        if (!this.options.sequenceviewonly)
+        if (!this.options.sequenceviewonly) {
             atts.contenteditable = "true";
+            atts.spellcheck = "false";
+        }
         this.sequence = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll", wordBreak: "break-all" }, atts);
     },
 
@@ -353,8 +359,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     */
     createNotation: function (div, width, height) {
         var atts = {};
-        if (!this.options.sequenceviewonly)
+        if (!this.options.sequenceviewonly) {
             atts.contenteditable = "true";
+            atts.spellcheck = "false";
+        }
         this.notation = scil.Utils.createElement(div, "div", null, { width: width, height: height, overfloatY: "scroll", wordBreak: "break-all" }, atts);
     },
 

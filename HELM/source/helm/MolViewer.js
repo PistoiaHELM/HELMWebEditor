@@ -36,10 +36,10 @@ org.helm.webeditor.MolViewer = {
     * Show structure view popup
     * @function show
     */
-    show: function (e, type, m, code, ed) {
+    show: function (e, type, m, code, ed, text) {
         this.clearTimer();
         var me = this;
-        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code, ed); }, this.delay);
+        this.tm = setTimeout(function () { me.show2({ x: e.clientX, y: e.clientY }, type, m, code, ed, text); }, this.delay);
     },
 
     /**
@@ -57,9 +57,9 @@ org.helm.webeditor.MolViewer = {
     * Inner implementation of display structure dialog (internal use)
     * @function show2
     */
-    show2: function (xy, type, m, code, ed) {
+    show2: function (xy, type, m, code, ed, a) {
         this.tm = null;
-        if (m == null)
+        if (m == null && a == null)
             return;
 
         if (ed != null && ed.contextmenu != null && ed.contextmenu.isVisible())
@@ -70,22 +70,62 @@ org.helm.webeditor.MolViewer = {
         if (this.cur != (type + "." + code) || !this.dlg.isVisible()) {
             this.cur = type + "." + code;
 
-            if (typeof (m) == "string") {
+            if (m != null && typeof (m) == "string") {
                 var s = m;
                 m = { n: m, m: this.assemblyMol(s) };
             }
 
-            this.dlg.show2({ title: "<div style='font-size:80%'>" + (/*code + ": " + */m.n) + "</div>", modal: false, immediately: true });
+            var name = "";
+            if (m != null) {
+                name = m.n;
+                if (name == null)
+                    name = a.elem;
+            }
+            else {
+                if (a.bio != null && !scil.Utils.isNullOrEmpty(a.bio.ambiguity))
+                    name = a.bio.ambiguity;
+            }
 
-            this.jsd.setMolfile(org.helm.webeditor.monomers.getMolfile(m));
+            var fields = this.dlg.form.fields;
+            this.dlg.show2({ title: "<div style='font-size:80%'>" + name + "</div>", modal: false, immediately: true });
 
-            var s = "<table cellspacing=0 cellpadding=0 style='font-size:80%'>";
-            if (m.at != null) {
+            var molfile = org.helm.webeditor.monomers.getMolfile(m);
+            if (scil.Utils.isNullOrEmpty(molfile)) {
+                fields.jsd.style.display = "none";
+            }
+            else {
+                fields.jsd.style.display = "";
+                fields.jsd.jsd.setXml(molfile);
+            }
+
+            var s = "";
+            if (m != null && m.at != null) {
                 for (var k in m.at)
                     s += "<tr><td>" + k + "=</td><td>&nbsp;" + m.at[k] + "</td></tr>";
             }
-            s += "</table>";
-            this.rs.innerHTML = s;
+
+            if (s == "") {
+                fields.rs.style.display = "none";
+            }
+            else {
+                fields.rs.style.display = "";
+                fields.rs.innerHTML = "<table cellspacing=0 cellpadding=0 style='font-size:80%'>" + s + "</table>";
+            }
+
+            var s = "";
+            if (a != null) {
+                if (!scil.Utils.isNullOrEmpty(a.tag))
+                    s += "<div>" + a.tag + "</div>";
+            }
+            if (s == "") {
+                fields.notes.style.display = "none";
+            }
+            else {
+                fields.notes.style.display = "";
+                fields.notes.innerHTML = s;
+
+                fields.notes.style.borderTop = fields.rs.style.display == "" ? "solid 1px gray" : "";
+            }
         }
 
         var scroll = scil.Utils.scrollOffset();
@@ -212,10 +252,12 @@ org.helm.webeditor.MolViewer = {
         if (this.dlg != null)
             return;
 
-        var fields = { jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true }, rs: { type: "html", viewonly: true, style: { borderTop: "solid 1px gray"}} };
+        var fields = {
+            jsd: { type: "jsdraw", width: 180, height: 130, scale: this.molscale, viewonly: true },
+            rs: { type: "html", viewonly: true, style: { borderTop: "solid 1px gray", width: 180} },
+            notes: { type: "html", viewonly: true, style: { width: 180, color: "gray"} }
+        };
         this.dlg = scil.Form.createDlgForm("", fields, null, { hidelabel: true, modal: false, noclose: true });
-        this.jsd = this.dlg.form.fields.jsd.jsd;
-        this.rs = this.dlg.form.fields.rs;
         this.dlg.hide(true);
 
         this.dlg.dialog.style.backgroundColor = "#fff";

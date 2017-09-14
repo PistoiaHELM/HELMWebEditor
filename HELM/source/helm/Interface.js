@@ -166,11 +166,14 @@ org.helm.webeditor.Interface = {
     * @param {string} color
     */
     drawMonomer: function (surface, a, p, fontsize, linewidth, color) {
+        if (a.hidden)
+            return;
+
         color = null;
         var biotype = a.biotype();
         var c = scil.Utils.isNullOrEmpty(color) ? org.helm.webeditor.Monomers.getColor(a) : color;
         var w = fontsize * org.helm.webeditor.atomscale;
-        var lw = linewidth / 2;//(c.nature ? 1 : 2);
+        var lw = linewidth / 2; //(c.nature ? 1 : 2);
         if (biotype == org.helm.webeditor.HELM.LINKER)
             JSDraw2.Drawer.drawEllipse(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw).setFill(c.backgroundcolor);
         else if (biotype == org.helm.webeditor.HELM.SUGAR)
@@ -181,6 +184,9 @@ org.helm.webeditor.Interface = {
             JSDraw2.Drawer.drawHexgon(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw, linewidth * 3).setFill(c.backgroundcolor);
         else if (biotype == org.helm.webeditor.HELM.CHEM)
             JSDraw2.Drawer.drawRect(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw).setFill(c.backgroundcolor);
+        else if (biotype == org.helm.webeditor.HELM.BLOB)
+            JSDraw2.Drawer.drawRect(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw * 2, linewidth * 5).setFill(c.backgroundcolor);
+        var pt = p.clone();
         p.offset(0, -1);
         JSDraw2.Drawer.drawLabel(surface, p, a.elem, c.textcolor, fontsize * (a.elem.length > 1 ? 2 / a.elem.length : 1.0), null, null, null, false);
 
@@ -202,6 +208,11 @@ org.helm.webeditor.Interface = {
                 p1.offset(-fontsize * c, -fontsize * 1.5);
                 JSDraw2.Drawer.drawLabel(surface, p1, s, "#FFA500", fontsize, null, "end", null, false);
             }
+        }
+
+        if (!scil.Utils.isNullOrEmpty(a.tag)) {
+            var r = fontsize / 2;
+            JSDraw2.Drawer.drawEllipse(surface, org.helm.webeditor.Interface.createRect(pt.x + r / 2, pt.y - w / 3 - r / 2, r, r), "white", lw).setFill("red");
         }
     },
 
@@ -234,15 +245,23 @@ org.helm.webeditor.Interface = {
     getHelmToolbar: function (buttons, filesubmenus, selecttools, options) {
         this.addToolbar(buttons, true, null, options);
 
+        if (org.helm.webeditor.ambiguity) {
+            buttons.push({ c: "helm_blob", t: "BLOB", label: "BLOB" });
+            buttons.push({ c: "bracket", t: "Bracket", label: "Bracket" });
+        }
+        buttons.push({ c: "single", t: "Single bond", label: "Single" });
+        buttons.push({ c: "|" });
+
         buttons.push({ c: "undo", t: "Undo", label: "Undo" });
         buttons.push({ c: "redo", t: "Redo", label: "Redo" });
         buttons.push({ c: "|" });
+
         buttons.push({ c: "eraser", t: "Eraser", label: "Eraser" });
         buttons.push({ c: "|" });
         buttons.push({ c: "select", t: "Box Selection", label: "Select", sub: selecttools });
         buttons.push({ c: "|" });
         buttons.push({ c: "helm_find", t: "Find/Replace", label: "Find/Replace" });
-        buttons.push({ c: "helm_layout", t: "Layout", label: "Layout" });
+        buttons.push({ c: "helm_layout", t: "Clean", label: "Clean" });
         buttons.push({ c: "|" });
         buttons.push({ c: "zoomin", t: "Zoom in", label: "Zoom" });
         buttons.push({ c: "zoomout", t: "Zoom out", label: "Zoom" });
@@ -263,12 +282,44 @@ org.helm.webeditor.Interface = {
 
         if (ed.options.helmtoolbar) {
             var a = JSDraw2.Atom.cast(ed.curObject);
-            if (a != null && a.biotype() == scil.helm.HELM.SUGAR && a.bio != null) {
-                items.push({ caption: "Set as Sense", key: "helm_set_sense" });
-                items.push({ caption: "Set as Antisense", key: "helm_set_antisense" });
-                items.push({ caption: "Clear Annotation", key: "helm_set_clear" });
+            var b = JSDraw2.Bond.cast(ed.curObject);
+            var grp = JSDraw2.Group.cast(ed.curObject);
+            if (a != null) {
+                var biotype = a.biotype();
+                if (a != null && biotype == scil.helm.HELM.SUGAR && a.bio != null) {
+                    items.push({ caption: "Set as Sense", key: "helm_set_sense" });
+                    items.push({ caption: "Set as Antisense", key: "helm_set_antisense" });
+                    items.push({ caption: "Clear Annotation", key: "helm_set_clear" });
+                    items.push("-");
+                    items.push({ caption: "Create Complementary Strand", key: "helm_complementary_strand" });
+                }
+
+                if (a.superatom != null) {
+                    if (items.length > 0)
+                        items.push("-");
+                    items.push({ caption: "Expand" });
+                }
+
+                if (org.helm.webeditor.ambiguity && org.helm.webeditor.isHelmNode(biotype) && a.superatom == null) {
+                    if (items.length > 0)
+                        items.push("-");
+                    if (biotype == org.helm.webeditor.HELM.BLOB)
+                        items.push({ caption: "Blob Type", callback: function (cmd, obj) { ed.helm.setHelmBlobType(obj, cmd); }, children: org.helm.webeditor.blobtypes });
+                    else if (a.group == null)
+                        items.push({ caption: "Create Group", key: "helm_create_group" });
+                    items.push("-");
+                    items.push({ caption: "Set Monomer Attributes", key: "helm_atom_prop" });
+                }
+            }
+            else if (b != null && (b.a1.biotype() == org.helm.webeditor.HELM.BLOB || b.a2.biotype() == org.helm.webeditor.HELM.BLOB)) {
+                items.push({ caption: "Set Bond Attributes", key: "helm_bond_prop" });
+            }
+            else if (grp != null) {
+                items.push({ caption: "Collapse", key: "helm_group_collapse" });
                 items.push("-");
-                items.push({ caption: "Create Complementary Strand", key: "helm_complementary_strand" });
+                items.push({ caption: "Create Group", key: "helm_create_group" });
+                items.push("-");
+                items.push({ caption: "Set Ratio", key: "group_setratio" });
             }
         }
         else {
@@ -279,7 +330,7 @@ org.helm.webeditor.Interface = {
             items.push("-");
 
         if (ed.options.helmtoolbar)
-            ;//items.push({ caption: "About HELM Web Editor", key: "abouthelm" });
+            ; //items.push({ caption: "About HELM Web Editor", key: "abouthelm" });
         else
             items.push({ caption: "About JSDraw", key: "about" });
         return items;

@@ -31,7 +31,10 @@ org.helm.webeditor.Layout = {
     * Clean/lay out a molecule
     * @function clean
     */
-    clean: function (m, bondlength, a) {
+    clean: function (jsd, a) {
+        var m = jsd.m;
+        var bondlength = jsd.bondlength;
+
         m.clearFlag();
         var chains = org.helm.webeditor.Chain._getChains(m, a);
 
@@ -42,24 +45,49 @@ org.helm.webeditor.Layout = {
             // set chain id
             org.helm.webeditor.Chain._setChainID(chain, i);
 
-            if (chain.isCircle()) {
-                chain.layoutCircle(bondlength);
+            if (!chain.hasBase() && chain.atoms.length > 50) {
+                chain.layoutRows(bondlength, 10);
             }
             else {
-                if (!this.layoutInnerCircle(chain, bondlength, m, i))
-                    chain.layoutLine(bondlength);
+                if (chain.isCircle()) {
+                    chain.layoutCircle(bondlength);
+                }
+                else {
+                    if (!this.layoutInnerCircle(chain, bondlength, m, i))
+                        chain.layoutLine(bondlength);
+                }
+                chain.layoutBases();
             }
-            chain.layoutBases();
 
             chain.setFlag(true);
             chain.resetIDs();
         }
 
+        jsd.updateGroupRect();
+
         this.layoutCrossChainBonds(m, chains, bondlength);
         this.layoutBranches(m);
 
+        this.layoutFragments(m, bondlength);
+
         // clear chain id
         org.helm.webeditor.Chain._removeChainID(m.atoms);
+    },
+
+    layoutFragments: function (m, bondlength) {
+        var frags = m.splitFragments();
+        if (frags.length < 2)
+            return;
+
+        var r0 = frags[0].rect();
+        var x = r0.center().x;
+        var y = r0.bottom() + 3 * bondlength;
+        for (var i = 1; i < frags.length; ++i) {
+            var frag = frags[i];
+            var r = frag.rect();
+            frag.offset(x - r.center().x, y - r.top);
+            y += r.height + 3 * bondlength;
+        }
     },
 
     /**
@@ -133,7 +161,7 @@ org.helm.webeditor.Layout = {
     layoutCircle: function (atoms, bondlength, startdeg) {
         var rect = this.getRect(atoms);
         var origin = rect.center();
-        
+
         var delta = org.helm.webeditor.bondscale * bondlength;
         var deg = 360 / (atoms.length - 1);
         var radius = (delta / 2) / Math.sin((deg / 2) * Math.PI / 180);
@@ -244,9 +272,11 @@ org.helm.webeditor.Layout = {
                             chain.rotate(deg, c);
                         }
                     }
-                    else
-                    {
-                        var delta = a1.p.clone().offset(0, bondlength * 3).offset(-a2.p.x, -a2.p.y);
+                    else {
+                        var p = a1.p.clone().offset(0, bondlength * 3);
+                        if (this._hasOverlap(chains, fixed, p, bondlength / 30))
+                            p = a1.p.clone().offset(0, -bondlength * 3);
+                        var delta = p.offset(-a2.p.x, -a2.p.y);
                         chains[a2._chainid].move(delta);
                     }
                 }
@@ -255,6 +285,21 @@ org.helm.webeditor.Layout = {
                 fixed[a2._chainid] = true;
             }
         }
+    },
+
+    _hasOverlap: function (chains, fixed, p, tor) {
+        for (var i = 0; i < chains.length; ++i) {
+            if (!fixed[i])
+                continue;
+
+            var atoms = chains[i].atoms;
+            for (var k = 0; k < atoms.length; ++k) {
+                if (atoms[k].p.distTo(p) < tor)
+                    return true;
+            }
+        }
+
+        return false;
     },
 
     /**

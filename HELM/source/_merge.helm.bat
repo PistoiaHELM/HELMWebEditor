@@ -1,21 +1,22 @@
 ﻿
-del Pistoia.HELM.js
+del _helm_merged.js
 
-type .\helm\helm.js >> Pistoia.HELM.js
-type .\helm\Interface.js >> Pistoia.HELM.js
-type .\helm\MonomerColors.js >> Pistoia.HELM.js
-type .\helm\Monomers.js >> Pistoia.HELM.js
-type .\helm\Plugin.js >> Pistoia.HELM.js
-type .\helm\Chain.js >> Pistoia.HELM.js
-type .\helm\Layout.js >> Pistoia.HELM.js
-type .\helm\IO.js >> Pistoia.HELM.js
-type .\helm\MonomerExplorer.js >> Pistoia.HELM.js
-type .\helm\MolViewer.js >> Pistoia.HELM.js
-type .\helm\Formula.js >> Pistoia.HELM.js
-type .\helm\Editor.js >> Pistoia.HELM.js
-type .\helm\ExtinctionCoefficient.js >> Pistoia.HELM.js
-type .\helm\App.js >> Pistoia.HELM.js
-type .\helm\AppToolbar.js >> Pistoia.HELM.js
-type .\helm\MonomerLibApp.js >> Pistoia.HELM.js
-type .\helm\RuleSet.js >> Pistoia.HELM.js
-type .\helm\RuleSetApp.js >> Pistoia.HELM.js
+type .\helm\helm.js >> _helm_merged.js
+type .\helm\Interface.js >> _helm_merged.js
+type .\helm\MonomerColors.js >> _helm_merged.js
+type .\helm\Monomers.js >> _helm_merged.js
+type .\helm\Plugin.js >> _helm_merged.js
+type .\helm\Chain.js >> _helm_merged.js
+type .\helm\Layout.js >> _helm_merged.js
+type .\helm\IO.js >> _helm_merged.js
+type .\helm\MonomerExplorer.js >> _helm_merged.js
+type .\helm\MolViewer.js >> _helm_merged.js
+type .\helm\Formula.js >> _helm_merged.js
+type .\helm\Editor.js >> _helm_merged.js
+type .\helm\ExtinctionCoefficient.js >> _helm_merged.js
+type .\helm\App.js >> _helm_merged.js
+type .\helm\AppToolbar.js >> _helm_merged.js
+type .\helm\MonomerLibApp.js >> _helm_merged.js
+type .\helm\RuleSet.js >> _helm_merged.js
+type .\helm\RuleSetApp.js >> _helm_merged.js
+type .\helm\Adapter.js >> _helm_merged.js

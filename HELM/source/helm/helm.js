@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright C 2017, The Pistoia Alliance
-*  Version 2.0.1.2017-06-08
+*  Version 2.1.0.2017-09-12
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -29,7 +29,7 @@
 
 /**
 @project HELM Web Editor
-@version 2.0.1
+@version 2.1.0
 @description HELM Web Editor built on JSDraw.Lite
 */
 
@@ -50,18 +50,22 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.0.1.2017-05-21s",
+    kVersion: "2.1.0.2017-09-12",
     atomscale: 2,
     bondscale: 1.6,
     allowHeadToHeadConnection: true,
+    ambiguity: false,
 
     HELM: {
         BASE: "HELM_BASE",
         SUGAR: "HELM_SUGAR",
         LINKER: "HELM_LINKER",
         AA: "HELM_AA",
-        CHEM: "HELM_CHEM"
+        CHEM: "HELM_CHEM",
+        BLOB: "HELM_BLOB"
     },
+
+    blobtypes: ["Antibody", "Gold Particle", "Protein"],
 
     /**
     * Test if a node is HELM monomer
@@ -73,7 +77,7 @@ org.helm.webeditor = {
 
         var biotype = typeof(a) == "string" ? a : a.biotype();
         return biotype == org.helm.webeditor.HELM.BASE || biotype == org.helm.webeditor.HELM.SUGAR || biotype == org.helm.webeditor.HELM.LINKER ||
-            biotype == org.helm.webeditor.HELM.AA || biotype == org.helm.webeditor.HELM.CHEM;
+            biotype == org.helm.webeditor.HELM.AA || biotype == org.helm.webeditor.HELM.CHEM || biotype == org.helm.webeditor.HELM.BLOB;
     },
 
     /**

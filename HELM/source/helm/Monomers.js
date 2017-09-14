@@ -30,6 +30,8 @@
 org.helm.webeditor.Monomers = {
     defaultmonomers: { HELM_BASE: null, HELM_SUGAR: null, HELM_LINKER: null, HELM_AA: null, HELM_CHEM: null },
 
+    blobs: { blob: { n: 'Blob', id: "Blob", na: 'B', rs: 0, at: {}, m: '' }, group: { n: 'Group', id: "Group", na: 'G', rs: 0, at: {}, m: ''} },
+
     /**
     * Clear monomer database (internal use)
     * @function clear
@@ -61,6 +63,8 @@ org.helm.webeditor.Monomers = {
             return this._getFirstKey(org.helm.webeditor.Monomers.aas, "A");
         else if (monomertype == org.helm.webeditor.HELM.CHEM)
             return this._getFirstKey(org.helm.webeditor.Monomers.chems, "R");
+        else if (monomertype == org.helm.webeditor.HELM.BLOB)
+            return this._getFirstKey(org.helm.webeditor.Monomers.blobs);
         return "?";
     },
 
@@ -309,6 +313,8 @@ org.helm.webeditor.Monomers = {
             return org.helm.webeditor.monomers.aas;
         else if (a == org.helm.webeditor.HELM.CHEM)
             return org.helm.webeditor.monomers.chems;
+        else if (a == org.helm.webeditor.HELM.BLOB)
+            return org.helm.webeditor.monomers.blobs;
         return null;
     },
 
@@ -331,6 +337,8 @@ org.helm.webeditor.Monomers = {
             return org.helm.webeditor.MonomerColors.aas;
         else if (a == org.helm.webeditor.HELM.CHEM)
             return org.helm.webeditor.MonomerColors.chems;
+        else if (a == org.helm.webeditor.HELM.BLOB)
+            return org.helm.webeditor.MonomerColors.blobs;
         return null;
     },
 
@@ -398,6 +406,9 @@ org.helm.webeditor.Monomers = {
         if (mc == null)
             mc = {};
         var color = mc[m.na];
+
+        if (m.backgroundcolor == null && a.elem == "?")
+            m.backgroundcolor = org.helm.webeditor.MonomerColors.unknown;
 
         return {
             linecolor: m.linecolor == null ? "#000" : m.linecolor,

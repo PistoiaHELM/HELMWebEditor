@@ -27,6 +27,8 @@
 * @class org.helm.webeditor.MonomerColors
 */
 org.helm.webeditor.MonomerColors = {
+    unknown: "#FFFF00",
+
     bases: {
         A: "#A0A0FF",
         G: "#FF7070",
@@ -70,5 +72,10 @@ org.helm.webeditor.MonomerColors = {
 
     chems: {
         R: "#eeeeee",
+    },
+
+    blobs: {
+        B: "#999999",
+        G: "#e2e2e2"
     }
 };

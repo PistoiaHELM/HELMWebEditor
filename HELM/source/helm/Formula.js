@@ -33,6 +33,8 @@ org.helm.webeditor.Formula = {
     */
     getMF: function (m, html) {
         var stats = this.getAtomStats(m);
+        if (stats == null)
+            return null;
 
         var s = "";
         if (stats["C"] != null)
@@ -67,6 +69,9 @@ org.helm.webeditor.Formula = {
     */
     getMW: function (m) {
         var stats = this.getAtomStats(m);
+        if (stats == null)
+            return null;
+
         var sum = 0;
         for (var e in stats) {
             if (e != "R")
@@ -84,6 +89,9 @@ org.helm.webeditor.Formula = {
         var list = [];
         for (var i = 0; i < m.atoms.length; ++i) {
             var a = m.atoms[i];
+            if (a.elem == "?")
+                return null;
+
             if (org.helm.webeditor.isHelmNode(a))
                 list.push(a);
             else
