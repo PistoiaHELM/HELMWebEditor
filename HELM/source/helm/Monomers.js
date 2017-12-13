@@ -28,8 +28,9 @@
 * @class org.helm.webeditor.Monomers
 */
 org.helm.webeditor.Monomers = {
+    smilesmonomerid: 0,
+    smilesmonomers: {},
     defaultmonomers: { HELM_BASE: null, HELM_SUGAR: null, HELM_LINKER: null, HELM_AA: null, HELM_CHEM: null },
-
     blobs: { blob: { n: 'Blob', id: "Blob", na: 'B', rs: 0, at: {}, m: '' }, group: { n: 'Group', id: "Group", na: 'G', rs: 0, at: {}, m: ''} },
 
     /**
@@ -73,10 +74,10 @@ org.helm.webeditor.Monomers = {
     * @function _getFirstKey
     */
     _getFirstKey: function (set, key1, key2) {
-        if (key1 != null && set[key1.toLowerCase()] != null)
-            return set[key1.toLowerCase()].id;
-        if (key2 != null && set[key2.toLowerCase()] != null)
-            return set[key2.toLowerCase()].id;
+        if (key1 != null && set[scil.helm.symbolCase(key1)] != null)
+            return set[scil.helm.symbolCase(key1)].id;
+        if (key2 != null && set[scil.helm.symbolCase(key2)] != null)
+            return set[scil.helm.symbolCase(key2)].id;
 
         for (var k in set)
             return k;
@@ -366,7 +367,8 @@ org.helm.webeditor.Monomers = {
         if (a == null && name == null)
             return null;
 
-        var s, biotype;
+        var s;
+        var biotype;
         if (name == null) {
             biotype = a.biotype();
             s = a.elem;
@@ -377,11 +379,17 @@ org.helm.webeditor.Monomers = {
         }
 
         if (s == "?") {
-            return { id: '?', n: "?", na: '?', rs: 2, at: { R1: 'H', R2: 'H' }, m: "" };
+            var m = { id: '?', n: "?", na: '?', rs: 2, at: { R1: 'H', R2: 'H' }, m: "" };
+            if (biotype == org.helm.webeditor.HELM.SUGAR)
+                m.at.R3 = "H";
+            return m;
         }
 
+        if (biotype == org.helm.webeditor.HELM.LINKER && s == "null")
+            return { id: 'null', n: "?", na: '?', rs: 2, at: { R1: 'H', R2: 'H' }, m: "" };
+
         var set = this.getMonomerSet(biotype);
-        return set == null ? null : set[s.toLowerCase()];
+        return set == null ? null : set[scil.helm.symbolCase(s)];
     },
 
     /**
@@ -472,8 +480,6 @@ org.helm.webeditor.Monomers = {
         return null;
     },
 
-    smilesmonomerid: 0,
-    smilesmonomers: {},
     addSmilesMonomer: function (type, smiles) {
         var ss = this.findSmilesRs(smiles);
         if (ss == null || ss.length == 0)
@@ -489,7 +495,19 @@ org.helm.webeditor.Monomers = {
             m.at[ss[i]] = "H";
         m.rs = ss.length;
         var set = this.getMonomerSet(type);
-        set[m.id.toLowerCase()] = m;
+        set[scil.helm.symbolCase(m.id)] = m;
+
+        if (this.cleanupurl != null) {
+            if (this.onMonomerSmiles != null) {
+                this.onMonomerSmiles(m, smiles);
+            }
+            else {
+                scil.Utils.ajax(this.cleanupurl, function (ret) {
+                    if (ret != null && ret.output != null)
+                        m.m = ret.output;
+                }, { input: smiles, inputformat: "smiles", outputformat: "mol" });
+            }
+        }
 
         this.smilesmonomers[smiles] = m;
         return m;
@@ -534,7 +552,7 @@ org.helm.webeditor.Monomers = {
         delete m.type;
         delete m.mt;
 
-        set[m.id.toLowerCase()] = m;
+        set[scil.helm.symbolCase(m.id)] = m;
         return true;
     },
 
@@ -550,7 +568,7 @@ org.helm.webeditor.Monomers = {
         m.molfile = molfile;
         if (m.m.at != null) {
             for (var x in m.m.at)
-                m[x.toLowerCase()] = m.m.at[x];
+                m[scil.helm.symbolCase(x)] = m.m.at[x];
         }
 
         var s = "";

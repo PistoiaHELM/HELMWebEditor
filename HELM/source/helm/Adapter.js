@@ -33,6 +33,13 @@ org.helm.webeditor.Adapter = {
     startApp: function (div, options) {
         org.helm.webeditor.Adapter.init(options.url);
 
+        if (options.onValidateHelm == null)
+            options.onValidateHelm = this.onValidateHelm;
+        if (options.onMonomerSmiles == null)
+            org.helm.webeditor.Monomers.onMonomerSmiles = this.onMonomerSmiles;
+        else
+            org.helm.webeditor.Monomers.onMonomerSmiles = options.onMonomerSmiles;
+
         scil.Utils.ajax(org.helm.webeditor.Adapter.url + "/monomer/ALL", function (ret) {
             org.helm.webeditor.Adapter.startApp2(div, options);
         });
@@ -90,7 +97,9 @@ org.helm.webeditor.Adapter = {
                 var pt = scil.Utils.isNullOrEmpty(args.content.polymertype) ? "ALL" : args.content.polymertype;
                 args.url = org.helm.webeditor.Adapter.url + "/monomer/" + pt + "?limit=" + limit + "&offset=" + offset;
                 if (!scil.Utils.isNullOrEmpty(args.content.symbol))
-                    args.url += "&filter=" + escape(args.content.symbol);
+                    args.url += "&filter=" + escape(args.content.symbol) + "&filterField=symbol";
+                else if (!scil.Utils.isNullOrEmpty(args.content.name))
+                    args.url += "&filter=" + escape(args.content.name) + "&filterField=name";
                 opts.verb = "get";
                 break;
             case "helm.monomer.save":
@@ -140,7 +149,8 @@ org.helm.webeditor.Adapter = {
                 break;
 
             default:
-                opts.verb = "get";
+                if (opts.verb == null)
+                    opts.verb = "get";
                 break;
         }
         opts.ignoresucceedcheck = true;
@@ -149,9 +159,7 @@ org.helm.webeditor.Adapter = {
 
     startApp2: function (div, options) {
         org.helm.webeditor.ambiguity = options.ambiguity;
-        new scil.helm.AppToolbar("toolbar", "helm/img/",
-            [{ icon: "canvas-1.png", label: "Canvas" }, { icon: "monomers-2.png", label: "Monomer Library" }, { icon: "settings-2.png", label: "Settings"}]
-        );
+        new scil.helm.AppToolbar(options.toolbarholder, "helm/img/", options.toolbarbuttons);
         app = new scil.helm.App(div, options);
     },
 
@@ -188,7 +196,7 @@ org.helm.webeditor.Adapter = {
             return;
         for (var k = 0; k < ret.rgroups.length; ++k) {
             var r = ret.rgroups[k];
-            m[r.label.toLowerCase()] = r.capGroupName;
+            m[scil.helm.symbolCase(r.label)] = r.capGroupName;
         }
     },
 
@@ -203,5 +211,39 @@ org.helm.webeditor.Adapter = {
                 rgroups.push({ label: "R" + i, capGroupName: ret["r" + i] })
         }
         ret.rgroups = rgroups;
+    },
+
+    onValidateHelm: function (me) {
+        var url = me.options.validateurl;
+        if (scil.Utils.isNullOrEmpty(url)) {
+            scil.Utils.alert("The validation url is not configured yet");
+            return;
+        }
+
+        me.setNotationBackgroundColor("white");
+        var helm = scil.Utils.getInnerText(me.notation);
+        if (scil.Utils.isNullOrEmpty(helm))
+            return;
+
+        scil.Utils.ajax(url,
+            function (ret) { me.setNotationBackgroundColor(ret.Validation == "valid" ? "#9fc" : "#fcf"); },
+            { HELMNotation: helm },
+            { onError: function (data) { me.setNotationBackgroundColor("#fcf"); }, verb: "post", headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" }
+            });
+    },
+
+    onCleanUpStructure: function (mol, me) {
+        //        scil.Utils.ajax(me.options.cleanupurl, function (ret) {
+        //            me.structureview.setMolfile(ret == null ? null : ret.output);
+        //        }, { input: mol.getMolfile(), inputformat: "mol", outputformat: "mol" });
+    },
+
+    onMonomerSmiles: function (m, smiles) {
+        var url = org.helm.webeditor.Monomers.cleanupurl;
+        scil.Utils.ajax(url,
+            function (ret) { m.m = ret.Molfile; },
+            { SMILES: smiles },
+            { verb: "post", headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" }
+            });
     }
 };

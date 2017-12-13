@@ -75,7 +75,7 @@ org.helm.webeditor.Layout = {
     },
 
     layoutFragments: function (m, bondlength) {
-        var frags = m.splitFragments();
+        var frags = m.splitFragments(true);
         if (frags.length < 2)
             return;
 
@@ -94,10 +94,10 @@ org.helm.webeditor.Layout = {
     * Reset Monomer IDs (internal use)
     * @function resetIDs
     */
-    resetIDs: function (m) {
+    resetIDs: function (m, aaid) {
         var chains = org.helm.webeditor.Chain._getChains(m);
         for (var i = 0; i < chains.length; ++i)
-            chains[i].resetIDs();
+            chains[i].resetIDs(aaid);
     },
 
     /**

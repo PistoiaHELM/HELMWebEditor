@@ -329,8 +329,9 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
     * Reset chain monomer IDs
     * @function resetIDs
     */
-    resetIDs: function () {
+    resetIDs: function (resetaaid) {
         var aaid = 0;
+        var _aaid = 0;
         var baseid = 0;
 
         var n = this.isCircle() ? this.atoms.length - 1 : this.atoms.length;
@@ -338,6 +339,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             var a = this.atoms[i];
             var biotype = a.biotype();
             if (biotype == org.helm.webeditor.HELM.AA) {
+                a._aaid = ++_aaid;
                 a.bio.id = ++aaid;
                 if (aaid == 1)
                     a.bio.annotation = "n";
@@ -347,6 +349,9 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             }
             else if (biotype == org.helm.webeditor.HELM.SUGAR || biotype == org.helm.webeditor.HELM.LINKER) {
                 if (biotype == org.helm.webeditor.HELM.SUGAR && this.bases[i] != null) {
+                    a._aaid = ++_aaid;
+                    this.bases[i]._aaid = ++_aaid;
+
                     this.bases[i].bio.id = ++baseid;
                     if (baseid == 1) {
                         if (a.bio.annotation != "5'ss" && a.bio.annotation != "5'as")
@@ -357,9 +362,11 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                     }
                 }
                 aaid = 0;
+                _aaid = 0;
             }
             else {
                 aaid = 0;
+                _aaid = 0;
                 baseid = 0;
             }
         }
@@ -615,11 +622,14 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                     prefix = a.elem == "Group" ? "G" : "BLOB";
 
                 var seqid = prefix + (++ret.chainid[prefix]);
-                if (prefix == "G")
+                if (prefix == "G") {
                     org.helm.webeditor.IO.getGroupHelm(ret, seqid, a, highlightselection);
+                    if (this.atoms.length == 1)
+                        ret.groupatoms[seqid] = a;
+                }
 
-                if (i == 0 && a.biotype() == org.helm.webeditor.HELM.SUGAR) {
-                    if (a.bio.annotation == "5'ss" || a.bio.annotation == "5'as")
+                if (i == 0) {
+                    if (a.biotype() == org.helm.webeditor.HELM.SUGAR && a.bio.annotation == "5'ss" || a.bio.annotation == "5'as")
                         ret.annotations[seqid] = { strandtype: a.bio.annotation.substr(2) };
                 }
 
@@ -679,6 +689,9 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
                     ret.ratios[lastseqid] = groupatom.ratio;
             }
             ret.chains[lastseqid] = chn;
+
+            if (groupatom != null && firstseqid == lastseqid && !scil.Utils.isNullOrEmpty(groupatom.tag))
+                chn.annotation = groupatom.tag;
         }
 
         if (this.isCircle()) {

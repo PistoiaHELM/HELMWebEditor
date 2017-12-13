@@ -41,6 +41,14 @@
 
     <div id="div1" style="margin: 5px; margin-top: 15px"></div>
     <script type="text/javascript">
+        JSDraw2.defaultoptions = {skin: "w8" };
+        
+      scil.Utils.stupidTomcatBug = function (params) {
+        var s = {"_":0};
+        scil.apply(s, params);
+        return s;
+      }
+        
       scil.ready(function () {
       new scil.helm.AppToolbar("toolbar", "../JSDraw/helm/img/",
       [{ icon: "canvas-2.png", label: "Canvas", url: "App.htm" }, { icon: "monomers-2.png", label: "Monomer Library", url: "MonomerLibApp.htm" }, { icon: "settings-1.png", label: "Ruleset" }]

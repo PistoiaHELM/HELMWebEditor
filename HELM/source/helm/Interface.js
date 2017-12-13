@@ -315,11 +315,11 @@ org.helm.webeditor.Interface = {
                 items.push({ caption: "Set Bond Attributes", key: "helm_bond_prop" });
             }
             else if (grp != null) {
-                items.push({ caption: "Collapse", key: "helm_group_collapse" });
-                items.push("-");
                 items.push({ caption: "Create Group", key: "helm_create_group" });
                 items.push("-");
-                items.push({ caption: "Set Ratio", key: "group_setratio" });
+                items.push({ caption: "Collapse", key: "helm_group_collapse" });
+                items.push("-");
+                items.push({ caption: "Set Attributes", key: "group_setproperties" });
             }
         }
         else {

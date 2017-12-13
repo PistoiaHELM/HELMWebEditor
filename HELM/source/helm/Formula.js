@@ -85,6 +85,18 @@ org.helm.webeditor.Formula = {
     * @function getAtomStats
     */
     getAtomStats: function (m) {
+        var brackets = [];
+        for (var i = 0; i < m.graphics.length; ++i) {
+            var br = JSDraw2.Bracket.cast(m.graphics[i]);
+            if (br != null && br.atoms != null && br.atoms.length > 0) {
+                var n = br.getSubscript(m);
+                if (!(n > 0))
+                    return null;
+                if (n > 1)
+                    brackets.push({ br: br, n: n });
+            }
+        }
+
         var atoms = [];
         var list = [];
         for (var i = 0; i < m.atoms.length; ++i) {
@@ -92,8 +104,14 @@ org.helm.webeditor.Formula = {
             if (a.elem == "?")
                 return null;
 
-            if (org.helm.webeditor.isHelmNode(a))
+            if (org.helm.webeditor.isHelmNode(a)) {
                 list.push(a);
+                var n = this.getRepeat(brackets, a);
+                if (n > 0) {
+                    for (var k = 1; k < n; ++k)
+                        list.push(a);
+                }
+            }
             else
                 atoms.push(a);
         }
@@ -118,6 +136,16 @@ org.helm.webeditor.Formula = {
         }
 
         return ret;
+    },
+
+    getRepeat: function (brackets, a) {
+        for (var i = 0; i < brackets.length; ++i) {
+            var b = brackets[i];
+            if (scil.Utils.indexOf(b.br.atoms, a) >= 0)
+                return b.n;
+        }
+
+        return 1;
     },
 
     /**

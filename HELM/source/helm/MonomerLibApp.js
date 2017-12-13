@@ -110,7 +110,8 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             "-",
             { type: "a", src: scil.Utils.imgSrc("img/save.gif"), title: "Export Monomers", items: ["JSON", "SDF"], onclick: function (cmd) { me.exportFile(cmd); } },
             "-",
-            { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol/Name", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); } },
+            { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); }, onchange: function () { me.clearFilterValue("name"); } },
+            { type: "input", key: "name", labelstyle: { fontSize: "90%" }, label: "Name", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); }, onchange: function () { me.clearFilterValue("symbol"); } },
             { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
             { type: "select", key: "monomertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), label: "Monomer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
         //{ type: "select", key: "status", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getStatuses(), label: "Status", styles: { width: 100 }, onchange: function () { me.refresh(); } },
@@ -152,6 +153,15 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         this.monomers.refresh();
     },
 
+    clearFilterValue: function (key) {
+        for (var i = 0; i < this.buttons.length; ++i) {
+            if (this.buttons[i].key == key) {
+                this.buttons[i].b.value = "";
+                break;
+            }
+        }
+    },
+
     onbeforesave: function (data, args, form) {
         if (data.polymertype != "CHEM" && scil.Utils.isNullOrEmpty(data.naturalanalog)) {
             scil.Utils.alert("Natural Analog cannot be blank");
@@ -167,11 +177,11 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             var a = atoms[i];
             if (a.elem == "R") {
                 var r = (a.alias == null ? "R" : a.alias);
-                if (ratoms[r.toLowerCase()] != null) {
+                if (ratoms[scil.helm.symbolCase(r)] != null) {
                     scil.Utils.alert("The R cannot be used twice: " + r);
                     return false;
                 }
-                ratoms[r.toLowerCase()] = r;
+                ratoms[scil.helm.symbolCase(r)] = r;
             }
         }
 
@@ -205,7 +215,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
     * @function onbeforerefresh
     */
     onbeforerefresh: function (args) {
-        scil.Form.getButtonValuesByKey(this.buttons, ["status", "polymertype", "monomertype", "status", "symbol", "countperpage"], args);
+        scil.Form.getButtonValuesByKey(this.buttons, ["status", "polymertype", "monomertype", "status", "symbol", "name", "countperpage"], args);
     },
 
     /**

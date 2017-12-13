@@ -93,6 +93,9 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         if (!scil.Utils.isNullOrEmpty(this.options.jsdrawservice))
             JSDrawServices = { url: this.options.jsdrawservice };
 
+        if (this.options.cleanupurl != null && org.helm.webeditor.Monomers.cleanupurl == null)
+            org.helm.webeditor.Monomers.cleanupurl = this.options.cleanupurl;
+
         if (this.options.rulesurl != null) {
             scil.Utils.ajax(this.options.rulesurl, function (ret) {
                 if (ret.rules != null)
@@ -146,7 +149,6 @@ org.helm.webeditor.App = scil.extend(scil._base, {
     */
     init: function (parent) {
         var me = this;
-
         var sizes = this.calculateSizes();
 
         var tree = {
@@ -193,7 +195,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             tabkey: "notation",
             buttons: this.options.sequenceviewonly ? null : [
                 { src: scil.Utils.imgSrc("img/moveup.gif"), label: "Apply", title: "Apply HELM Notation", onclick: function () { me.updateCanvas("notation", false); } },
-                { src: scil.Utils.imgSrc("img/add.gif"), label: "Append", title: "Append HELM Notation", onclick: function () { me.updateCanvas("notation", true); } }
+                { src: scil.Utils.imgSrc("img/add.gif"), label: "Append", title: "Append HELM Notation", onclick: function () { me.updateCanvas("notation", true); } },
+                { src: scil.Utils.imgSrc("img/tick.gif"), label: "Validate", title: "Validate HELM Notation", onclick: function () { me.validateHelm(); } }
             ],
             oncreate: function (div) { me.createNotation(div, sizes.rightwidth, sizes.bottomheight); }
         });
@@ -213,6 +216,29 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         });
 
         scil.connect(window, "onresize", function (e) { me.resizeWindow(); });
+    },
+
+    validateHelm: function () {
+        if (this.options.onValidateHelm != null) {
+            this.options.onValidateHelm(this);
+            return;
+        }
+
+        var url = this.options.validateurl;
+        if (scil.Utils.isNullOrEmpty(url)) {
+            scil.Utils.alert("The validation url is not configured yet");
+            return;
+        }
+
+        this.setNotationBackgroundColor("white");
+        var helm = scil.Utils.getInnerText(this.notation);
+        if (scil.Utils.isNullOrEmpty(helm))
+            return;
+
+        var me = this;
+        scil.Utils.ajax(url, function (ret) {
+            me.setNotationBackgroundColor(ret.valid ? "#9fc" : "#fcf");
+        }, { helm: helm });
     },
 
     /**
@@ -334,9 +360,10 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         var type = a == null ? null : a.biotype();
         var set = org.helm.webeditor.Monomers.getMonomerSet(type);
         var s = a == null ? null : a.elem;
-        var m = set == null ? null : set[s.toLowerCase()];
+        var m = set == null ? null : set[scil.helm.symbolCase(s)];
         if (m != null && m.m == "" && a != null && a.superatom != null)
             m.m = a.superatom.getXml();
+
         org.helm.webeditor.MolViewer.show(e, type, m, s, ed, a);
     },
 
@@ -451,8 +478,14 @@ org.helm.webeditor.App = scil.extend(scil._base, {
                     this.sequence.innerHTML = this.canvas.getSequence(true);
                 break;
             case "notation":
-                if (this.notation != null)
-                    this.notation.innerHTML = this.canvas.getHelm(true);
+                if (this.notation != null) {
+                    var helm = scil.Utils.getInnerText(this.notation);
+                    var s = this.canvas.getHelm(true);
+                    if (helm != s) {
+                        this.notation.innerHTML = s;
+                        this.setNotationBackgroundColor("white");
+                    }
+                }
                 break;
             case "properties":
                 this.calculateProperties();
@@ -461,6 +494,11 @@ org.helm.webeditor.App = scil.extend(scil._base, {
                 this.updateStructureView();
                 break;
         }
+    },
+
+    setNotationBackgroundColor: function (c) {
+        if (this.notation != null)
+            this.notation.parentNode.parentNode.style.background = c;
     },
 
     /**
@@ -549,6 +587,103 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         return n;
     },
 
+    containsAll: function (list, sublist) {
+        for (var i = 0; i < sublist.length; ++i) {
+            if (scil.Utils.indexOf(list, sublist[i]) < 0)
+                return false;
+        }
+
+        return true;
+    },
+
+    expandRepeat: function (br, repeat, m, selected) {
+        var r1 = null;
+        var r2 = null;
+        var b1 = null;
+        var b2 = null;
+
+        var oldbonds = [];
+        for (var i = 0; i < m.bonds.length; ++i) {
+            var b = m.bonds[i];
+            var i1 = scil.Utils.indexOf(br.atoms, b.a1);
+            var i2 = scil.Utils.indexOf(br.atoms, b.a2);
+            if (i1 >= 0 && i2 >= 0) {
+                oldbonds.push(b);
+            }
+            else if (i1 >= 0 && i2 < 0) {
+                if (b.r1 == 1) {
+                    r1 = b.a1;
+                    b1 = b;
+                }
+                else if (b.r1 == 2) {
+                    r2 = b.a1;
+                    b2 = b;
+                }
+            }
+            else if (i2 >= 0 && i1 < 0) {
+                if (b.r2 == 1) {
+                    r1 = b.a2;
+                    b1 = b;
+                }
+                else if (b.r2 == 2) {
+                    r2 = b.a2;
+                    b2 = b;
+                }
+            }
+        }
+
+        for (var count = 0; count < repeat - 1; ++count) {
+            var newatoms = [];
+            var na1 = null;
+            var na2 = null;
+            for (var i = 0; i < br.atoms.length; ++i) {
+                var a0 = br.atoms[i];
+                var na = a0.clone();
+                selected.atoms.push(na);
+                newatoms.push(na);
+
+                if (a0 == r1)
+                    na1 = na;
+                else if (a0 == r2)
+                    na2 = na;
+            }
+
+            for (var i = 0; i < oldbonds.length; ++i) {
+                var b0 = oldbonds[i];
+                var nb = b0.clone();
+                selected.bonds.push(nb);
+                m.bonds.push(nb);
+                nb.a1 = newatoms[scil.Utils.indexOf(br.atoms, b0.a1)];
+                nb.a2 = newatoms[scil.Utils.indexOf(br.atoms, b0.a2)];
+            }
+
+            var nb = null;
+            if (b1 == null) {
+                nb = new JSDraw2.Bond(null, null, JSDraw2.BONDTYPES.SINGLE);
+                nb.r1 = 2;
+                nb.r2 = 1;
+            }
+            else {
+                nb = b1.clone();
+            }
+            selected.bonds.push(nb);
+            m.bonds.push(nb);
+            if (b1 == null || b1.a1 == r1) {
+                nb.a1 = na1;
+                nb.a2 = r2;
+            }
+            else {
+                nb.a2 = na1;
+                nb.a1 = r2;
+            }
+
+            if (b2 != null) {
+                b2.replaceAtom(r2, na2);
+                r2 = na2;
+            }
+        }
+    },
+
     /**
     * Update structure view from Canvas (internal use)
     * @function updateStructureView
@@ -558,17 +693,30 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             return;
         this.structureview.clear(true);
 
-        for (var i = 0; i < this.canvas.m.atoms.length; ++i)
-            this.canvas.m.atoms[i].__mol = null;
+        var m2 = this.canvas.m.clone();
+        for (var i = 0; i < m2.atoms.length; ++i)
+            m2.atoms[i].__mol = null;
 
-        if (this.selectBondsOfSelectedAtoms(this.canvas.m) > 0)
+        if (this.selectBondsOfSelectedAtoms(m2) > 0)
             this.canvas.refresh();
-        var selected = this.getSelectedAsMol(this.canvas.m);
+        var selected = this.getSelectedAsMol(m2);
         if (selected == null || selected.atoms.length == 0)
             return;
 
         var atoms = selected.atoms;
         var bonds = selected.bonds;
+
+        for (var i = 0; i < m2.graphics.length; ++i) {
+            var br = JSDraw2.Bracket.cast(m2.graphics[i]);
+            if (br == null)
+                continue;
+
+            var repeat = br == null ? null : br.getSubscript(m2);
+            var n = parseInt(repeat);
+            if (n > 1 && br.atoms != null && br.atoms.length > 0 && this.containsAll(atoms, br.atoms)) {
+                this.expandRepeat(br, n, m2, selected)
+            }
+        }
 
         var bondlength = null;
         var mols = [];
@@ -577,6 +725,24 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             var mon = org.helm.webeditor.Monomers.getMonomer(a);
             var m = org.helm.webeditor.Interface.createMol(org.helm.webeditor.monomers.getMolfile(mon));
             a.__mol = m;
+
+            // cap R groups
+            var connected = m2.getAllBonds(a);
+            var used = {};
+            for (var k = 0; k < connected.length; ++k) {
+                var bond = connected[k];
+                if (bond.a1 == a)
+                    used["R" + bond.r1] = true;
+                else if (bond.a2 == a)
+                    used["R" + bond.r2] = true;
+            }
+
+            for (var r in mon.at) {
+                if (used[r])
+                    continue;
+
+                this._replaceR(m, r, mon.at[r]);
+            }
 
             if (m != null && !m.isEmpty()) {
                 var d = m.medBondLength();
@@ -602,14 +768,37 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             return;
 
         if (this.options.cleanupurl != null) {
-            var me = this;
-            scil.Utils.ajax(this.options.cleanupurl, function (ret) {
-                me.structureview.setMolfile(ret == null ? null : ret.output);
-            }, { input: mol.getMolfile(), inputformat: "mol", outputformat: "mol" });
+            if (this.options.onCleanUpStructure != null) {
+                this.options.onCleanUpStructure(mol, this);
+            }
+            else {
+                var me = this;
+                scil.Utils.ajax(this.options.cleanupurl, function (ret) {
+                    me.structureview.setMolfile(ret == null ? null : ret.output);
+                }, { input: mol.getMolfile(), inputformat: "mol", outputformat: "mol" });
+            }
         }
         else {
             this.structureview.setMolfile(mol.getMolfile());
         }
+    },
+
+    _replaceR: function (m, r, e) {
+        if (e == "OH")
+            e = "O";
+        if (e != "H" && e != "O" && e != "X")
+            return false;
+
+        for (var i = 0; i < m.atoms.length; ++i) {
+            var a = m.atoms[i];
+            if (a.elem == "R" && a.alias == r) {
+                a.elem = e;
+                a.alias = null;
+                return true;
+            }
+        }
+
+        return false;
     },
 
     connectNextMonomer: function (a, atoms, bonds) {

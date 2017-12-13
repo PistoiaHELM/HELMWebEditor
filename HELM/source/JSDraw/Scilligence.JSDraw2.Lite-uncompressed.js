@@ -465,25 +465,49 @@ scilligence.Utils = {
         }
 
         if (Math.abs(val) >= 1000)
-            return this.roundStr(val / 1000, n, padding) + " " + (unit == "g/L" ? "g/mL" : "k" + unit);
+            return this.roundStr(val / 1000, n, padding) + " " + this._convertUnit(unit, 1000);
         if (Math.abs(val) >= 1)
-            return this.roundStr(val, n, padding) + " " + (unit == "g/L" ? "mg/mL" : unit);
+            return this.roundStr(val, n, padding) + " " + this._convertUnit(unit, 1);
 
         val *= 1000;
-        if (Math.abs(val) >= 1) {
-            if (unit == "g/L" || unit == "mg/mL")
-                return this.roundStr(val, n, padding) + " ug/mL";
-            else if (unit == "mg/L" || unit == "ug/mL")
-                return this.roundStr(val, n, padding) + " ug/L";
-            else
-                return this.roundStr(val, n, padding) + " m" + unit;
+        if (Math.abs(val) >= 1)
+            return this.roundStr(val, n, padding) + " " + this._convertUnit(unit, 0.001);
+
+        val *= 1000;
+        return this.roundStr(val, n, padding) + " " + this._convertUnit(unit, 0.000001);
+    },
+
+    _convertUnit: function (unit, scale) {
+        switch (scale) {
+            case 1:
+                if (unit == "g/L")
+                    return "mg/mL";
+                else if (unit == "U/L")
+                    return "mU/mL";
+                else
+                    return unit;
+            case 1000:
+                if (unit == "g/L")
+                    return "g/mL";
+                else if (unit == "U/L")
+                    return "U/mL";
+                else
+                    return "k" + unit;
+            case 0.001:
+                if (unit == "g/L" || unit == "mg/mL")
+                    return "mg/L";
+                else if (unit == "U/L" || unit == "mU/mL")
+                    return "mU/L";
+                else
+                    return "m" + unit;
+            case 0.000001:
+                if (unit == "g/L" || unit == "mg/mL")
+                    return "ug/L";
+                else if (unit == "U/L" || unit == "mU/mL")
+                    return "uU/L";
+                else
+                    return "u" + unit;
         }
-
-        val *= 1000;
-        if (unit == "g/L" || unit == "mg/mL")
-            return this.roundStr(val, n, padding) + " ug/L";
-        else
-            return this.roundStr(val, n, padding) + " u" + unit;
     },
 
     disabledcontextmenus: [],
@@ -1598,10 +1622,8 @@ scilligence.Utils = {
         if (ret == null) {
             if (scil.Utils.isNullOrEmpty(format)) {
                 format = JSDraw2.defaultoptions.dateformat;
-                if (scil.Utils.isNullOrEmpty(JSDraw2.defaultoptions.dateformat))
+                if (scil.Utils.isNullOrEmpty(format))
                     format = "yyyy-mmm-dd";
-                else
-                    format = JSDraw2.defaultoptions.dateformat;
             }
 
             // if the input is 2014-04-08, this is to fix the timezone issue
@@ -2423,12 +2445,28 @@ scilligence.Utils = {
             else
                 url += "?wrapper=textarea";
         }
+
+        // I#12036
+        if (scil.Utils.___ajaxUploadFile == null) {
+            dojo.config.dojoBlankHtmlUrl = scil.Utils.imgSrc("blank.html");
+            dojo.io.iframe.send({
+                url: dojo.config.dojoBlankHtmlUrl,
+                form: form,
+                method: "get",
+                content: params,
+                timeoutSeconds: 60,
+                preventCache: true,
+                handleAs: "text"
+            });
+            scil.Utils.___ajaxUploadFile == true;
+        }
+
         dojo.io.iframe.send({
             url: url,
             form: form,
             method: "post",
             content: params,
-            timeoutSeconds: 5,
+            timeoutSeconds: 60,
             preventCache: true,
             handleAs: "text",
             error: function (data) {
@@ -2476,6 +2514,7 @@ scilligence.Utils = {
         url: null,
         params: null,
         msg: null,
+        checkfiles: null,
         dlg: null,
         btn: null,
         tbody: null,
@@ -2541,9 +2580,10 @@ scilligence.Utils = {
             }
         },
 
-        show: function (caption, message, url, callback, params, showpassword, postonly) {
+        show: function (caption, message, url, callback, params, showpassword, postonly, checkfiles) {
             this.dlg.show(caption);
             this.postonly = postonly;
+            this.checkfiles = checkfiles;
             if (this.imagelistdiv != null) {
                 this.imagelistdiv.style.display = "none";
                 this.imagelist.clear();
@@ -2551,7 +2591,7 @@ scilligence.Utils = {
 
             var me = this;
             if (this.btn != null) {
-                dojo.connect(this.btn, "onclick", function () { me.show2(); });
+                dojo.connect(this.btn, "onclick", function (e) { me.show2(); e.preventDefault(); });
                 this.btn = null;
             }
 
@@ -2585,7 +2625,20 @@ scilligence.Utils = {
             }
             else {
                 var me = this;
-                scil.Utils.ajaxUploadFile(this.form, this.url, this.params, this.callback);
+                if (this.checkfiles) {
+                    var list = [];
+                    var files = this.files[0].files;
+                    for (var i = 0; i < files.length; ++i)
+                        list.push(files[i].name);
+                    this.checkfiles(list, function (overwrite) {
+                        var args = scil.clone(me.params);
+                        args.overwrite = overwrite;
+                        scil.Utils.ajaxUploadFile(me.form, me.url, args, me.callback);
+                    });
+                }
+                else {
+                    scil.Utils.ajaxUploadFile(me.form, me.url, me.params, me.callback);
+                }
             }
         }
     }),
@@ -2623,17 +2676,17 @@ scilligence.Utils = {
     */
     uploadfileDlg: null,
     uploadfileDlg2: null,
-    uploadFile: function (caption, message, url, callback, params, chk, multiple, showpassword, postonly) {
+    uploadFile: function (caption, message, url, callback, params, chk, multiple, showpassword, postonly, checkfiles) {
         if (multiple) {
             if (this.uploadfileDlg2 == null)
                 this.uploadfileDlg2 = new scil.Utils.UploadFileDlg(true);
-            this.uploadfileDlg2.show(caption, message, url, callback, params, showpassword, postonly);
+            this.uploadfileDlg2.show(caption, message, url, callback, params, showpassword, postonly, checkfiles);
             this.uploadfileDlg2.check = chk;
         }
         else {
             if (this.uploadfileDlg == null)
                 this.uploadfileDlg = new scil.Utils.UploadFileDlg();
-            this.uploadfileDlg.show(caption, message, url, callback, params, showpassword, postonly);
+            this.uploadfileDlg.show(caption, message, url, callback, params, showpassword, postonly, checkfiles);
             this.uploadfileDlg.check = chk;
         }
     },
@@ -2731,7 +2784,8 @@ scilligence.Utils = {
     },
 
     getMaxZindex2: function (tag) {
-        var zindex = 1;
+        // I#11869
+        var zindex = document.body.className == "mce-fullscreen" ? 101 : 1;
         var list = document.getElementsByTagName(tag);
         for (var i = 0; i < list.length; ++i) {
             if (list[i].style == null || list[i].style.display == "none")
@@ -3252,6 +3306,13 @@ scilligence.Utils = {
         if (scil.Utils.isNullOrEmpty(s))
             return false;
 
+        var p = s.indexOf('.');
+        if (p > 0) {
+            var i = s.indexOf(',');
+            if (i > 0 && i < p)
+                s = s.replace(/[,]/g, '');
+        }
+
         // I#11086
         if (allowoperator)
             return new RegExp("^[>|<|≥|≤]?[ ]{0,50}[-]?[0-9]+([\.][0-9]{0,50})?([e|E][-|+][0-9]+)?([ ]{0,50}[±][0-9]{0,50}([\.][0-9]{0,50})?)?$").test(s + "");
@@ -3386,6 +3447,19 @@ scilligence.Utils = {
             dict[k] = temp[k];
     },
 
+    disableSelection: function (d) {
+        if (d == null)
+            return;
+
+        scil.apply(d.style, {
+            webkitTouchCallout: "none", /* iOS Safari */
+            webkitUserSelect: "none", /* Chrome */
+            mozUserSelect: "none", /* Firefox */
+            msUserSelect: "none", /* IE/Edge */
+            userSelect: "none"
+        });
+    },
+
     getLastBarcode: function (callback, category, email, url) {
         scil.Utils.jsonp(url != null ? url : "JSDraw/Service.aspx?cmd=mobile.getlast", function (ret) {
             callback(ret);
@@ -3474,10 +3548,11 @@ scil.form = {};
 JsUtils = scil.Utils;
 scil.Utils.padleft = scil.Utils.padLeft;
 scil.Utils.padright = scil.Utils.padRight;
+
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2017 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -3486,7 +3561,7 @@ scil.Utils.padright = scil.Utils.padRight;
 
 /**
 @project JSDraw
-@version 5.2.0
+@version 5.3.1
 @description JSDraw Chemical/Biological Structure Editor
 */
 
@@ -3504,7 +3579,7 @@ JSDraw2.speedup = { fontsize: 4, gap: 0, disableundo: false, minbondlength: 1 };
 * JSDraw Version
 * @property scilligence.JSDraw2.version
 */
-JSDraw2.version = "JSDraw V5.2.0";
+JSDraw2.version = "JSDraw V5.3.1";
 
 // JSDraw file version
 JSDraw2.kFileVersion = "5.0";
@@ -3903,9 +3978,12 @@ JSDraw2.Atom = scil.extend(scil._base, {
         a.val = this.val;
         if (this.query != null)
             a.query = scil.clone(this.query);
+        if (this.bio != null)
+            a.bio = scil.clone(this.bio);
         a.locked = this.locked;
         a.hidden = this.hidden;
         a.ratio = this.ratio;
+        a.selected = this.selected;
         return a;
     },
 
@@ -3993,6 +4071,8 @@ JSDraw2.Atom = scil.extend(scil._base, {
                 s += " ann='" + scil.Utils.escXmlValue(this.bio.annotation) + "'";
             if (this.elem == "?" && !scil.Utils.isNullOrEmpty(this.bio.ambiguity))
                 s += " amb='" + scil.Utils.escXmlValue(this.bio.ambiguity) + "'";
+            if (this.biotype() == org.helm.webeditor.HELM.BLOB && !scil.Utils.isNullOrEmpty(this.bio.blobtype))
+                s += " blobtype='" + scil.Utils.escXmlValue(this.bio.blobtype) + "'";
         }
 
         if (this.rgroup == null && this.superatom == null) {
@@ -4110,6 +4190,10 @@ JSDraw2.Atom = scil.extend(scil._base, {
             var amb = e.getAttribute("amb");
             if (this.elem == "?" && !scil.Utils.isNullOrEmpty(amb))
                 this.bio.ambiguity = amb;
+
+            var blobtype = e.getAttribute("blobtype");
+            if (this.biotype() == org.helm.webeditor.HELM.BLOB && !scil.Utils.isNullOrEmpty(blobtype))
+                this.bio.blobtype = blobtype;
         }
 
         if (this.elem != null) {
@@ -5078,6 +5162,7 @@ JSDraw2.Bond = scilligence.extend(scilligence._base, {
         b.ratio2 = this.ratio2;
         b.z = this.z;
         b.tag = this.tag;
+        b.selected = this.selected;
         return b;
     },
 
@@ -5278,6 +5363,62 @@ JSDraw2.Bond = scilligence.extend(scilligence._base, {
         return "black";
     },
 
+    _fmtBondAnn: function (r, ratio) {
+        var s = "";
+
+        if (!scil.Utils.isNullOrEmpty(r) && r != "?" && r != "?:?") {
+            s = r + "";
+            var p = s.indexOf(':');
+            if (p > 0)
+                s = "Pos: " + s.substr(0, p) + "; R#: " + s.substr(p + 1);
+        }
+
+        if (!scil.Utils.isNullOrEmpty(ratio))
+            s += (s == "" ? "" : "; ") + "Ratio: " + ratio;
+
+        return s;
+    },
+
+    drawBondAnnotation: function (surface, fontsize, b) {
+        var ba1 = this._fmtBondAnn(this.r1, this.ratio1);
+        var ba2 = this._fmtBondAnn(this.r2, this.ratio2);
+
+        if (ba1 == "" || ba2 == "")
+            return;
+
+        var dx = (b.p1.x - b.p2.x) / 90;
+        var dy = (b.p1.y - b.p2.y) / 90;
+        var c1 = new JSDraw2.Point((b.p1.x + b.p2.x) / 2, (b.p1.y + b.p2.y) / 2);
+        var c2 = c1.clone();
+
+        if (Math.abs(b.a1.p.x - b.a2.p.x) < fontsize) {
+            //vertical
+            c1.offset(fontsize * dx + fontsize * 0.2, fontsize * dy - fontsize * 0.5);
+            c2.offset(-fontsize * dx + fontsize * 0.2, -fontsize * dy - fontsize * 0.5);
+            if (!scil.Utils.isNullOrEmpty(ba1))
+                JSDraw2.Drawer.drawText(surface, c1, ba1, "green", fontsize);
+            if (!scil.Utils.isNullOrEmpty(ba2))
+                JSDraw2.Drawer.drawText(surface, c2, ba2, "green", fontsize);
+        }
+        else if (Math.abs(b.a1.p.y - b.a2.p.y) < fontsize) {
+            //horizontal
+            c1.offset(fontsize * dx, fontsize * dy - fontsize * 0.9);
+            c2.offset(-fontsize * dx, -fontsize * dy + fontsize * 0.6);
+            if (!scil.Utils.isNullOrEmpty(ba1))
+                JSDraw2.Drawer.drawLabel(surface, c1, ba1, "green", fontsize, null, null, null, false);
+            if (!scil.Utils.isNullOrEmpty(ba2))
+                JSDraw2.Drawer.drawLabel(surface, c2, ba2, "green", fontsize, null, null, null, false);
+        }
+        else {
+            c1.offset(fontsize * dx, fontsize * dy);
+            c2.offset(-fontsize * dx, -fontsize * dy);
+            if (!scil.Utils.isNullOrEmpty(ba1))
+                JSDraw2.Drawer.drawLabel(surface, c1, ba1, "green", fontsize, null, null, null, false);
+            if (!scil.Utils.isNullOrEmpty(ba2))
+                JSDraw2.Drawer.drawLabel(surface, c2, ba2, "green", fontsize, null, null, null, false);
+        }
+    },
+
     draw: function (surface, linewidth, m, fontsize, simpledraw) {
         if (this.type == JSDraw2.BONDTYPES.DUMMY) {
             if ((this.a1.elem == "@" || this.a2.elem == "@") && !this.a1.p.equalsTo(this.a2.p))
@@ -5332,6 +5473,9 @@ JSDraw2.Bond = scilligence.extend(scilligence._base, {
             }
             return;
         }
+
+        if (!simpledraw)
+            this.drawBondAnnotation(surface, fontsize, b);
 
         var dir = 8;
         if (b.type == JSDraw2.BONDTYPES.DOUBLE || b.type == JSDraw2.BONDTYPES.DELOCALIZED || b.type == JSDraw2.BONDTYPES.EITHER || b.type == JSDraw2.BONDTYPES.DOUBLEORAROMATIC)
@@ -6707,12 +6851,14 @@ JSDraw2.Mol = scil.extend(scil._base, {
     * @function cleanupRxn
     * @returns null
     */
-    cleanupRxn: function () {
+    cleanupRxn: function (defaultbondlength) {
         var rxn = this.parseRxn(true);
         if (rxn == null || rxn.reactants.length == 1 && rxn.products.length == 0 && rxn.arrow == null)
             return false;
 
         var bondlength = this.medBondLength();
+        if (!(bondlength > 0))
+            bondlength = defaultbondlength > 0 ? defaultbondlength : JSDraw2.Editor.BONDLENGTH;
         return this._layoutRxn(rxn, bondlength);
     },
 
@@ -6727,6 +6873,11 @@ JSDraw2.Mol = scil.extend(scil._base, {
         var y = null;
         for (var i = 0; i < rxn.reactants.length; ++i) {
             var r = rxn.reactants[i].rect();
+            if (r.width == 0)
+                r.inflate(bondlength, 0);
+            if (r.height == 0)
+                r.inflate(0, bondlength);
+
             if (x == null) {
                 x = r.right();
                 y = r.center().y;
@@ -6810,6 +6961,11 @@ JSDraw2.Mol = scil.extend(scil._base, {
 
         for (var i = 0; i < rxn.products.length; ++i) {
             var r = rxn.products[i].rect();
+            if (r.width == 0)
+                r.inflate(bondlength, 0);
+            if (r.height == 0)
+                r.inflate(0, bondlength);
+
             if (x == null) {
                 x = r.right();
                 y = r.center().y;
@@ -6841,7 +6997,7 @@ JSDraw2.Mol = scil.extend(scil._base, {
 
     /**
     * Return the center coorindate of all objects
-    * @function cleanupRxn
+    * @function center
     * @returns the center as a Point object
     */
     center: function () {
@@ -7051,6 +7207,19 @@ JSDraw2.Mol = scil.extend(scil._base, {
     },
 
     delGraphics: function (obj) {
+        var group = JSDraw2.Group.cast(obj);
+        if (group != null) {
+            for (var i = 0; i < this.atoms.length; ++i) {
+                if (this.atoms[i].group == group)
+                    this.atoms[i].group = null;
+            }
+
+            for (var i = 0; i < this.graphics.length; ++i) {
+                if (this.graphics[i].group == group)
+                    this.graphics[i].group = null;
+            }
+        }
+
         for (var i = 0; i < this.graphics.length; ++i) {
             if (this.graphics[i] == obj) {
                 this.graphics.splice(i, 1);
@@ -7699,10 +7868,11 @@ JSDraw2.Mol = scil.extend(scil._base, {
             var bonds = [];
             for (var i = 0; i < this.bonds.length; ++i) {
                 var b = this.bonds[i];
-                if (b.a1._outside && b.a2._outside)
+                if (b.a1._outside && b.a2._outside && !b.a1.hidden && !b.a2.hidden)
                     continue;
+
                 if (!simpledraw || !b.selected) {
-                    if (this.moveHiddenAtomToGroupBorder(b.a1, b.a2.p) || this.moveHiddenAtomToGroupBorder(b.a2, b.a1.p))
+                    if (this.moveHiddenAtomToGroupBorder(b.a1, b.a2) || this.moveHiddenAtomToGroupBorder(b.a2, b.a1))
                         b.draw(surface, linewidth, this, fontsize, simpledraw);
                     else
                         bonds.push(b);
@@ -7767,16 +7937,18 @@ JSDraw2.Mol = scil.extend(scil._base, {
         }
     },
 
-    moveHiddenAtomToGroupBorder: function (a, p) {
+    moveHiddenAtomToGroupBorder: function (a, a2) {
         if (!a.hidden)
             return false;
 
-        for (var i = 0; i < this.graphics.length; ++i) {
-            var g = JSDraw2.Group.cast(this.graphics[i]);
-            if (g == null && g.a != a)
-                continue;
+        var g = this._findGroup(a);
+        if (g == null)
+            return false;
 
-            var r = g.rect();
+        var r = g.rect();
+        if (!a2.hidden) {
+            // group to atom: use the closest border
+            var p = a2.p;
             if (p.x < r.left)
                 a.p.x = r.left;
             else if (p.x > r.right())
@@ -7791,9 +7963,68 @@ JSDraw2.Mol = scil.extend(scil._base, {
             else
                 a.p.y = p.y;
 
-            return true;
+            a._outside = false;
         }
-        return false;
+        else {
+            // group to group
+            var g2 = this._findGroup(a2);
+            if (g2 == null)
+                return false;
+
+            var r2 = g2.rect();
+            if (r.left >= r2.left && r.left <= r2.right() || r.right() >= r2.left && r.right() <= r2.right() || r2.left >= r.left && r2.left <= r.right() || r2.right() >= r.left && r2.right() <= r.right()) {
+                // vertically overlapped: vertical center
+                var x = (Math.max(r.left, r2.left) + Math.min(r.right(), r2.right())) / 2;
+                a.p.x = a2.p.x = x;
+                a.p.y = r.bottom() < r2.top ? r.bottom() : r.top;
+                a2.p.y = r2.top > r.bottom() ? r2.top : r2.bottom();
+            }
+            else if (r.top >= r2.top && r.top <= r2.bottom() || r.bottom() >= r2.top && r.bottom() <= r2.bottom() || r2.top >= r.top && r2.top <= r.bottom() || r2.bottom() >= r.top && r2.bottom() <= r.bottom()) {
+                // horizontally overlapped: horizontal center
+                var y = (Math.max(r.top, r2.top) + Math.min(r.bottom(), r2.bottom())) / 2;
+                a.p.y = a2.p.y = y;
+                a.p.x = r.right() < r2.left ? r.right() : r.left;
+                a2.p.x = r2.left > r.right() ? r2.left : r2.right();
+            }
+            else {
+                // then corner to corner
+                if (r.right() < r2.left) {
+                    if (r.bottom() < r2.top) {
+                        a.p = r.bottomright();
+                        a2.p = r2.topleft();
+                    }
+                    else {
+                        a.p = r.topright();
+                        a2.p = r2.bottomleft();
+                    }
+                }
+                else {
+                    if (r.bottom() < r2.top) {
+                        a.p = r.bottomleft();
+                        a2.p = r2.topright();
+                    }
+                    else {
+                        a.p = r.topleft();
+                        a2.p = r2.bottomright();
+                    }
+                }
+            }
+
+            a._outside = false;
+            a2._outside = false;
+        }
+
+        return true;
+    },
+
+    _findGroup: function (a) {
+        for (var i = 0; i < this.graphics.length; ++i) {
+            var g = JSDraw2.Group.cast(this.graphics[i]);
+            if (g != null && g.a == a)
+                return g;
+        }
+
+        return null;
     },
 
     drawSelect: function (lasso, simpledraw) {
@@ -9006,11 +9237,16 @@ JSDraw2.Mol = scil.extend(scil._base, {
             if (t == null)
                 continue;
 
+            var k = id.k;
             var sgroup = { sty: "", spl: "", data: "", id: id };
             this.getDataGroup(t.text, t.fieldtype, t._rect.left * scale, -t._rect.top * scale, null, sgroup);
             sgroupdata += "M  STY" + scil.Utils.formatStr(sgroup.sty.length / 8, 3, 0) + sgroup.sty + "\n";
 
-            var k = ++id.k;
+            // I#11604
+            if (id.k == k)
+                ++id.k;
+            k = id.k;
+
             var sal = "";
             var sbl = "";
             for (var j = 0; j < t.anchors.length; ++j) {
@@ -9852,13 +10088,19 @@ JSDraw2.Mol = scil.extend(scil._base, {
     * @function splitFragments
     * @returns an array of Mol
     */
-    splitFragments: function () {
+    splitFragments: function (skipHiddenAtoms) {
         this.clearFlag();
 
         var fragid = -1;
         var bonds = scil.Utils.cloneArray(this.bonds);
         while (bonds.length > 0) {
             var b = bonds[0];
+            if (skipHiddenAtoms) {
+                if (b.a1.hidden || b.a2.hidden) {
+                    bonds.splice(0, 1);
+                    continue;
+                }
+            }
             b.f = b.a1.f = b.a2.f = ++fragid;
             bonds.splice(0, 1);
 
@@ -9866,6 +10108,11 @@ JSDraw2.Mol = scil.extend(scil._base, {
                 var n = 0;
                 for (var i = bonds.length - 1; i >= 0; --i) {
                     var b = bonds[i];
+                    if (b.a1.hidden || b.a2.hidden) {
+                        bonds.splice(i, 1);
+                        continue;
+                    }
+
                     if (b.f == null && (b.a1.f == fragid || b.a2.f == fragid)) {
                         b.f = b.a1.f = b.a2.f = fragid;
                         bonds.splice(i, 1);
@@ -9896,6 +10143,9 @@ JSDraw2.Mol = scil.extend(scil._base, {
 
         for (var i = 0; i < this.atoms.length; ++i) {
             if (this.atoms[i].f == null) {
+                if (skipHiddenAtoms && this.atoms[i].hidden)
+                    continue;
+
                 var m = new JSDraw2.Mol();
                 frags.push(m);
                 m._addAtom(this.atoms[i], this);
@@ -11604,7 +11854,43 @@ JSDraw2.Stack = scilligence.extend(scilligence._base, {
         return i;
     }
 });
-﻿//////////////////////////////////////////////////////////////////////////////////
+
+
+
+scil.Deque = scil.apply(scil._base, {
+    constructor: function () {
+        this.items = [];
+    },
+
+    pushRange: function (list) {
+        if (list == null)
+            return;
+
+        for (var i = 0; i < list.length; ++i)
+            this.push(list[i]);
+    },
+
+    push: function (n) {
+        this.items.push(n);
+    },
+
+    pop: function () {
+        if (this.items.length == 0)
+            return null;
+
+        var r = this.items[0];
+        this.items.splice(0, 1);
+        return r;
+    },
+
+    length: function () {
+        return this.items.length;
+    },
+
+    clear: function () {
+        this.items = [];
+    }
+});﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
 // Copyright (C) 2016 Scilligence Corporation
@@ -11862,13 +12148,13 @@ JSDraw2.FormulaParser = {
 
         var m = this._parse(s, orphan, bonds);
         if (m == null && orphan)
-            m = this.pareFormlaAsSalt(s);
+            m = this.pareFormulaAsSalt(s);
 
         if (m == null || m.atoms.length == 0)
             return null;
 
         if (!scil.Utils.isNullOrEmpty(salt)) {
-            var m2 = this.pareFormlaAsSalt(salt);
+            var m2 = this.pareFormulaAsSalt(salt);
             if (m2 == null || m2.atoms.length == 0)
                 return null;
 
@@ -11884,7 +12170,7 @@ JSDraw2.FormulaParser = {
         return m;
     },
 
-    pareFormlaAsSalt: function (salt) {
+    pareFormulaAsSalt: function (salt) {
         if (scil.Utils.isNullOrEmpty(salt))
             return null;
 
@@ -11955,10 +12241,13 @@ JSDraw2.FormulaParser = {
                 return { coef: 1, mf: null, mw: 0, s: s };
         }
 
-        var patt = /^[0-9]{0,10}[\.]?[0-9]{0,9}[ ]?/;
-        var s2 = patt.exec(s) + "";
-        if (s2.length == s.length)
-            return null;
+        var s2 = "";
+        if (!JSDraw2.FormulaParser.ignoresaltcoef) {
+            var patt = /^[0-9]{0,10}[\.]?[0-9]{0,9}[ ]?/;
+            var s2 = patt.exec(s) + "";
+            if (s2.length == s.length)
+                return null;
+        }
 
         var coef = 1.0;
         if (s2 != "") {
@@ -13405,36 +13694,41 @@ JSDraw2.Drawer = {
     kMinFontSize: 4,
 
     drawFormula: function (surface, p, reversed, s, color, fontsize) {
-
+        //I#11940
         if (reversed) {
             var c = s.charAt(0);
-            if (c >= '0' && c <= '9') {
+            if (c >= '0' && c <= '9')
                 reversed = false;
-            }
-            else {
-                var ss = this.splitFormula(s);
-                var s2 = "";
-                for (var i = 0; i < ss.length; ++i)
-                    s2 = ss[i].str + (ss[i].num != null ? ss[i].num : "") + s2;
-                s = "";
-                for (var i = 0; i < s2.length; ++i)
-                    s = s2.substr(i, 1) + s;
-            }
         }
 
         var rect = new JSDraw2.Rect();
-        for (var i = 0; i < s.length; ++i) {
-            var c = s.charAt(i);
-            var isnumber = false;
-            if (i > 0) {
-                var c0 = s.charAt(i - 1);
-                isnumber = !(c0 == '.' || c0 >= '0' && c0 <= '9') && c >= '0' && c <= '9';
+        var ss = this.splitFormula(s);
+        for (var i = 0; i < ss.length; ++i) {
+            if (reversed) {
+                if (ss[i].num != null) {
+                    var r = this.drawWord(surface, rect, p, color, fontsize, ss[i].num, reversed, true);
+                    if (rect.isEmpty())
+                        rect = r;
+                    else
+                        rect.union(r);
+                }
             }
-            var r = this.drawWord(surface, rect, p, color, fontsize, s.substr(i, 1), reversed, isnumber);
+
+            var r = this.drawWord(surface, rect, p, color, fontsize, ss[i].str, reversed, false);
             if (rect.isEmpty())
                 rect = r;
             else
                 rect.union(r);
+
+            if (!reversed) {
+                if (ss[i].num != null) {
+                    r = this.drawWord(surface, rect, p, color, fontsize, ss[i].num, reversed, true);
+                    if (rect.isEmpty())
+                        rect = r;
+                    else
+                        rect.union(r);
+                }
+            }
         }
 
         return rect;
@@ -14213,8 +14507,11 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             this.options.inktools = JSDraw2.defaultoptions.inktools != null ? JSDraw2.defaultoptions.inktools : !scil.Utils.isAttFalse(this.div, "inktools");
         if (this.options.highlighterrors == null)
             this.options.highlighterrors = JSDraw2.defaultoptions.highlighterrors != null ? JSDraw2.defaultoptions.highlighterrors : !scil.Utils.isAttFalse(this.div, "highlighterrors");
-        if (this.options.skin == null)
+        if (this.options.skin == null) {
             this.options.skin = JSDraw2.defaultoptions.skin != null ? JSDraw2.defaultoptions.skin : dojo.attr(this.div, "skin");
+            if (this.options.skin == null)
+                this.options.skin = "w8"
+        }
         if (this.options.monocolor == null)
             this.options.monocolor = scil.Utils.isAttTrue(this.div, "monocolor");
         if (this.options.fullscreen == null)
@@ -15432,20 +15729,35 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
     * @returns true if it is a reaction
     */
     cleanupRxn: function () {
-        var f = this.m.cleanupRxn();
+        var f = this.m.cleanupRxn(this.bondlength);
         if (f)
             this.fitToWindow(this.bondlength);
         return f;
     },
 
-    setRxn: function (rxn, redraw, bondlength) {
+    setRxn: function (rxn, redraw, bondlength, addlabel) {
         this.pushundo();
         if (bondlength != null)
             this.bondlength = bondlength;
 
+        if (addlabel) {
+            for (var i = 0; i < rxn.reactants.length; ++i)
+                rxn.reactants[i].removeTextByFieldType("RXNLABEL");
+            for (var i = 0; i < rxn.products.length; ++i)
+                rxn.products[i].removeTextByFieldType("RXNLABEL");
+        }
+
         this.m.setRxn(rxn, this.bondlength);
         this.calcTextRect();
         this.m._layoutRxn(rxn, this.bondlength);
+
+        if (addlabel) {
+            for (var i = 0; i < rxn.reactants.length; ++i)
+                this.m._addRxnLabel(rxn.reactants[i], this.bondlength / 2);
+            for (var i = 0; i < rxn.products.length; ++i)
+                this.m._addRxnLabel(rxn.products[i], this.bondlength / 2);
+        }
+
         this.fitToWindow(this.bondlength);
         if (redraw != false)
             this.redraw();
@@ -16305,6 +16617,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             }
             else if (this.resizing != null) {
                 if (this.resizing.changed) {
+                    this._bracketReselectAtoms();
                     this.pushundo(this.movingClone);
                     this.movingClone = null;
                     this.resizing = null;
@@ -16313,6 +16626,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             }
             else if (this.movingClone != null) {
                 if (!this.movingClone.startPt.equalsTo(p2)) {
+                    this._bracketReselectAtoms();
                     this.pushundo(this.movingClone);
                     this.mergeOverlaps();
                     this.movingClone = null;
@@ -16591,19 +16905,31 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             }
         }
 
-        if ((a1 == null || a2 == null) && this.helm != null && !this.helm.isHelmCmd(cmd)) {
-            this.redraw();
-            return;
-        }
-
-        if (this.helm != null && this.helm.isHelmCmd(cmd)) {
-            if (a1 != null && a2 == null) {
-                this.helm.extendChain(a1, cmd, p1, p2, cloned);
-                return;
-            }
-            else if (a1 == null && a2 == null) {
+        if (this.options.helmtoolbar) {
+            if (this.helm.connnectGroup(p1, this.curObject)) {
+                this.pushundo(cloned);
                 this.redraw();
                 return;
+            }
+
+            if ((a1 == null || a2 == null) && this.helm != null && !this.helm.isHelmCmd(cmd)) {
+                if (cmd == "single") {
+                    if (this.helm.connnectGroup(p1, this.curObject))
+                        this.pushundo(cloned);
+                }
+                this.redraw();
+                return;
+            }
+
+            if (this.helm != null && this.helm.isHelmCmd(cmd)) {
+                if (a1 != null && a2 == null) {
+                    this.helm.extendChain(a1, cmd, p1, p2, cloned);
+                    return;
+                }
+                else if (a1 == null && a2 == null) {
+                    this.redraw();
+                    return;
+                }
             }
         }
 
@@ -16699,6 +17025,16 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
 
         this.start = null;
         this.refresh(b != null);
+    },
+
+    _bracketReselectAtoms: function () {
+        var br = JSDraw2.Bracket.cast(this.curObject);
+        if (br == null)
+            return;
+
+        var list = this.m.bracketSelect(br.rect());
+        if (list != null && list.length > 0)
+            br.atoms = list;
     },
 
     _addNewAtomInExistingGroup: function (olda, atoms) {
@@ -17023,11 +17359,11 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         var modified = false;
         var cloned = this.clone();
         switch (cmd) {
-            //            case "Chiral":                                                           
-            //                this.pushundo();                                                           
-            //                this.m.chiral = !this.m.chiral;                                                           
-            //                this.refresh(true);                                                           
-            //                break;                                                           
+            //            case "Chiral":                                                                                                       
+            //                this.pushundo();                                                                                                       
+            //                this.m.chiral = !this.m.chiral;                                                                                                       
+            //                this.refresh(true);                                                                                                       
+            //                break;                                                                                                       
             case "curveline":
                 obj.setAssayCurveLine(this);
                 break;
@@ -17128,10 +17464,10 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
                     modified = this.helm.makeComplementaryStrand(obj) != null;
                 break;
             case "helm_create_group":
-                modified = this.helm.createGroup(obj) != null;
+                modified = this.helm.createGroup(obj, null, true) != null;
                 break;
             case "helm_group_collapse":
-                modified = this.helm.collapseGroup(obj) != null;
+                modified = this.helm.collapseGroup(obj, true) != null;
                 break;
             case "helm_bond_prop":
                 this.helm.setBondProp(obj);
@@ -17139,8 +17475,8 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             case "helm_atom_prop":
                 this.helm.setAtomProp(obj);
                 break;
-            case "group_setratio":
-                this.setGroupRatio(obj);
+            case "group_setproperties":
+                this.setGroupProperties(obj);
                 break;
             case "detectstereochemistry":
                 this.detectChiralities(true);
@@ -17304,23 +17640,40 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         this.refresh(true);
     },
 
-    setGroupRatio: function (obj) {
+    setGroupProperties: function (obj) {
         var g = JSDraw2.Group.cast(obj);
         if (g == null)
             return;
 
         var me = this;
-        scil.Utils.prompt2({ caption: "Set Group Ratio", message: "Please type the ratio", defaultvalue: g.ratio, callback: function (s) {
-            s = scil.Utils.trim(s);
-            if (s == "")
-                s = null;
-            if ((g.ratio == null ? "" : g.ratio + "") != s) {
-                me.pushundo();
-                g.ratio = s;
-                me.refresh(true);
-            }
+        if (this.groupPropDlg == null) {
+            var me = this;
+            var fields = { ratio: { label: "Ratio", type: "number", accepts: "(and)|(or)|[*|?]", width: 100 }, tag: { label: "Annotation", width: 300} };
+            this.groupPropDlg = scil.Form.createDlgForm("Group Properties", fields, { label: "Save", onclick: function () { me.setGroupProperties2(); } });
         }
-        });
+        this.groupPropDlg.show();
+        this.groupPropDlg.form.setData({ ratio: g.ratio, tag: g.tag });
+        this.groupPropDlg.g = g;
+    },
+
+    setGroupProperties2: function () {
+        var data = this.groupPropDlg.form.getData();
+        var g = this.groupPropDlg.g;
+        if (data.ratio != "" && this.hasGroupBond(g))
+            data.ratio = "";
+
+        if ((g.ratio == null ? "" : g.ratio + "") != data.ratio || g.tag != data.tag) {
+            this.pushundo();
+            g.ratio = data.ratio;
+            g.tag = data.tag;
+            this.groupPropDlg.hide();
+            this.refresh(true);
+        }
+    },
+
+    hasGroupBond: function (g) {
+        var list = g.a == null ? null : this.m.getAllBonds(g.a);
+        return list != null && list.length > 0;
     },
 
     copyAs: function (fmt) {
@@ -17979,7 +18332,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
 
             var c = null;
             switch (e.keyCode) {
-                //case 16: // *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+                //case 16: // *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
                 case 56:
                     c = '*';
                     break;
@@ -19241,7 +19594,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
                 break;
             case "rxn":
                 var cloned = this.clone();
-                if (this.cleanupRxn()) {
+                if (this.cleanupRxn(this.bondlength)) {
                     this.pushundo(cloned);
                     this.refresh(true);
                 }
@@ -21104,6 +21457,7 @@ JSDraw2.Group = scil.extend(scil._base, {
         this.color = null;
         this.a = null;
         this.ratio = null;
+        this.tag = null;
     },
 
     clone: function () {
@@ -21114,6 +21468,7 @@ JSDraw2.Group = scil.extend(scil._base, {
         g.color = this.color;
         g.gap = this.gap;
         g.ratio = this.ratio;
+        g.tag = this.tag;
         return g;
     },
 
@@ -21203,8 +21558,10 @@ JSDraw2.Group = scil.extend(scil._base, {
             JSDraw2.Drawer.drawLabel(surface, new JSDraw2.Point(r.left + r.width / 2, r.bottom() + fontsize / 2), this.name, color, fontsize, false);
         }
 
+        if (!scil.Utils.isNullOrEmpty(this.tag))
+            JSDraw2.Drawer.drawLabel(surface, new JSDraw2.Point(r.left, r.top - fontsize), this.tag, "black", fontsize, false, "start");
         if (!scil.Utils.isNullOrEmpty(this.ratio))
-            JSDraw2.Drawer.drawLabel(surface, new JSDraw2.Point(r.right(), r.bottom() + fontsize / 2), this.ratio, "black", fontsize, false, "end");          
+            JSDraw2.Drawer.drawLabel(surface, new JSDraw2.Point(r.right(), r.bottom() + fontsize / 2), "ratio: " + this.ratio, "black", fontsize, false, "end");
     },
 
     drawSelect: function (lasso) {
@@ -21464,6 +21821,7 @@ scil.Lang = {
     token: "translate",
     key: "scil_lang",
     current: null,
+    language: null,
     en: {},
     cn: {},
 
@@ -21493,9 +21851,13 @@ scil.Lang = {
         lang = lang.toLowerCase();
         if (lang == "zh")
             lang = "cn";
+
+        this.language = lang;
         this.current = this[lang];
-        if (this.current == null)
+        if (this.current == null) {
             this.current = this.en;
+            this.language = null;
+        }
 
         JSDraw2.Language.use(lang);
     },
@@ -22057,6 +22419,9 @@ scil.Dialog = scil.extend(scil._base, {
         if (w > 0 || h > 0)
             scil.apply(style, { width: w > 0 ? w : null, height: h > 0 ? h : null, overflow: "scroll" });
 
+        if (this.options.bodystyle != null)
+            scil.apply(style, this.options.bodystyle);
+
         var div = scil.Utils.createElement(td, "div", null, style);
         if (typeof this.body == "string")
             div.innerHTML = "<div>" + this.body + "</div>";
@@ -22103,6 +22468,10 @@ scil.Dialog = scil.extend(scil._base, {
     },
 
     startMove: function (e) {
+        this.movingSt = null;
+        var src = e.srcElement || e.target;
+        if (src.tagName == "IMG")
+            return;
         this.movingSt = new JSDraw2.Point(e.clientX, e.clientY);
     },
 
@@ -22578,18 +22947,20 @@ scil.Form = scil.extend(scil._base, {
             scil.Utils.createElement(tr, "td", "&nbsp;");
             tr = scil.Utils.createElement(this.tbody, "tr");
             this.buttonTR = tr;
-            if (options == null || !options.vertical) {
+
+            if (options == null || !options.vertical)
                 scil.Utils.createElement(tr, "td");
-            }
-            var td = scil.Utils.createElement(tr, "td");
+
+            var td = scil.Utils.createElement(tr, "td", null, { whiteSpace: "nowrap" });
             if (options.centerbuttons)
                 td.style.textAlign = "center";
             if (buttons.length > 0) {
                 for (var i = 0; i < buttons.length; ++i) {
-                    if (buttons[i] == " ")
+                    var b = buttons[i];
+                    if (b == " ")
                         scil.Utils.createElement(td, "span", "&nbsp;");
                     else
-                        this.buttons.push(scil.Utils.createButton(td, buttons[i], this.lang));
+                        this.buttons.push(scil.Utils.createButton(td, b, this.lang));
                 }
             }
             else {
@@ -22960,6 +23331,7 @@ scil.apply(scil.Form, {
             case "curve":
             case "sketches":
             case "code":
+            case "signature":
                 tag = "div";
                 break;
             case "button":
@@ -23179,6 +23551,11 @@ scil.apply(scil.Form, {
             if (value != null)
                 field.jsd.setValue(value);
         }
+        else if (itemtype == "signature") {
+            field.jsd = new scil.FieldSignature(field, args);
+            if (value != null)
+                field.jsd.setValue(value);
+        }
         else if (itemtype == "richtext") {
             field.jsd = new scil.FieldRichText(field, args);
             if (value != null)
@@ -23283,15 +23660,14 @@ scil.apply(scil.Form, {
         else if (!viewonly && itemtype == "multiselect")
             field.jsd = new scil.DropdownCheck(field, options);
         else if (!viewonly && itemtype == "htmltext") {
-            var args = {};
-            args.buttons = [{ id: "insertimage", iconurl: scil.Utils.imgSrc("img/add.gif"), tooltips: "Insert Image", onclick: function (ed) { scil.Form.insertImage(ed); } }];
-            args.buttons1 = "bold,italic,underline,strikethrough,|,fontsizeselect,|,bullist,numlist,|,outdent,indent,|,sub,sup,|,insertimage";
-            if (item.fullscreen) {
-                args.plugins = "fullscreen";
-                args.buttons1 += ",|,fullscreen";
-            }
-            if (item.extrabuttons != null)
-                args.buttons1 += item.extrabuttons;
+            if (args.buttons == null)
+                args.buttons = [];
+            else if (typeof (args.buttons) == "string")
+                args.buttons = [args.buttons];
+            args.buttons.push({ iconurl: scil.Utils.imgSrc("img/uploadimg.gif"), tooltips: "Insert Image", onclick: function (ed) { scil.Richtext.insertImage(ed); } });
+            args.buttons.push({ iconurl: scil.Utils.imgSrc("img/benzene.gif"), tooltips: "Insert Structure", onclick: function (ed) { scil.Richtext.insertStructure(ed); } });
+            if (args.extrabuttons != null)
+                args.buttons.push(args.extrabuttons);
             if (value != null && value == "")
                 field.value = value;
             scil.Richtext.initTinyMCE(field, args);
@@ -23370,7 +23746,7 @@ scil.apply(scil.Form, {
             return field.checked;
         else if (field.stype == "htmltext") {
             var ed = scil.Form.getEd(field);
-            return ed == null ? field.innerHTML : ed.getContent();
+            return ed == null ? field.innerHTML : scil.Richtext.getHtml(ed);
         }
         else if (field.stype == "file" || field.stype == "filelink" || field.stype == "filedblink" || field.stype == "filepath" ||
             field.stype == "image" || field.stype == "curve" || field.stype == "sketches")
@@ -23378,6 +23754,8 @@ scil.apply(scil.Form, {
         else if (field.stype == "tabtext" || field.stype == "richtext" || field.stype == "plaintext" || field.stype == "subform")
             return field.jsd.getXml();
         else if (field.stype == "code")
+            return field.jsd.getValue();
+        else if (field.stype == "signature")
             return field.jsd.getValue();
         else if (field.stype == "number")
             return field.jsd.getValue();
@@ -23457,20 +23835,29 @@ scil.apply(scil.Form, {
             }
         }
         else if (item.type == "date") {
+            if (typeof (value) == "string" && !scil.Utils.isNullOrEmpty(value) && !isNaN(value)) {
+                value = parseFloat(value);
+                if (isNaN(value))
+                    value = null;
+            }
+            var s = item.timeformat == null ? scil.Utils.dateStr(value, true, item.dateformat) : scil.Utils.timeStr(value, true, item.timeformat);
             if (viewonly) {
                 if (field.tagName == "INPUT")
-                    field.value = scil.Utils.dateStr(value, true, "yyyy-mm-dd");
+                    field.value = s;
                 else
-                    this._setInnerHTML(field, scil.Utils.dateStr(value, true), originalvalue);
+                    this._setInnerHTML(field, s, originalvalue);
             }
             else {
-                field.value = scil.Utils.dateStr(value, true, "yyyy-mm-dd");
+                field.value = s;
             }
         }
         else if (item.type == "color") {
             field.jsd.setValue(value);
         }
         else if (field.stype == "code") {
+            field.jsd.setValue(value);
+        }
+        else if (field.stype == "signature") {
             field.jsd.setValue(value);
         }
         else if (field.stype == "number") {
@@ -23492,11 +23879,11 @@ scil.apply(scil.Form, {
         }
         else if (item.type == "htmltext") {
             if (viewonly) {
-                this._setInnerHTML(field, field.innerHTML = value == null ? "" : value, originalvalue);
+                this._setInnerHTML(field, field.innerHTML = value == null ? "" : value, originalvalue, true);
             }
             else {
                 var ed = scil.Form.getEd(field);
-                if (ed != null)
+                if (ed != null && ed.dom != null)
                     ed.setContent(value == null ? "" : value);
                 else
                     field.value = value == null ? "" : value;
@@ -23506,7 +23893,7 @@ scil.apply(scil.Form, {
             if (field.tagName == "TEXTAREA")
                 field.value = value == null ? "" : value;
             else
-                this._setInnerHTML(field, this.wrapTextarea(value), originalvalue);
+                this._setInnerHTML(field, this.wrapTextarea(value), originalvalue, true);
         }
         else if (field.stype != "div" && field.stype != "button") {
             if (field.stype == "hidden" && value != null && typeof (value) == "object" && value.tagName != null) // I#10361
@@ -23527,8 +23914,13 @@ scil.apply(scil.Form, {
         return value == null ? "" : "<pre style='margin:0;padding:0;" + whitespace + "'>" + scil.Utils.escapeHtml(value) + "</pre>";
     },
 
-    _setInnerHTML: function (field, value, originalvalue) {
-        field.innerHTML = value == null ? "" : value;
+    _setInnerHTML: function (field, value, originalvalue, clear) {
+        if (value == null)
+            value = "";
+        else if (clear)
+            value += "<div style='clear:both'></div>"; // I#11990
+
+        field.innerHTML = value;
 
         // very tricky: in chrome:
         //     0 == "" -> true
@@ -23986,7 +24378,7 @@ scil.apply(scil.Form, {
                 l.style.marginLeft = padding + "px";
             }
             b = scil.Utils.createElement(parent, "select", null, button.styles, button.attributes);
-            scil.Utils.listOptions(b, button.items || button.options, null, null, button.sort);
+            scil.Utils.listOptions(b, button.items || button.options, button.value, null, button.sort);
             if (button.onchange != null)
                 dojo.connect(b, "onchange", function (b) { button.onchange(b); });
             b.style.marginRight = padding + "px";
@@ -23999,6 +24391,8 @@ scil.apply(scil.Form, {
             b = scil.Utils.createElement(parent, "input", null, button.styles, button.attributes);
             if (button.onenter != null)
                 dojo.connect(b, "onkeydown", function (e) { if (e.keyCode == 13) button.onenter(b); });
+            if (button.onchange != null)
+                dojo.connect(b, "onchange", function (b) { button.onchange(b); });
             if (button.autosuggesturl != null)
                 new scil.AutoComplete(b, button.autosuggesturl, { onsuggest: button.onsuggest });
             b.style.marginRight = padding + "px";
@@ -24007,6 +24401,9 @@ scil.apply(scil.Form, {
                 new scil.DatePicker(b);
             else if (button.type == "color")
                 new scil.ColorPicker2(b);
+
+            if (button.value != null)
+                b.value = button.value;
         }
         else {
             b = scil.Utils.createButton(parent, button);
@@ -24017,21 +24414,6 @@ scil.apply(scil.Form, {
 
     getEd: function (field) {
         return tinymce.get(field.id);
-    },
-
-    insertImage: function (ed) {
-        var url = JSDraw2.defaultoptions.imageserviceurl;
-        if (url == null || url == "") {
-            url = "./HelpService.aspx";
-            //scil.Utils.alert("*JSDraw2.defaultoptions.imageserviceurl* is not set yet");
-            //return;
-        }
-
-        scil.Richtext.saveBookmark(ed);
-        scil.Utils.uploadFile("Insert Image", 'Choose a picture file:', url + "?cmd=help.uploadimage", function (ret) {
-            var html = "<img src='" + url + "?imageid=" + ret.imageid + "'>";
-            scil.Richtext.restoreBookmark(ed, html);
-        });
     },
 
     dict2formxml: function (dict) {
@@ -24664,6 +25046,8 @@ scil.Table = scil.extend(scil._base, {
         this.tbody = null;
         this.items = null;
         this.key = null;
+
+        this._lastcheck = null;
     },
 
     /**
@@ -25472,10 +25856,14 @@ scil.Table = scil.extend(scil._base, {
         var td = scil.Utils.createElement(r, "td");
         if (this.options.rowcheck) {
             var name = this.options.rowcheck == "radio" ? "__scil_table_" + this._tableid + "_radio" : null;
-            var check = scil.Utils.createElement(td, this.options.rowcheck == "radio" ? "radio" : "checkbox", null, null, { name: name });
+            var checktype = this.options.rowcheck == "radio" ? "radio" : "checkbox";
+            var check = scil.Utils.createElement(td, checktype, null, null, { name: name });
             check.checked = values == null ? false : values.rowchecked;
             if (this.options.onrowcheck != null)
                 dojo.connect(check, "onchange", function () { me.options.onrowcheck(r, check.checked); });
+
+            if (checktype == "checkbox")
+                scil.connect(check, "onclick", function (e) { me.checkedClick(e); });
         }
         else {
             td.style.display = "none";
@@ -25529,6 +25917,29 @@ scil.Table = scil.extend(scil._base, {
         }
 
         return r;
+    },
+
+    checkedClick: function (e) {
+        var check = e.srcElement || e.target;
+        if (!check.checked)
+            return;
+
+        if (e.shiftKey) {
+            var nodes = this.tbody.childNodes;
+            var start = scil.Utils.indexOf(nodes, scil.Utils.getParent(this._lastcheck, "TR"));
+            var end = scil.Utils.indexOf(nodes, scil.Utils.getParent(check, "TR"));
+            if (st != -1 && ed != -1) {
+                var st = Math.min(start, end);
+                var ed = Math.max(start, end);
+                for (var i = st; i <= ed; ++i) {
+                    if (nodes[i].style.display == "none")
+                        nodes[i].childNodes[this.checkIndex].firstChild.checked = false;
+                    else
+                        nodes[i].childNodes[this.checkIndex].firstChild.checked = true;
+                }
+            }
+        }
+        this._lastcheck = check;
     },
 
     _connectOnchange: function (field, item) {
@@ -25918,6 +26329,9 @@ scil.Tree = scil.extend(scil._base, {
 
         var f = null;
         var n = bar.parentNode;
+        if (n != null && n.item != null && n.item.leaf)
+            return;
+
         if (this.options.url == null || n.getAttribute("loaded") == "1" || bar.nextSibling != null) {
             f = bar.nextSibling == null || bar.nextSibling.style.display == "none";
             this.expand(n, f);
@@ -25973,7 +26387,7 @@ scil.Tree = scil.extend(scil._base, {
         if (typeof node == "string")
             node = this.find(null, node);
 
-        if (node.item != null && node.item.selectable == false)
+        if (node == null || node.item != null && node.item.selectable == false)
             return;
 
         if (node.item != null && node.item._more) {
@@ -27374,9 +27788,9 @@ scil.FieldNumber = scil.extend(scil._base, {
         var me = this;
         scil.connect(input, "onchange", function (e) {
             var s = input.value;
-            if (s != "" && s != null && !scil.Utils.isNumber(s, me.options.allowoperator)) {
-                scil.Utils.alert("A number is required!");
+            if (s != "" && s != null && (me.options.accepts == null || !new RegExp(me.options.accepts).test(s)) && !scil.Utils.isNumber(s, me.options.allowoperator)) {
                 input.value = "";
+                scil.Utils.alert("A number is required!");
             }
             else {
                 if (me.unit != null)
@@ -28020,19 +28434,20 @@ scil.DnD = scil.extend(scil._base, {
         this.src = null;
         this.copy = null;
         this.dragging = false;
+        this.disabled = false;
 
         this.options = options;
         if (typeof (parent) == "string")
             parent = scil.byId(parent);
 
         var me = this;
-        dojo.connect(parent, "onmousedown", function (e) { me.mousedown(e); });
+        dojo.connect(parent, "onmousedown", function (e) { if (!me.disabled) me.mousedown(e); });
 
-        dojo.connect(document.body, "onmousemove", function (e) { me.mousemove(e); });
-        dojo.connect(document.body, "onmouseup", function (e) { me.mouseup(e); });
+        dojo.connect(document.body, "onmousemove", function (e) { if (!me.disabled) me.mousemove(e); });
+        dojo.connect(document.body, "onmouseup", function (e) { if (!me.disabled) me.mouseup(e); });
     },
 
-    isDragging: function() {
+    isDragging: function () {
         return this.dragging;
     },
 
@@ -28048,26 +28463,31 @@ scil.DnD = scil.extend(scil._base, {
     },
 
     mousedown: function (e, src) {
-        if (this.options.onstartdrag != null)
+        if (this.options.onstartdrag != null) {
             this.src = this.options.onstartdrag(e, this);
+            this.startpos = { x: e.clientX, y: e.clientY };
+        }
     },
 
     mousemove: function (e) {
         if (this.src == null)
             return;
 
-        if (this.copy == null) {
+        if (this.copy == null && (Math.abs(e.clientX - this.startpos.x) > 10 || Math.abs(e.clientY - this.startpos.y) > 10)) {
             if (this.options.oncreatecopy != null)
                 this.copy = this.options.oncreatecopy(e, this);
         }
 
         if (this.copy != null) {
             var scroll = scil.Utils.scrollOffset();
-            this.copy.style.left = (e.clientX + scroll.x) + "px";
-            this.copy.style.top = (e.clientY + scroll.y) + "px";
+            this.copy.style.left = (e.clientX + scroll.x + 2) + "px";
+            this.copy.style.top = (e.clientY + scroll.y + 2) + "px";
 
             this.dragging = true;
         }
+
+        if (this.options.ondragover != null)
+            this.options.ondragover(e, this);
     },
 
     mouseup: function (e) {
@@ -28806,6 +29226,7 @@ scil.Page.ExplorerForm = scil.extend(scil._base, {
         this.toolbar = scil.Utils.createElement(scil.Utils.createElement(tbody, "tr"), "td", null, scil.Page.ExplorerForm.kToolbarStyle);
         if (options.toolbarvisible == false)
             this.toolbar.style.display = "none";
+        this.toolbar.style.whiteSpace = "nowrap"; //I#11762
 
         this.main = scil.Utils.createElement(scil.Utils.createElement(tbody, "tr"), "td", null, scil.Page.ExplorerForm.kAreaStyle);
         this.div = scil.Utils.createElement(this.main, "div");
@@ -28848,7 +29269,7 @@ scil.Page.ExplorerForm = scil.extend(scil._base, {
         this.root.style.display = "none";
     },
 
-    collapse: function() {
+    collapse: function () {
         this.expand(false);
     },
 
@@ -28872,7 +29293,7 @@ scil.Page.ExplorerForm = scil.extend(scil._base, {
 
 
 scil.apply(scil.Page.ExplorerForm, {
-    kHeaderStyle: { background: "#88f", padding: "3px 10px 3px 16px", whiteSpace: "nowrap", borderTopLeftRadius: "5px", borderTopRightRadius: "5px" },
+    kHeaderStyle: { background: "#88f", color: "white", padding: "3px 10px 3px 16px", whiteSpace: "nowrap", borderTopLeftRadius: "5px", borderTopRightRadius: "5px" },
     kToolbarStyle: { background: "#f5f5f5", border: "solid 1px #f5f5f5", padding: "0 5px 0 5px" },
     kAreaStyle: { border: "solid 1px #f5f5f5", padding: "5px" }
 });﻿//////////////////////////////////////////////////////////////////////////////////

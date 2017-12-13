@@ -586,7 +586,7 @@ function __setMonomerID(set) {
         var v = set[k];
         v.id = k;
         delete set[k];
-        set[k.toLowerCase()] = v;
+        set[scil.helm.symbolCase(k)] = v;
     }
 }
 

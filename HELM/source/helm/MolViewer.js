@@ -86,8 +86,12 @@ org.helm.webeditor.MolViewer = {
                     name = a.bio.ambiguity;
             }
 
+            var blobtype = "";
+            if (a != null && type == org.helm.webeditor.HELM.BLOB && !scil.Utils.isNullOrEmpty(a.bio.blobtype))
+                blobtype = "{" + a.bio.blobtype + "}";
+
             var fields = this.dlg.form.fields;
-            this.dlg.show2({ title: "<div style='font-size:80%'>" + name + "</div>", modal: false, immediately: true });
+            this.dlg.show2({ title: "<div style='font-size:80%'>" + name + blobtype + "</div>", modal: false, immediately: true });
 
             var molfile = org.helm.webeditor.monomers.getMolfile(m);
             if (scil.Utils.isNullOrEmpty(molfile)) {

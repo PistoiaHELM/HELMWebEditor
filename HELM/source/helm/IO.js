@@ -36,32 +36,23 @@ org.helm.webeditor.IO = {
     getHelm: function (m, highlightselection) {
         var ret = { chainid: { RNA: 0, PEPTIDE: 0, CHEM: 0, BLOB: 0, G: 0 }, sequences: {}, connections: [], chains: {}, pairs: [], groupatoms: [], groups: {}, annotations: {}, singletons: {}, ratios: {} };
         this.getHelm2(m, highlightselection, ret);
+
+        for (var k in ret.chains) {
+            var chain = ret.chains[k];
+            var a = chain[0];
+            if (chain.length == 1 && a.biotype() == org.helm.webeditor.HELM.BLOB && !scil.Utils.isNullOrEmpty(a.tag))
+                chain.annotation = a.tag;
+        }
+
+        for (var k in ret.groups) {
+            if (ret.groups[k].length == 1)
+                ret.singletons[k] = ret.groups[k][0];
+        }
+
+        for (var k in ret.singletons)
+            delete ret.groups[k];
+
         return this.getHelmString(ret, highlightselection);
-    },
-
-    getGroupHelm: function (ret, id, a, highlightselection) {
-        var existing = {};
-        for (var k in ret.sequences)
-            existing[k] = true;
-
-        var m = a.superatom;
-        if (a.hidden) {
-            ret.groupatoms[id] = a;
-        }
-        else {
-            this.getHelm2(m, highlightselection, ret, a);
-
-            var combo = [];
-            for (var k in ret.sequences) {
-                if (!existing[k])
-                    combo.push(k); //{ chain: k, ratio: a.ratio });
-            }
-
-            if (combo.length == 1)
-                ret.singletons[id] = combo[0];
-            else
-                ret.groups[id] = combo;
-        }
     },
 
     getHelm2: function (m, highlightselection, ret, groupatom) {
@@ -103,23 +94,69 @@ org.helm.webeditor.IO = {
             }
         }
 
+        var groups = [];
+        for (var i = 0; i < m.graphics.length; ++i) {
+            var g = JSDraw2.Group.cast(m.graphics[i]);
+            if (g != null)
+                groups.push(g);
+        }
+
+        for (var i = 0; i < groups.length; ++i) {
+            var g = groups[i];
+            if (scil.Utils.isNullOrEmpty(g.tag))
+                continue;
+
+            for (var c in ret.chains) {
+                if (this.allBelongToGroup(ret.chains[c], g)) {
+                    ret.chains[c].annotation = g.tag;
+                    break;
+                }
+            }
+        }
+
         for (var id in ret.groupatoms) {
             var a = ret.groupatoms[id];
-            for (var i = 0; i < m.graphics.length; ++i) {
-                var g = JSDraw2.Group.cast(m.graphics[i]);
-                if (g != null && g.a == a) {
-                    var combo = [];
-                    for (var c in ret.chains) {
-                        if (this.allBelongToGroup(ret.chains[c], g)) {
-                            combo.push(c);
-                            if (!scil.Utils.isNullOrEmpty(g.ratio))
-                                ret.ratios[c] = g.ratio;
-                        }
-                    }
-                    if (combo.length == 1)
-                        ret.singletons[id] = combo[0];
-                    else
-                        ret.groups[id] = combo;
+            for (var i = 0; i < groups.length; ++i) {
+                var g = groups[i];
+                if (g.a == a) {
+                    groups.splice(i, 1);
+                    this._scanGroup(ret, g, id);
+                    break;
+                }
+            }
+        }
+
+        var groupids = [];
+        for (var i = 0; i < groups.length; ++i) {
+            var g = groups[i];
+
+            var prefix = "G";
+            var id = prefix + (++ret.chainid[prefix]);
+            groupids[i] = id;
+
+            this._scanGroup(ret, g, id);
+        }
+
+        for (var i = 0; i < groups.length; ++i) {
+            var g = groups[i];
+            var combo = ret.groups[groupids[i]];
+            if (combo == null)
+                continue;
+
+            for (var j = 0; j < groups.length; ++j) {
+                var g2 = groups[j];
+                if (g2.group == g) {
+                    var id = groupids[j];
+                    if (scil.Utils.indexOf(combo, id) < 0)
+                        combo.push(id);
+                }
+            }
+
+            for (var id in ret.groupatoms) {
+                var a = ret.groupatoms[id];
+                if (a.group == g) {
+                    if (scil.Utils.indexOf(combo, id) < 0)
+                        combo.push(id);
                     break;
                 }
             }
@@ -147,6 +184,42 @@ org.helm.webeditor.IO = {
         }
     },
 
+    _scanGroup: function (ret, g, id) {
+        var combo = [];
+        for (var c in ret.chains) {
+            if (this.allBelongToGroup(ret.chains[c], g)) {
+                combo.push(c);
+                if (!scil.Utils.isNullOrEmpty(g.ratio))
+                    ret.ratios[c] = g.ratio;
+            }
+        }
+
+        ret.groups[id] = combo;
+        ret.ratios[id] = g.ratio;
+    },
+
+    getGroupHelm: function (ret, id, a, highlightselection) {
+        var existing = {};
+        for (var k in ret.sequences)
+            existing[k] = true;
+
+        var m = a.superatom;
+        if (a.hidden) {
+            ret.groupatoms[id] = a;
+        }
+        else {
+            this.getHelm2(m, highlightselection, ret, a);
+
+            var combo = [];
+            for (var k in ret.sequences) {
+                if (!existing[k])
+                    combo.push(k); //{ chain: k, ratio: a.ratio });
+            }
+
+            ret.groups[id] = combo;
+        }
+    },
+
     addConnection: function (ret, c1, c2, a1, a2, r1, r2, ratio1, ratio2, tag, h) {
         ret.connections.push({ c1: c1, c2: c2, ai1: a1._aaid, ai2: a2._aaid, r1: r1, r2: r2, ratio1: ratio1, ratio2: ratio2, tag: tag, h: h });
     },
@@ -156,12 +229,12 @@ org.helm.webeditor.IO = {
         if (ret.singletons[conn.c1] != null) {
             conn.c1 = ret.singletons[conn.c1];
             if (conn.ai1 > 0)
-                conn.ai1 = "*";
+                conn.ai1 = "?";
         }
         if (ret.singletons[conn.c2] != null) {
             conn.c2 = ret.singletons[conn.c2];
             if (conn.ai2 > 0)
-                conn.ai2 = "*";
+                conn.ai2 = "?";
         }
 
         var c = conn.c1 + "," + conn.c2;
@@ -206,23 +279,32 @@ org.helm.webeditor.IO = {
         for (var i = 0; i < keys.length; ++i) {
             var k = keys[i];
             s += (s == "" ? "" : "|") + k + "{" + ret.sequences[k] + "}";
+            var chain = ret.chains[k];
+            if (chain != null && !scil.Utils.isNullOrEmpty(chain.annotation))
+                s += this.wrapAnnotation(chain.annotation);
         }
 
         if (s == "")
             return s;
 
+        var count = 0;
+
         s += "$";
+        var groups = [];
         for (var i = 0; i < ret.connections.length; ++i) {
             var c = ret.connections[i];
-            s += (i > 0 ? "|" : "") + this.renderConnection(ret, c);
+            s += (++count > 1 ? "|" : "") + this.renderConnection(ret, c);
             if (c.ratio1 > 0 || c.ratio2 > 0) {
                 var s2 = c.c1 + (c.ratio1 > 0 ? ":" + c.ratio1 : "") + "+" + c.c2 + (c.ratio2 > 0 ? ":" + c.ratio2 : "");
                 id = "G" + (++ret.chainid.G);
-                ret.pairs.push(id + "(" + s2 + ")");
+                groups.push(id + "(" + s2 + ")");
             }
         }
+        for (var i = 0; i < ret.pairs.length; ++i)
+            s += (++count > 1 ? "|" : "") + ret.pairs[i];
 
         s += "$";
+        var list = [];
         for (var id in ret.groups) {
             var s2 = "";
             var list = ret.groups[id];
@@ -231,12 +313,13 @@ org.helm.webeditor.IO = {
                 if (ret.singletons[c] != null)
                     c = ret.singletons[c];
                 var ratio = ret.ratios[c];
-                s2 += (i > 0 ? "+" : "") + c + (scil.Utils.isNullOrEmpty(ratio) ? "" : ":" + ratio);
+                var separator = ret.ratios[id] == "or" ? "," : "+";
+                s2 += (i > 0 ? separator : "") + c + (scil.Utils.isNullOrEmpty(ratio) ? "" : ":" + ratio);
             }
-            ret.pairs.push(id + "(" + s2 + ")");
+            groups.push(id + "(" + s2 + ")");
         }
-        for (var i = 0; i < ret.pairs.length; ++i)
-            s += (i > 0 ? "|" : "") + ret.pairs[i];
+        for (var i = 0; i < groups.length; ++i)
+            s += (i > 0 ? "|" : "") + groups[i];
 
         s += "$";
 
@@ -344,12 +427,14 @@ org.helm.webeditor.IO = {
     */
     getCode: function (a, highlightselection, bracket) {
         var s;
+        var blob = false;
         if (typeof (a) == "object" && a.biotype() == org.helm.webeditor.HELM.BLOB) {
+            blob = true;
             if (a.elem == "Group") {
                 s = "Group";
             }
             else {
-                s = scil.Utils.isNullOrEmpty(a.tag) ? "" : a.tag;
+                s = a.bio != null && scil.Utils.isNullOrEmpty(a.bio.blobtype) ? "" : a.bio.blobtype;
             }
         }
         else {
@@ -368,16 +453,22 @@ org.helm.webeditor.IO = {
                 s = a.bio.ambiguity == null ? "?" : a.bio.ambiguity;
             else if (s.length > 1)
                 s = "[" + s + "]";
-
-            if (!scil.Utils.isNullOrEmpty(a.tag))
-                s += '\"' + a.tag.replace(/"/g, "\\\"") + '\"';
         }
+
+        if (!blob)
+            s += this.wrapAnnotation(a.tag);
 
         if (bracket)
             s = "(" + s + ")";
         if (highlightselection && a.selected)
             s = "<span style='background:#bbf;'>" + s + "</span>";
         return s;
+    },
+
+    wrapAnnotation: function (s) {
+        if (!scil.Utils.isNullOrEmpty(s))
+            return '\"' + s.replace(/"/g, "\\\"") + '\"';
+        return "";
     },
 
     /**
@@ -445,6 +536,10 @@ org.helm.webeditor.IO = {
         var sections = this.split(s, '$');
         var chains = {};
 
+        var gi = 100;
+        var groups = {};
+        var groupannotations = {};
+
         // sequence
         s = sections[0];
         if (!scil.Utils.isNullOrEmpty(s)) {
@@ -475,25 +570,38 @@ org.helm.webeditor.IO = {
                 else if (type == "CHEM")
                     n2 = this.addChem(plugin, s, chain, origin, renamedmonomers);
                 else if (type == "BLOB")
-                    n2 = this.addBlob(plugin, s, chain, origin, renamedmonomers);
+                    n2 = this.addBlob(plugin, s, chain, origin, renamedmonomers, e.tag);
 
                 if (n2 > 0) {
                     n += n2;
                     origin.y += 4 * plugin.jsd.bondlength;
                 }
+
+                if (!scil.Utils.isNullOrEmpty(e.tag) && groups[sid] == null) {
+                    ++gi;
+                    var g = "G" + gi;
+                    sections[2] += "|" + g + "(" + sid + ")";
+                    groups[sid] = g;
+                    groupannotations[g] = e.tag;
+                }
             }
         }
 
+        // hydrogenpairs
+        var hydrogenpairs = [];
         var connections = [];
         var connatoms = {};
 
-        var gi = 100;
         s = sections[1];
-        var groups = {};
         if (!scil.Utils.isNullOrEmpty(s)) {
             var ss = s == "" ? [] : this.split(s, '|');
             // RNA1,RNA1,1:R1-21:R2
             for (var i = 0; i < ss.length; ++i) {
+                if (ss[i].indexOf("pair") > 0) {
+                    hydrogenpairs.push(ss[i]);
+                    continue;
+                }
+
                 var e = this.detachAnnotation(ss[i]);
                 var c = this.parseConnection(e.str);
                 if (c == null)
@@ -543,29 +651,36 @@ org.helm.webeditor.IO = {
                         if (chain != null)
                             chains[id] = chain;
                     }
-                    else {
-                        // bond ratio
-                        this.parseBondRatios(bondratios, c);
+                    else if (!this.parseBondRatios(bondratios, c)) { // bond ratio
+                        // then group
+                        var chain = this.createGroupForChains(plugin, chains, id, c, groupannotations[id]);
+                        if (chain != null && chain.atoms.length == 1)
+                            plugin.groupExpand(chain.atoms[0]);
                     }
                 }
                 else {
                     // pair
-                    var c = this.parseConnection(ss[i]);
-                    if (c == null || chains[c.chain1] == null || chains[c.chain2] == null || !scil.Utils.startswith(c.chain1, "RNA") || !scil.Utils.startswith(c.chain2, "RNA"))
-                        continue; //error
-
-                    var atom1 = chains[c.chain1].getAtomByAAID(c.a1);
-                    var atom2 = chains[c.chain2].getAtomByAAID(c.a2);
-                    if (atom1 == null || atom2 == null)
-                        continue; //error
-
-                    if (c.r1 != "pair" || c.r2 != "pair")
-                        continue; //error
-
-                    //chain.bonds.push(plugin.addBond(atom1, atom2, r1, r2));
-                    plugin.addHydrogenBond(atom1, atom2);
+                    hydrogenpairs.push(ss[i]);
                 }
             }
+        }
+
+        for (var i = 0; i < hydrogenpairs.length; ++i) {
+            // pair
+            var c = this.parseConnection(hydrogenpairs[i]);
+            if (c == null || chains[c.chain1] == null || chains[c.chain2] == null || !scil.Utils.startswith(c.chain1, "RNA") || !scil.Utils.startswith(c.chain2, "RNA"))
+                continue; //error
+
+            var atom1 = chains[c.chain1].getAtomByAAID(c.a1);
+            var atom2 = chains[c.chain2].getAtomByAAID(c.a2);
+            if (atom1 == null || atom2 == null)
+                continue; //error
+
+            if (c.r1 != "pair" || c.r2 != "pair")
+                continue; //error
+
+            //chain.bonds.push(plugin.addBond(atom1, atom2, r1, r2));
+            plugin.addHydrogenBond(atom1, atom2);
         }
 
         // connection
@@ -574,19 +689,24 @@ org.helm.webeditor.IO = {
             if (c == null || chains[c.chain1] == null || chains[c.chain2] == null)
                 continue; //error
 
+            if (groups[c.chain1] != null)
+                c.chain1 = groups[c.chain1];
+            if (groups[c.chain2] != null)
+                c.chain2 = groups[c.chain2];
+
             var chain1 = chains[c.chain1];
             var chain2 = chains[c.chain2];
             var atom1, atom2;
             var a1 = parseInt(c.a1);
             var a2 = parseInt(c.a2);
-            if (a1 > 0 || !scil.Utils.startswith(c.chain1, "G") && !scil.Utils.startswith(c.chain1, "BLOB")) {
+            if (a1 > 0 && !scil.Utils.startswith(c.chain1, "G") && !scil.Utils.startswith(c.chain1, "BLOB")) {
                 atom1 = chain1.getAtomByAAID(c.a1);
             }
             else {
                 atom1 = chain1.atoms[0];
                 c.r1 = c.a1 + ":" + c.r1;
             }
-            if (a2 > 0 || !scil.Utils.startswith(c.chain2, "G") && !scil.Utils.startswith(c.chain2, "BLOB")) {
+            if (a2 > 0 && !scil.Utils.startswith(c.chain2, "G") && !scil.Utils.startswith(c.chain2, "BLOB")) {
                 atom2 = chain2.getAtomByAAID(c.a2);
             }
             else {
@@ -665,8 +785,10 @@ org.helm.webeditor.IO = {
 
     parseBondRatios: function (bondratios, s) {
         var p = s.indexOf('+');
+        if (p < 0)
+            p = s.indexOf(',');
         if (p <= 0)
-            return;
+            return false;
 
         var ret = {};
         var s1 = s.substr(0, p);
@@ -691,11 +813,23 @@ org.helm.webeditor.IO = {
         }
 
         bondratios.push(ret);
+        return true;
     },
 
-    createGroupForChains: function (plugin, chains, chainid, c) {
+    createGroupForChains: function (plugin, chains, chainid, c, tag) {
+        var logic = null;
+        var ss = this.splitString(c, "+");
+        if (ss.length > 1) {
+            logic = "and";
+        }
+        else {
+            ss = this.splitString(c, ",");
+            if (ss.length > 1)
+                logic = "or";
+        }
+
         var allatoms = [];
-        var ss = this.splitString(c, "+,");
+        var atom = null;
         for (var i = 0; i < ss.length; ++i) {
             var ratio = null;
 
@@ -721,22 +855,29 @@ org.helm.webeditor.IO = {
             var g2 = plugin.createGroup2(atoms, false);
             if (g2 != null) {
                 g2.ratio = ratio;
+                g2.tag = tag;
 
                 var a2 = plugin.collapseGroup(g2);
                 a2._aaid = 1;
                 allatoms.push(a2);
+
+                atom = a2;
             }
         }
 
-        var g = plugin.createGroup2(allatoms, false);
-        if (g == null)
-            return null;
+        if (allatoms.length > 1) {
+            var g = plugin.createGroup2(allatoms, false);
+            if (g == null)
+                return null;
 
-        var a = plugin.collapseGroup(g);
-        a._aaid = 1;
+            g.ratio = logic;
+            g.tag = tag;
+            atom = plugin.collapseGroup(g);
+            atom._aaid = 1;
+        }
 
         var chain = new org.helm.webeditor.Chain(ss[chainid]);
-        chain.atoms.push(a);
+        chain.atoms.push(atom);
         return chain;
     },
 
@@ -975,9 +1116,14 @@ org.helm.webeditor.IO = {
     * Add a BLOB node (internal use)
     * @function addBlob
     */
-    addBlob: function (plugin, name, chain, origin, renamedmonomers) {
+    addBlob: function (plugin, name, chain, origin, renamedmonomers, annotation) {
+        var e = this.detachAnnotation(name);
         var a = this.addNode(plugin, chain, chain.atoms, origin.clone(), org.helm.webeditor.HELM.BLOB, "Blob", renamedmonomers);
-        a.tag = name == "Blob" || name == "[Blob]" ? null : name;
+        a.bio.blobtype = e.str == "Blob" || e.str == "[Blob]" ? null : e.str;
+        if (!scil.Utils.isNullOrEmpty(a.tag))
+            a.tag = e.tag;
+        else if (!scil.Utils.isNullOrEmpty(annotation))
+            a.tag = annotation;
         return 1;
     },
 
@@ -1003,11 +1149,11 @@ org.helm.webeditor.IO = {
 
                 var ss2 = this.splitChars(e.str.substr(1, e.str.length - 2), '.');
                 if (ss2.length == 1) {
-                    this._addOneAA(plugin, chain, e.str, null, renamedmonomers, loop);
+                    atoms.push(this._addOneAA(plugin, chain, e.str, null, renamedmonomers, loop));
                 }
                 else {
                     for (var k = 0; k < ss2.length; ++k)
-                        this._addOneAA(plugin, chain, ss2[k], null, renamedmonomers, loop);
+                        atoms.push(this._addOneAA(plugin, chain, ss2[k], null, renamedmonomers, loop));
                 }
 
                 if (!scil.Utils.isNullOrEmpty(e.repeat)) {
@@ -1028,7 +1174,8 @@ org.helm.webeditor.IO = {
 
     _addOneAA: function (plugin, chain, s, tag, renamedmonomers, loop) {
         loop.p.x += loop.delta;
-        loop.a2 = this.addNode(plugin, chain, chain.atoms, loop.p.clone(), org.helm.webeditor.HELM.AA, s, renamedmonomers);
+        var a = this.addNode(plugin, chain, chain.atoms, loop.p.clone(), org.helm.webeditor.HELM.AA, s, renamedmonomers);
+        loop.a2 = a;
         loop.a2.tag = tag;
 
         if (loop.a1 != null)
@@ -1039,6 +1186,7 @@ org.helm.webeditor.IO = {
 
         loop.a1 = loop.a2;
         loop.a1.bio.id = ++loop.n;
+        return a;
     },
 
     /**

@@ -25,37 +25,45 @@
 -->
 <!DOCTYPE html>
 <html>
-<head>
-    <title>HELM Web Editor - Monomer Manager</title>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <script type="text/javascript" src='../pako/pako.js'></script>
-    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
-    <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Lite.js'></script>
-    <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Resources.js'></script>
-    <script type="text/javascript" src='../JSDraw/Pistoia.HELM.js'></script>
-</head>
-  <body style="font-family:Arial; margin: 0">
+    <head>
+        <title>HELM Web Editor - Monomer Manager</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <script type="text/javascript" src='../pako/pako.js'></script>
+        <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+        <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Lite.js'></script>
+        <script type="text/javascript" src='../JSDraw/Scilligence.JSDraw2.Resources.js'></script>
+        <script type="text/javascript" src='../JSDraw/Pistoia.HELM.js'></script>
+    </head>
+    <body style="font-family:Arial; margin: 0">
 
-    <div id="toolbar"></div>
-
-
-    <div id="div1" style="margin: 5px; margin-top: 15px"></div>
-    <script type="text/javascript">
-      scil.ready(function () {
-        new scil.helm.AppToolbar("toolbar", "../JSDraw/helm/img/",
-        [{ icon: "canvas-2.png", label: "Canvas", url: "App.htm" }, { icon: "monomers-1.png", label: "Monomer Library" }, { icon: "settings-2.png", label: "Ruleset", url: "RuleSetApp.htm" }]
-        );
-
-        new scil.helm.MonomerLibApp("div1", { ajaxurl: "../../service/ajaxtool/post?cmd=" });
-      });
-    </script>
+        <div id="toolbar"></div>
 
 
-    <hr />
-      <div style="text-align:center;">
-          Copyright (C) 2017 Pistoia (www.pistoiaalliance.org)<br />
-          (Developed by <a href='http://www.scilligence.com/'>Scilligence</a>, using <a href='http://www.jsdraw.com'>JSDraw</a>)
-      </div>
-</body>
+        <div id="div1" style="margin: 5px; margin-top: 15px"></div>
+        <script type="text/javascript">
+            //scil.Utils.stupidTomcatBug = function (params) {
+            //    var s = {"_": 0};
+            //    scil.apply(s, params);
+            //    return s;
+            //}
+
+            scil.ready(function () {
+                JSDraw2.defaultoptions = {skin: "w8"};
+                org.helm.webeditor.Adapter.init("/HELM2MonomerService/webService/service/library");
+
+                new scil.helm.AppToolbar("toolbar", "../JSDraw/helm/img/",
+                        [{icon: "canvas-2.png", label: "Canvas", url: "App.htm"}, {icon: "monomers-1.png", label: "Monomer Library"}, {icon: "settings-2.png", label: "Ruleset", url: "RuleSetApp.htm"}]
+                        );
+                new scil.helm.MonomerLibApp("div1", {ajaxurl: ""});
+            });
+        </script>
+
+
+        <hr />
+        <div style="text-align:center;">
+            Copyright (C) 2017 Pistoia (www.pistoiaalliance.org)<br />
+            (Developed by <a href='http://www.scilligence.com/'>Scilligence</a>, using <a href='http://www.jsdraw.com'>JSDraw</a>)
+        </div>
+    </body>
 </html>

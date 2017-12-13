@@ -131,21 +131,6 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         else {
             this.filterGroup(this.filterInput.value);
         }
-
-
-        //var tab = null;
-        //if (key == "monomers") {
-        //    key = this.monomerstabs.currentTabKey();
-        //    if (key == "chem" || key == "aa")
-        //        tab = this.monomerstabs.currenttab;
-        //    else if (key == "rna")
-        //        tab = this.rnatabs.currenttab;
-        //}
-        //else {
-        //    tab = this.tabs.currenttab;
-        //}
-
-        //this.filterGroup(tab.clientarea, this.filterInput.value);
     },
 
     /**
@@ -169,12 +154,24 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                 var html = scil.Utils.isNullOrEmpty(name) ? d.innerHTML : null;
                 var f = 1;
                 if (s != null) {
-                    if (scil.Utils.startswith(name.toLowerCase(), s))
+                    f = 0;
+                    if (scil.Utils.startswith(name.toLowerCase(), s)) {
                         f = 1;
-                    else if (name.toLowerCase().indexOf(s) >= 0)
+                    }
+                    else if (name.toLowerCase().indexOf(s) >= 0) {
                         f = 2;
-                    else
-                        f = 0;
+                    }
+                    else if (s.length >= 3 || org.helm.webeditor.MonomerExplorer.filtername) {
+                        var type = d.getAttribute("helm");
+                        var set = type == org.helm.webeditor.MonomerExplorer.kNucleotide ? org.helm.webeditor.MonomerExplorer.nucleotides : org.helm.webeditor.Monomers.getMonomerSet(type);
+                        var m = set[scil.helm.symbolCase(name)];
+                        if (m != null && m.n != null) {
+                            if (scil.Utils.startswith(m.n.toLowerCase(), s))
+                                f = 1;
+                            else if (m.n.toLowerCase().indexOf(s) >= 0)
+                                f = 2;
+                        }
+                    }
                 }
 
                 if (f == 1)
@@ -476,8 +473,8 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
     */
     getMonomerNames: function (list, addnull) {
         var ret = [];
-        if (addnull)
-            ret.push("null");
+        //if (addnull)
+        //    ret.push("null");
 
         list.sort(org.helm.webeditor.MonomerExplorer.compareMonomers);
         for (var i = 0; i < list.length; ++i)
@@ -493,6 +490,12 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
     createMonomerGroup: function (div, type, list, addnull) {
         var me = this;
         list = this.getMonomerList(list, type, addnull);
+
+        if (org.helm.webeditor.ambiguity) {
+            if (type == org.helm.webeditor.HELM.CHEM)
+                list.splice(0, 0, '*');
+        }
+
         div.style.overflowY = "scroll";
         this._listMonomers(div, list, type, this.options.mexfavoritefirst);
         dojo.connect(div, "onmousedown", function (e) { me.select(e); });
@@ -580,6 +583,13 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
         if (groupbyanalog) {
             var dict = this.getMonomerDictGroupByAnalog(type);
 
+            if (org.helm.webeditor.ambiguity) {
+                if (type == org.helm.webeditor.HELM.AA)
+                    dict['?'] = ['*', '_', 'X'];
+                else if (type == org.helm.webeditor.HELM.BASE)
+                    dict['?'] = ['_', 'N', '*'];
+            }
+
             var list = [];
             if (this.options.mexfavoritefirst) {
                 for (var k in dict) {
@@ -618,6 +628,15 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
                 scil.connect(d, "onclick", function () { me.addNucleotide(); })
             }
             var list = this.getMonomerList(list, type, addnull);
+            if (org.helm.webeditor.ambiguity) {
+                if (type == org.helm.webeditor.HELM.SUGAR)
+                    list.splice(0, 0, '*');
+                else if (type == org.helm.webeditor.HELM.LINKER)
+                    list.splice(0, 0, '*');
+                else if (type == "nucleotide")
+                    list.splice(0, 0, '*');
+            }
+
             this._listMonomers(div, list, type, this.options.mexfavoritefirst);
         }
     },
@@ -854,7 +873,9 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
             var type = src.getAttribute("helm");
             var set = type == org.helm.webeditor.MonomerExplorer.kNucleotide ? org.helm.webeditor.MonomerExplorer.nucleotides : org.helm.webeditor.Monomers.getMonomerSet(type);
             var s = scil.Utils.getInnerText(src);
-            var m = set[s.toLowerCase()];
+            var m = set[scil.helm.symbolCase(s)];
+            if (m == null)
+                m = set[s];
             org.helm.webeditor.MolViewer.show(e, type, m, s);
         }
         else {
@@ -1063,6 +1084,7 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
     backgroundcolor: "blue",
     color: "white",
     customnucleotides: null,
+    filtername: false,
     favorites: new scil.Favorite("monomers", function (name, f, type) { org.helm.webeditor.MonomerExplorer.onAddFavorite(name, f, type); }),
 
     nucleotides: {
@@ -1087,7 +1109,7 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
         else if (a.id.length != b.id.length && (a.id.length == 1 || b.id.length == 1))
             return a.id.length > b.id.length ? 1 : -1;
         else
-            return a.id.toLowerCase() > b.id.toLowerCase() ? 1 : -1;
+            return scil.helm.symbolCase(a.id) > scil.helm.symbolCase(b.id) ? 1 : -1;
     },
 
     /**
