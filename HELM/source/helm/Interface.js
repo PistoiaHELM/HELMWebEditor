@@ -286,7 +286,7 @@ org.helm.webeditor.Interface = {
             var grp = JSDraw2.Group.cast(ed.curObject);
             if (a != null) {
                 var biotype = a.biotype();
-                if (a != null && biotype == scil.helm.HELM.SUGAR && a.bio != null) {
+                if (biotype == scil.helm.HELM.SUGAR && a.bio != null) {
                     items.push({ caption: "Set as Sense", key: "helm_set_sense" });
                     items.push({ caption: "Set as Antisense", key: "helm_set_antisense" });
                     items.push({ caption: "Clear Annotation", key: "helm_set_clear" });
@@ -323,8 +323,16 @@ org.helm.webeditor.Interface = {
             }
         }
         else {
+            var a = JSDraw2.Atom.cast(ed.curObject);
+            if (a.bio == null)
+                items.push({ caption: "R Group", callback: function (cmd, obj) { ed.menuSetAtomType(cmd, obj); }, children: ["R", "R1", "R2", "R3", "R4", "R5"] });
+
             items.push({ caption: "Copy Molfile", key: "copymolfile" });
         }
+
+        var br = JSDraw2.Bracket.cast(ed.curObject);
+        if (br != null)
+            items.push({ caption: "Set Subscript", key: "setbracketsubscription" });
 
         if (items.length > 0)
             items.push("-");

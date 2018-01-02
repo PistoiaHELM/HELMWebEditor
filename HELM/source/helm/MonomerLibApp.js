@@ -118,6 +118,12 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             {type: "select", key: "countperpage", labelstyle: { fontSize: "90%" }, label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
         ];
 
+        var ver = null;
+        if (scil.helm != null && JSDraw2.Security.kEdition != "Lite") {
+            scil.helm.MonomerLibApp.ajaxurl = this.options.ajaxurl;
+            ver = { label: "Versions", type: "html", render: function (v, values) { return v > 0 ? "<a href='javascript:scil.helm.MonomerLibApp.showVersions(" + values.id + ")'>" + v + "</a>" : null; } };
+        }
+
         this.monomers = this.page.addForm({
             caption: "Monomer List",
             key: "id",
@@ -137,8 +143,10 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
                 r2: { label: "R2", width: 50 },
                 r3: { label: "R3", width: 50 },
                 author: { label: "Author", width: 100 },
+                versions: ver,
                 createddate: { label: "Created Date", type: "date", width: 100 }
             },
+            savedoc: true,
             formcaption: "Monomer",
             fields: org.helm.webeditor.MonomerLibApp.getFields()
         });
@@ -256,6 +264,36 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
             r4: { label: "R4", type: "select", items: this.caps },
             r5: { label: "R5", type: "select", items: this.caps }
         }
+    },
+
+    showVersions: function (id) {
+        var me = this;
+        scil.Utils.ajax(this.ajaxurl + "helm.monomer.versions", function (ret) {
+            me.showVersions2(ret);
+        }, { id: id });
+    },
+
+    showVersions2: function (ret) {
+        if (this.versionDlg == null) {
+            var fields = { table: { type: "table", viewonly: true, columns: {
+                versionid: { label: "Version ID" },
+                dt: { label: "Date", type: "date" },
+                user: { label: "User" },
+                action: { label: "Action" }
+            }
+            }
+            };
+            this.versionDlg = scil.Form.createDlgForm("Versions", fields, null, { hidelabel: true });
+        }
+
+        var cur = ret[ret.length - 1];
+        cur.versionid = "Current";
+        ret.splice(ret.length - 1, 1);
+        ret.splice(0, 0, cur);
+
+        this.versionDlg.show();
+        this.versionDlg.form.setData({ table: ret });
+        this.versionDlg.moveCenter();
     },
 
     /**

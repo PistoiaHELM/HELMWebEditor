@@ -35,6 +35,8 @@ org.helm.webeditor.Adapter = {
 
         if (options.onValidateHelm == null)
             options.onValidateHelm = this.onValidateHelm;
+        if (options.onCleanUpStructure == null)
+            options.onCleanUpStructure = this.onCleanUpStructure;
         if (options.onMonomerSmiles == null)
             org.helm.webeditor.Monomers.onMonomerSmiles = this.onMonomerSmiles;
         else
@@ -236,6 +238,13 @@ org.helm.webeditor.Adapter = {
         //        scil.Utils.ajax(me.options.cleanupurl, function (ret) {
         //            me.structureview.setMolfile(ret == null ? null : ret.output);
         //        }, { input: mol.getMolfile(), inputformat: "mol", outputformat: "mol" });
+        var url = me.options.cleanupurl;
+        var molfile = mol.getMolfile();
+        scil.Utils.ajax(url,
+            function (ret) { m.m = ret.Molfile; },
+            { SMILES: molfile },
+            { verb: "post", headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" }
+            });
     },
 
     onMonomerSmiles: function (m, smiles) {

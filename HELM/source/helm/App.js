@@ -93,8 +93,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
         if (!scil.Utils.isNullOrEmpty(this.options.jsdrawservice))
             JSDrawServices = { url: this.options.jsdrawservice };
 
-        if (this.options.cleanupurl != null && org.helm.webeditor.Monomers.cleanupurl == null)
-            org.helm.webeditor.Monomers.cleanupurl = this.options.cleanupurl;
+        if (this.options.monomercleanupurl != null && org.helm.webeditor.Monomers.cleanupurl == null)
+            org.helm.webeditor.Monomers.cleanupurl = this.options.monomercleanupurl;
 
         if (this.options.rulesurl != null) {
             scil.Utils.ajax(this.options.rulesurl, function (ret) {

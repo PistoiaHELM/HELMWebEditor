@@ -1563,7 +1563,7 @@ scilligence.Utils = {
             tm = scil.Utils.time(tm);
 
         if (JSDraw2.timezoneoffet > 0)
-            tm.setTime(tm.getTime() + JSDraw2.timezoneoffet * 60 * 60 * 1000);
+            tm = new Date(tm.getTime() + JSDraw2.timezoneoffet * 60 * 60 * 1000);
 
         // date part
         var s = format;
@@ -1571,20 +1571,20 @@ scilligence.Utils = {
             s = "yyyy-mmm-dd";
 
         s = s.replace("yyyy", tm.getFullYear())
-                .replace("yy", (tm.getFullYear() + "").substr(2))
-                .replace("mmm", scil.Utils._months[tm.getMonth()])
-                .replace("mm", scil.Utils.padLeft(tm.getMonth() + 1, 2, '0'))
-                .replace("dd", scil.Utils.padLeft(tm.getDate(), 2, '0'));
+            .replace("yy", (tm.getFullYear() + "").substr(2))
+            .replace("mmm", scil.Utils._months[tm.getMonth()])
+            .replace("mm", scil.Utils.padLeft(tm.getMonth() + 1, 2, '0'))
+            .replace("dd", scil.Utils.padLeft(tm.getDate(), 2, '0'));
 
         // time part
-        var h24 = s.indexOf("hh") >= 0;
+        var h12 = s.indexOf("hh") >= 0;
         var h = tm.getHours();
         s = s.replace("hh", this.padLeft(h % 12, 2, '0'))
             .replace("HH", this.padLeft(h, 2, '0'))
             .replace("MM", this.padLeft(tm.getMinutes(), 2, '0'))
             .replace("SS", this.padLeft(tm.getSeconds(), 2, '0'))
             .replace("ss", this.padLeft(tm.getSeconds(), 2, '0'));
-        if (h24)
+        if (h12)
             s += h >= 12 ? "PM" : "AM";
 
         return s;
@@ -7931,6 +7931,8 @@ JSDraw2.Mol = scil.extend(scil._base, {
                 s = "[AND Enantiomer]";
             else if (this.chiral == "or")
                 s = "[OR Enantiomer]";
+            else if (this.chiral == true)
+                s = "Chiral";
 
             if (s != null)
                 JSDraw2.Drawer.drawText(surface, new JSDraw2.Point(dimension.x - fontsize * 4, fontsize * 1), s, "gray", fontsize, "right");
@@ -8167,7 +8169,8 @@ JSDraw2.Mol = scil.extend(scil._base, {
         var natoms = parseFloat(lines[start].substr(0, 3));
         var nbonds = parseFloat(lines[start].substr(3, 3));
         var chiral = lines[start].substr(12, 3);
-        //this.chiral = chiral == "  1";
+        if (!JSDraw2.defaultoptions.and_enantiomer)
+            this.chiral = chiral == "  1";
         if (isNaN(natoms) || isNaN(nbonds))
             return null;
         ++start;
@@ -9307,8 +9310,16 @@ JSDraw2.Mol = scil.extend(scil._base, {
     },
 
     getMolV3000: function (rxn) {
+        var superatoms = [];
+        var m = this.expandSuperAtoms(superatoms);
+        m.chiral = this.chiral;
+        return m._getMolV3000();
+    },
+
+    _getMolV3000: function (rxn) {
         var len = this.bondlength > 0 ? this.bondlength : this.medBondLength();
         var scale = len > 0 ? (1.56 / len) : 1.0;
+
         this.resetIds();
 
         var dt = new Date();
@@ -12742,7 +12753,7 @@ JSDraw2.FormulaParser = {
         if (m != null)
             return m;
 
-        var tokens = { O: ["O"], S: ["S"], Se: ["Se"], Te: ["Te"], Y: ["Y"], NH: ["N"], PH: ["P"], CO: ["C", "=O"], CO2: ["C", "=O", "O"], CH2: ["C"], C2H4: ["C", "C"], C3H6: ["C", "C", "C"], C4H8: ["C", "C", "C", "C"], C5H10: ["C", "C", "C", "C", "C"] };
+        var tokens = { O: ["O"], S: ["S"], Se: ["Se"], Te: ["Te"], Y: ["Y"], NH: ["N"], PH: ["P"], CO: ["C", "^=O"], CO2: ["C", "^=O", "O"], CH2: ["C"], C2H4: ["C", "C"], C3H6: ["C", "C", "C"], C4H8: ["C", "C", "C", "C"], C5H10: ["C", "C", "C", "C", "C"] };
         if (orphan)
             tokens.H = [];
 
@@ -12880,29 +12891,44 @@ JSDraw2.FormulaParser = {
 
         var a1 = atts[0].a;
         var a2 = null;
+        var branch = null;
         a1.attachpoints = [];
         for (var i = atoms.length - 1; i >= 0; --i) {
             var c = atoms[i];
-            var doublebond = false;
-            if (c.substr(0, 1) == "=") {
-                c = c.substr(1);
-                doublebond = true;
+
+            if (c.substr(0, 1) == "^") {
+                branch = c.substr(1);
+                continue;
             }
 
-            var p = a1.p.clone();
-            p.offset(1, 0);
-            var a2 = new JSDraw2.Atom(p, c);
-            var b = new JSDraw2.Bond(a1, a2);
-            if (doublebond)
-                b.type = JSDraw2.BONDTYPES.DOUBLE;
-            m.addAtom(a2);
-            m.addBond(b);
-            if (!doublebond)
-                a1 = a2;
+            // I#12074
+            a1 = this._connectAtom(a1, c, m);
+            if (branch != null) {
+                this._connectAtom(a1, branch, m);
+                branch = null;
+            }
         }
 
         a1.attachpoints = [1];
         return m;
+    },
+
+    _connectAtom: function (a1, c, m) {
+        var doublebond = false;
+        if (c.substr(0, 1) == "=") {
+            c = c.substr(1);
+            doublebond = true;
+        }
+
+        var p = a1.p.clone();
+        p.offset(1, 0);
+        var a2 = new JSDraw2.Atom(p, c);
+        var b = new JSDraw2.Bond(a1, a2);
+        if (doublebond)
+            b.type = JSDraw2.BONDTYPES.DOUBLE;
+        m.addAtom(a2);
+        m.addBond(b);
+        return a2;
     }
 };
 ﻿//////////////////////////////////////////////////////////////////////////////////
@@ -16458,7 +16484,10 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
                     if (connector == "rejector") {
                         if (from.reject != from) {
                             this.pushundo();
-                            from.reject = to;
+                            if (from.reject == to)
+                                from.reject = null;
+                            else
+                                from.reject = to;
                             this.refresh(true);
                             return;
                         }
@@ -17359,11 +17388,11 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         var modified = false;
         var cloned = this.clone();
         switch (cmd) {
-            //            case "Chiral":                                                                                                       
-            //                this.pushundo();                                                                                                       
-            //                this.m.chiral = !this.m.chiral;                                                                                                       
-            //                this.refresh(true);                                                                                                       
-            //                break;                                                                                                       
+            //            case "Chiral":                                                                                                               
+            //                this.pushundo();                                                                                                               
+            //                this.m.chiral = !this.m.chiral;                                                                                                               
+            //                this.refresh(true);                                                                                                               
+            //                break;                                                                                                               
             case "curveline":
                 obj.setAssayCurveLine(this);
                 break;
@@ -17516,6 +17545,9 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             case "rgroup_addstructure":
                 this.addRgroupStructure(obj);
                 modified = true;
+                break;
+            case "setbracketsubscription":
+                this.setBracketSubscription(obj);
                 break;
             case "setbracketratio":
                 this.setBracketRatio(obj);
@@ -17807,6 +17839,16 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         JSDraw2.needPro();
     },
 
+    setBracketSubscription: function (br) {
+        if (br == null)
+            return;
+
+        var t = this.m.getSgroupText(br, "BRACKET_TYPE");
+        if (t == null)
+            t = br.createSubscript(this.m, "#");
+        this.showTextEditor(t, null, t.text);
+    },
+
     setBracketRatio: function (br) {
         JSDraw2.needPro();
     },
@@ -17838,22 +17880,29 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
     menuSetAtomType: function (cmd, obj) {
         if (cmd == "..." || cmd == "more") {
             var me = this;
-            this.showPT(function (elem) { me.menuSetAtomType2(elem); });
+            this.showPT(function (elem) { me.menuSetAtomType2(elem, obj); });
         }
         else {
-            this.menuSetAtomType2(cmd);
+            this.menuSetAtomType2(cmd, obj);
         }
     },
 
-    menuSetAtomType2: function (elem) {
+    menuSetAtomType2: function (elem, obj) {
         var n = 0;
         var cloned = this.clone();
 
-        var atoms = this.m.allAtoms();
-        for (var i = 0; i < atoms.length; ++i) {
-            var a = atoms[i];
-            if (a.selected && a._parent.setAtomType(atoms[i], elem))
+        var a = JSDraw2.Atom.cast(obj);
+        if (a != null && !a.selected) {
+            if (a._parent.setAtomType(a, elem))
                 ++n;
+        }
+        else {
+            var atoms = this.m.allAtoms();
+            for (var i = 0; i < atoms.length; ++i) {
+                var a = atoms[i];
+                if (a.selected && a._parent.setAtomType(a, elem))
+                    ++n;
+            }
         }
 
         if (n > 0) {
@@ -18332,7 +18381,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
 
             var c = null;
             switch (e.keyCode) {
-                //case 16: // *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+                //case 16: // *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
                 case 56:
                     c = '*';
                     break;
@@ -23340,6 +23389,11 @@ scil.apply(scil.Form, {
             case "postfile":
                 tag = "file";
                 break;
+            case "user":
+                tag = "input";
+                if (item.autosuggesturl == null)
+                    item.autosuggesturl = "Ajax.ashx?cmd=user.suggest";
+                break;
             default:
                 if (itemtype != null)
                     tag = itemtype;
@@ -25302,6 +25356,7 @@ scil.Table = scil.extend(scil._base, {
                     this.key = id;
             }
         }
+        this._hideCookieCols(this.items);
 
         if (typeof (parent) == "string")
             parent = dojo.byId(parent);
@@ -25358,10 +25413,10 @@ scil.Table = scil.extend(scil._base, {
 
         for (var id in this.items) {
             var item = this.items[id];
-            var s = item.label;
+            var s = scil.Lang.res(item.label);
             if (item.unit != null && item.unit != "")
-                s += " (" + item.unit + ")";
-            var td = scil.Utils.createElement(r, "td", scil.Lang.res(s), style, { key: id });
+                s += " (" + scil.Lang.res(item.unit) + ")";
+            var td = scil.Utils.createElement(r, "td", s, style, { key: id });
             if (item.width != null)
                 td.style.width = item.width + "px";
             if (item.type == "hidden" || item.ishidden)
@@ -26023,11 +26078,36 @@ scil.Table = scil.extend(scil._base, {
     },
 
     showHideColumns2: function () {
+        var cols = "";
+
         var table = this.showhideDlg.form.fields.table.jsd;
         var list = table.getData(null, null, true);
-        for (var i = 0; i < list.length; ++i)
-            this.showColumn(list[i].key, list[i].rowchecked == true);
+        for (var i = 0; i < list.length; ++i) {
+            var f = list[i].rowchecked == true;
+            this.showColumn(list[i].key, f);
+            if (!f)
+                cols += list[i].key + ",";
+        }
         this.showhideDlg.hide();
+
+        if (!scil.Utils.isNullOrEmpty(this.options.hidecolumncookiekey))
+            scil.Utils.createCookie(this.options.hidecolumncookiekey + "_scil_table_hidecols", cols, 3650); // 10 years
+    },
+
+    _hideCookieCols: function (cols) {
+        if (scil.Utils.isNullOrEmpty(this.options.hidecolumncookiekey))
+            return;
+
+        var s = scil.Utils.readCookie(this.options.hidecolumncookiekey + "_scil_table_hidecols");
+        if (scil.Utils.isNullOrEmpty(s))
+            return;
+
+        var ss = s.split(',');
+        for (var i = 0; i < ss.length; ++i) {
+            var col = cols[ss[i]];
+            if (col != null)
+                cols[ss[i]].ishidden = true;
+        }
     }
 });
 
@@ -29495,7 +29575,7 @@ scil.Page.Table = scil.extend(scil._base, {
         scil.Utils.removeAll(this.tablediv);
 
         var me = this;
-        this.table = new scil.Table(true, null, { onAddRow: this.options.onAddRow, selectrow: true, onselectrow: function (tr) { me.selectrow(tr); }, rowcheck: this.options.rowcheck, grouping: this.options.grouping, grouplinestyle: this.options.grouplinestyle });
+        this.table = new scil.Table(true, null, { onAddRow: this.options.onAddRow, selectrow: true, onselectrow: function (tr) { me.selectrow(tr); }, rowcheck: this.options.rowcheck, grouping: this.options.grouping, grouplinestyle: this.options.grouplinestyle, hidecolumncookiekey: this.options.hidecolumncookiekey });
         this.table.render(this.tablediv, this.options.columns);
         this.table.tbody.parentNode.style.width = "100%";
 
@@ -29753,6 +29833,12 @@ scil.Page.Table = scil.extend(scil._base, {
         if (this.options.candelete != false)
             buttons.push({ src: scil.App.imgSmall("del.png"), label: "Delete", key: "delete", onclick: function () { me.del(); } });
         buttons.push({ src: scil.App.imgSmall("cancel.png"), label: "Cancel", key: "cancel", onclick: function () { me.cancel(); } });
+        if (this.options.editbuttons != null) {
+            if (this.options.editbuttons.length == null)
+                buttons.push(this.options.editbuttons);
+            else
+                buttons = buttons.concat(this.options.editbuttons);
+        }
 
         if (this.options.usetabs) {
             this.dlg = scil.Form.createTabDlgForm(this.options.formcaption, { tabs: this.options.fields, buttons: buttons, border: true, onchange: this.options.onformdatachange });
