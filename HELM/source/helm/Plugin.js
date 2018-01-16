@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -210,14 +210,14 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         if (this.bondPropDlg == null) {
             var me = this;
             var fields = {
-                a1: { label: "Atom #1", viewonly: true },
+                a1: { label: "Monomer #1", viewonly: true },
                 a1pos: { label: "Position" },
                 a1r: { label: "R#" },
-                a1ratio: { label: "Ratio", type: "number" },
-                a2: { label: "Atom #2", viewonly: true },
+                a1ratio: { label: "Ratio", type: "number", accepts: "^[?]$" },
+                a2: { label: "Monomer #2", viewonly: true },
                 a2pos: { label: "Position" },
                 a2r: { label: "R#" },
-                a2ratio: { label: "Ratio", type: "number" }
+                a2ratio: { label: "Ratio", type: "number", accepts: "^[?]$" }
             };
             this.bondPropDlg = scil.Form.createDlgForm("Bond Attributes", fields, { label: "Save", onclick: function () { me.setBondProp2(); } });
         }
@@ -229,6 +229,11 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         this.bondPropDlg.form.fields.a1r.disabled = !blob1;
         this.bondPropDlg.form.fields.a2pos.disabled = !blob2;
         this.bondPropDlg.form.fields.a2r.disabled = !blob2;
+
+        if (scil.Utils.isNullOrEmpty(data.a1ratio))
+            data.a1ratio = org.helm.webeditor.defaultbondratio;
+        if (scil.Utils.isNullOrEmpty(data.a2ratio))
+            data.a2ratio = org.helm.webeditor.defaultbondratio;
 
         this.bondPropDlg.form.setData(data);
         this.bondPropDlg.bond = b;
@@ -265,6 +270,16 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         var data = this.bondPropDlg.form.getData();
         this.bondPropDlg.hide();
 
+        if (data.a1ratio == "?" || data.a2ratio == "?") {
+            data.a1ratio = data.a2ratio = "?";
+        }
+        else {
+            if (data.a1ratio == "")
+                data.a1ratio = org.helm.webeditor.defaultbondratio;
+            if (data.a2ratio == "")
+                data.a2ratio = org.helm.webeditor.defaultbondratio;
+        }
+
         var f = false;
         var clone = this.jsd.clone();
         var b = this.bondPropDlg.bond;
@@ -272,8 +287,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             if (this._makeBondR(data.a1pos, data.a1r, b, "r1"))
                 f = true;
         }
-        if (b.ratio1 > 0 && !(data.a1ratio > 0) || !(b.ratio1 > 0) && data.a1ratio > 0 || b.ratio1 > 0 && data.a1ratio > 0 && b.ratio1 != data.a1ratio) {
-            b.ratio1 = data.a1ratio > 0 ? data.a1ratio : null;
+        if (!this._isRatioEq(b.ratio1, data.a1ratio)) {
+            b.ratio1 = data.a1ratio > 0 || data.a1ratio == "?" ? data.a1ratio : null;
             f = true;
         }
 
@@ -281,8 +296,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             if (this._makeBondR(data.a2pos, data.a2r, b, "r2"))
                 f = true;
         }
-        if (b.ratio2 > 0 && !(data.a2ratio > 0) || !(b.ratio2 > 0) && data.a2ratio > 0 || b.ratio2 > 0 && data.a2ratio > 0 && b.ratio2 != data.a2ratio) {
-            b.ratio2 = data.a2ratio > 0 ? data.a2ratio : null;
+        if (!this._isRatioEq(b.ratio2, data.a2ratio)) {
+            b.ratio2 = data.a2ratio > 0 || data.a2ratio == "?" ? data.a2ratio : null;
             f = true;
         }
 
@@ -290,6 +305,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             this.jsd.pushundo(clone);
             this.jsd.refresh(true);
         }
+    },
+
+    _isRatioEq: function (r1, r2) {
+        if (!(r1 > 0 || r1 == "?") || r1 == "")
+            r1 = null;
+        if (!(r2 > 0 || r2 == "?") || r2 == "")
+            r2 = null;
+
+        return r1 == r2;
     },
 
     _makeBondR: function (pos, r, b, key) {
@@ -727,7 +751,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
     },
 
     addBond: function (a1, a2, r1, r2) {
-        if (a1 == null || a2 == null || a1 == a2 || !this.hasSpareR(a1, r1) || !this.hasSpareR(a2, r2))
+        if (a1 == null || a2 == null || a1 == a2 || r1 != "?" && !this.hasSpareR(a1, r1) || r2 != "?" && !this.hasSpareR(a2, r2))
             return null;
         //if (a1.biotype() == org.helm.webeditor.HELM.SUGAR && a2.biotype() == org.helm.webeditor.HELM.SUGAR || a1.biotype() == org.helm.webeditor.HELM.AA && a2.biotype() == org.helm.webeditor.HELM.AA) {
         //    if ((r1 == 1 || r1 == 2) && r1 == r2)
@@ -1529,6 +1553,12 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
     createIsolatedMonomer: function (cmd, a) {
         if (cmd == "helm_nucleotide") {
+            var s = this.monomerexplorer == null ? null : scil.Utils.getInnerText(this.monomerexplorer.lastdiv);
+            if (s == "*") {
+                this.setNodeType(a, org.helm.webeditor.HELM.NUCLEOTIDE, "*");
+                return true;
+            }
+
             var m = this.getDefaultNodeType(org.helm.webeditor.HELM.SUGAR);
             this.setNodeType(a, org.helm.webeditor.HELM.SUGAR, m);
 

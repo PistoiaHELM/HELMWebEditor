@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -956,26 +956,28 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
         var name = scil.Utils.getInnerText(div);
         if (helm == org.helm.webeditor.MonomerExplorer.kNucleotide) {
-            var s = org.helm.webeditor.MonomerExplorer.nucleotides[name];
-            var p1 = s.indexOf('(');
-            var p2 = s.indexOf(")");
-            var sugar = org.helm.webeditor.IO.trimBracket(s.substr(0, p1));
-            var base = org.helm.webeditor.IO.trimBracket(s.substr(p1 + 1, p2 - p1 - 1));
-            var linker = org.helm.webeditor.IO.trimBracket(s.substr(p2 + 1));
+            if (name != "*") {
+                var s = org.helm.webeditor.MonomerExplorer.nucleotides[name];
+                var p1 = s.indexOf('(');
+                var p2 = s.indexOf(")");
+                var sugar = org.helm.webeditor.IO.trimBracket(s.substr(0, p1));
+                var base = org.helm.webeditor.IO.trimBracket(s.substr(p1 + 1, p2 - p1 - 1));
+                var linker = org.helm.webeditor.IO.trimBracket(s.substr(p2 + 1));
 
-            if (scil.Utils.isNullOrEmpty(linker))
-                linker = "null";
+                if (scil.Utils.isNullOrEmpty(linker))
+                    linker = "null";
 
-            this.selected[org.helm.webeditor.HELM.BASE] = base;
-            this.selected[org.helm.webeditor.HELM.LINKER] = linker;
-            this.selected[org.helm.webeditor.HELM.SUGAR] = sugar;
+                this.selected[org.helm.webeditor.HELM.BASE] = base;
+                this.selected[org.helm.webeditor.HELM.LINKER] = linker;
+                this.selected[org.helm.webeditor.HELM.SUGAR] = sugar;
 
-            if (this.rnatabs != null) {
-                var tabs = this.rnatabs;
-                tabs.updateTabLabel("nucleotide", this.createRNATabCaption("nucleotide", s));
-                tabs.updateTabLabel("sugar", this.createRNATabCaption("sugar", sugar));
-                tabs.updateTabLabel("linker", this.createRNATabCaption("linker", linker));
-                tabs.updateTabLabel("base", this.createRNATabCaption("base", base));
+                if (this.rnatabs != null) {
+                    var tabs = this.rnatabs;
+                    tabs.updateTabLabel("nucleotide", this.createRNATabCaption("nucleotide", s));
+                    tabs.updateTabLabel("sugar", this.createRNATabCaption("sugar", sugar));
+                    tabs.updateTabLabel("linker", this.createRNATabCaption("linker", linker));
+                    tabs.updateTabLabel("base", this.createRNATabCaption("base", base));
+                }
             }
         }
         else {

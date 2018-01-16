@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining

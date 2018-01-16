@@ -1,42 +1,6 @@
 
-1.  Create backend database
-=======================================
+The source code is built in MicroSoft Visual Studio.  The project file is "HELM.sln".
 
+For developer convience, all javascript source code are stored as separated file in .\helm\ folder.
 
-1.1 Monomer database
----------------------------------------
-
-create table HELMMonomers
-(
-id bigint not null identity(1, 1) primary key,
-Symbol varchar(256) not null,
-Name varchar(256) not null,
-NaturalAnalog varchar(256),
-SMILES varchar(max),
-PolymerType varchar(256) not null,
-MonomerType varchar(256),
-Status varchar(256),
-Molfile varchar(max),
-Hashcode varchar(128),
-R1 varchar(256),
-R2 varchar(256),
-R3 varchar(256),
-R4 varchar(256),
-R5 varchar(256),
-Author nvarchar(256),
-CreatedDate DateTime default getdate()
-);
-
-
-1.2 Rule database
----------------------------------------
-
-create table HELMRules
-(
-id bigint not null identity(1, 1) primary key,
-Name nvarchar(256) not null,
-Script nvarchar(max),
-Note nvarchar(max),
-Author nvarchar(256),
-CreatedDate DateTime default getdate()
-);
+For deployment conveience, it is able to run _merge.helm.bat Windows batch file to merge all source code into one file: .\JSDraw\Pistoia.HELM-uncompressed.js

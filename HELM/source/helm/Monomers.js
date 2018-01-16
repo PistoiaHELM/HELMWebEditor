@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -485,6 +485,7 @@ org.helm.webeditor.Monomers = {
         if (ss == null || ss.length == 0)
             return null;
 
+        smiles = this.chemAxon2JSDrawSmiles(smiles);
         if (this.smilesmonomers[smiles] != null)
             return this.smilesmonomers[smiles];
 
@@ -511,6 +512,35 @@ org.helm.webeditor.Monomers = {
 
         this.smilesmonomers[smiles] = m;
         return m;
+    },
+
+    chemAxon2JSDrawSmiles: function (smiles) {
+        // "C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|"
+        var s = smiles;
+        var p = s.indexOf(" |$");
+        if (p <= 0 || !scil.Utils.endswith(smiles, "$|"))
+            return smiles;
+
+        var rs = this.findSmilesRs(s);
+        s = s.substr(0, p);
+        if (rs != null && rs.length > 0) {
+            for (var i = 0; i < rs.length; ++i) {
+                p = s.indexOf("[*]");
+                if (p > 0) {
+                    ++p;
+                    s = s.substr(0, p) + rs[i] + s.substr(p + 1);
+                }
+                else {
+                    p = s.indexOf("*");
+                    if (p > 0)
+                        s = s.substr(0, p) + "[" + rs[i] + "]" + s.substr(p + 1);
+                    else
+                        return smiles;
+                }
+            }
+        }
+
+        return s;
     },
 
     findSmilesRs: function (s) {

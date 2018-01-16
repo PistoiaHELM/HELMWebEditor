@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -134,7 +134,7 @@ org.helm.webeditor.Adapter = {
                 if (!(page > 0))
                     page = 1;
                 var offset = (page - 1) * limit;
-                args.url = org.helm.webeditor.Adapter.url + "/rule?limit=" + limit + "&offset=" + offset;
+                args.url = org.helm.webeditor.Adapter.url + "/rules?limit=" + limit + "&offset=" + offset;
                 opts.verb = "get";
                 break;
             case "helm.rule.save":

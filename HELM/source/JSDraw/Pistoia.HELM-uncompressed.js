@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
-*  Version 2.1.0.2017-11-13
+* Copyright (C)2018, The Pistoia Alliance
+*  Version 2.1.0.2018-01-13
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -62,7 +62,8 @@ org.helm.webeditor = {
         LINKER: "HELM_LINKER",
         AA: "HELM_AA",
         CHEM: "HELM_CHEM",
-        BLOB: "HELM_BLOB"
+        BLOB: "HELM_BLOB",
+        NUCLEOTIDE: "HELM_NUCLETIDE" // only for the combo *
     },
 
     blobtypes: ["Bead", "Gold Particle"],
@@ -77,7 +78,7 @@ org.helm.webeditor = {
 
         var biotype = typeof (a) == "string" ? a : a.biotype();
         return biotype == org.helm.webeditor.HELM.BASE || biotype == org.helm.webeditor.HELM.SUGAR || biotype == org.helm.webeditor.HELM.LINKER ||
-            biotype == org.helm.webeditor.HELM.AA || biotype == org.helm.webeditor.HELM.CHEM || biotype == org.helm.webeditor.HELM.BLOB;
+            biotype == org.helm.webeditor.HELM.AA || biotype == org.helm.webeditor.HELM.CHEM || biotype == org.helm.webeditor.HELM.BLOB || biotype == org.helm.webeditor.HELM.NUCLEOTIDE;
     },
 
     /**
@@ -146,7 +147,7 @@ org.helm.webeditor = {
 
 scil.helm = org.helm.webeditor;
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -333,6 +334,8 @@ org.helm.webeditor.Interface = {
             JSDraw2.Drawer.drawRect(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw).setFill(c.backgroundcolor);
         else if (biotype == org.helm.webeditor.HELM.BLOB)
             JSDraw2.Drawer.drawRect(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw * 2, linewidth * 5).setFill(c.backgroundcolor);
+        else if (biotype == org.helm.webeditor.HELM.NUCLEOTIDE)
+            JSDraw2.Drawer.drawPentagon(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw, linewidth * 3).setFill(c.backgroundcolor);
         var pt = p.clone();
         p.offset(0, -1);
         JSDraw2.Drawer.drawLabel(surface, p, a.elem, c.textcolor, fontsize * (a.elem.length > 1 ? 2 / a.elem.length : 1.0), null, null, null, false);
@@ -472,7 +475,7 @@ org.helm.webeditor.Interface = {
         else {
             var a = JSDraw2.Atom.cast(ed.curObject);
             if (a.bio == null)
-                items.push({ caption: "R Group", callback: function (cmd, obj) { ed.menuSetAtomType(cmd, obj); }, children: ["R", "R1", "R2", "R3", "R4", "R5"] });
+                items.push({ caption: "R Group", callback: function (cmd, obj) { ed.menuSetAtomType(cmd, obj); }, children: ["R1", "R2", "R3", "R4", "R5"] });
 
             items.push({ caption: "Copy Molfile", key: "copymolfile" });
         }
@@ -491,7 +494,7 @@ org.helm.webeditor.Interface = {
         return items;
     }
 };﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -572,7 +575,7 @@ org.helm.webeditor.MonomerColors = {
     }
 };
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -1058,6 +1061,7 @@ org.helm.webeditor.Monomers = {
         if (ss == null || ss.length == 0)
             return null;
 
+        smiles = this.chemAxon2JSDrawSmiles(smiles);
         if (this.smilesmonomers[smiles] != null)
             return this.smilesmonomers[smiles];
 
@@ -1084,6 +1088,35 @@ org.helm.webeditor.Monomers = {
 
         this.smilesmonomers[smiles] = m;
         return m;
+    },
+
+    chemAxon2JSDrawSmiles: function (smiles) {
+        // "C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|"
+        var s = smiles;
+        var p = s.indexOf(" |$");
+        if (p <= 0 || !scil.Utils.endswith(smiles, "$|"))
+            return smiles;
+
+        var rs = this.findSmilesRs(s);
+        s = s.substr(0, p);
+        if (rs != null && rs.length > 0) {
+            for (var i = 0; i < rs.length; ++i) {
+                p = s.indexOf("[*]");
+                if (p > 0) {
+                    ++p;
+                    s = s.substr(0, p) + rs[i] + s.substr(p + 1);
+                }
+                else {
+                    p = s.indexOf("*");
+                    if (p > 0)
+                        s = s.substr(0, p) + "[" + rs[i] + "]" + s.substr(p + 1);
+                    else
+                        return smiles;
+                }
+            }
+        }
+
+        return s;
     },
 
     findSmilesRs: function (s) {
@@ -1288,7 +1321,7 @@ scil.helm.Monomers.chems = {
     'example': { id: 'Example', n: 'Symmetric Doubler', na: null, m: '\n  Marvin  09241011262D          \n\n 23 22  0  0  0  0            999 V2000\n   -3.8304    2.5045    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.8304    1.6795    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1159    1.2670    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.4014    1.6795    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6869    1.2670    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9725    1.6795    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2580    1.2670    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4565    1.6795    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4565    2.5045    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6869    0.4420    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1709    2.9170    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1709    3.7420    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.8854    4.1545    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.8854    4.9795    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.5448    2.9170    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.5448    3.7420    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.2593    4.1545    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.2593    4.9795    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1709    1.2670    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.5448    1.2670    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0994   -0.2725    0.0000 R#  0  0  0  0  0  0  0  0  0  0  0  0\n   -5.9738    5.3920    0.0000 R#  0  0  0  0  0  0  0  0  0  0  0  0\n    2.5999    5.3920    0.0000 R#  0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  1  0  0  0  0\n  4  5  1  0  0  0  0\n  5  6  1  0  0  0  0\n  6  7  1  0  0  0  0\n  7  8  1  0  0  0  0\n  8  9  1  0  0  0  0\n  5 10  1  0  0  0  0\n  9 11  1  0  0  0  0\n 11 12  1  0  0  0  0\n 12 13  1  0  0  0  0\n 13 14  1  0  0  0  0\n  1 15  1  0  0  0  0\n 15 16  1  0  0  0  0\n 16 17  1  0  0  0  0\n 17 18  1  0  0  0  0\n  8 19  2  0  0  0  0\n  2 20  2  0  0  0  0\n 10 21  1  0  0  0  0\n 18 22  1  0  0  0  0\n 14 23  1  0  0  0  0\nM  RGP  3  21   1  22   2  23   3\nM  END\n\n$$$$\n', rs: 3, at: { R1: 'H', R2: 'H', R3: 'H'} },
     'r': { id: 'R', n: 'R', na: null, m: null, rs: 0, at: {}}
 };﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -1499,14 +1532,14 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         if (this.bondPropDlg == null) {
             var me = this;
             var fields = {
-                a1: { label: "Atom #1", viewonly: true },
+                a1: { label: "Monomer #1", viewonly: true },
                 a1pos: { label: "Position" },
                 a1r: { label: "R#" },
-                a1ratio: { label: "Ratio", type: "number" },
-                a2: { label: "Atom #2", viewonly: true },
+                a1ratio: { label: "Ratio", type: "number", accepts: "^[?]$" },
+                a2: { label: "Monomer #2", viewonly: true },
                 a2pos: { label: "Position" },
                 a2r: { label: "R#" },
-                a2ratio: { label: "Ratio", type: "number" }
+                a2ratio: { label: "Ratio", type: "number", accepts: "^[?]$" }
             };
             this.bondPropDlg = scil.Form.createDlgForm("Bond Attributes", fields, { label: "Save", onclick: function () { me.setBondProp2(); } });
         }
@@ -1518,6 +1551,11 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         this.bondPropDlg.form.fields.a1r.disabled = !blob1;
         this.bondPropDlg.form.fields.a2pos.disabled = !blob2;
         this.bondPropDlg.form.fields.a2r.disabled = !blob2;
+
+        if (scil.Utils.isNullOrEmpty(data.a1ratio))
+            data.a1ratio = org.helm.webeditor.defaultbondratio;
+        if (scil.Utils.isNullOrEmpty(data.a2ratio))
+            data.a2ratio = org.helm.webeditor.defaultbondratio;
 
         this.bondPropDlg.form.setData(data);
         this.bondPropDlg.bond = b;
@@ -1554,6 +1592,16 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         var data = this.bondPropDlg.form.getData();
         this.bondPropDlg.hide();
 
+        if (data.a1ratio == "?" || data.a2ratio == "?") {
+            data.a1ratio = data.a2ratio = "?";
+        }
+        else {
+            if (data.a1ratio == "")
+                data.a1ratio = org.helm.webeditor.defaultbondratio;
+            if (data.a2ratio == "")
+                data.a2ratio = org.helm.webeditor.defaultbondratio;
+        }
+
         var f = false;
         var clone = this.jsd.clone();
         var b = this.bondPropDlg.bond;
@@ -1561,8 +1609,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             if (this._makeBondR(data.a1pos, data.a1r, b, "r1"))
                 f = true;
         }
-        if (b.ratio1 > 0 && !(data.a1ratio > 0) || !(b.ratio1 > 0) && data.a1ratio > 0 || b.ratio1 > 0 && data.a1ratio > 0 && b.ratio1 != data.a1ratio) {
-            b.ratio1 = data.a1ratio > 0 ? data.a1ratio : null;
+        if (!this._isRatioEq(b.ratio1, data.a1ratio)) {
+            b.ratio1 = data.a1ratio > 0 || data.a1ratio == "?" ? data.a1ratio : null;
             f = true;
         }
 
@@ -1570,8 +1618,8 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             if (this._makeBondR(data.a2pos, data.a2r, b, "r2"))
                 f = true;
         }
-        if (b.ratio2 > 0 && !(data.a2ratio > 0) || !(b.ratio2 > 0) && data.a2ratio > 0 || b.ratio2 > 0 && data.a2ratio > 0 && b.ratio2 != data.a2ratio) {
-            b.ratio2 = data.a2ratio > 0 ? data.a2ratio : null;
+        if (!this._isRatioEq(b.ratio2, data.a2ratio)) {
+            b.ratio2 = data.a2ratio > 0 || data.a2ratio == "?" ? data.a2ratio : null;
             f = true;
         }
 
@@ -1579,6 +1627,15 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
             this.jsd.pushundo(clone);
             this.jsd.refresh(true);
         }
+    },
+
+    _isRatioEq: function (r1, r2) {
+        if (!(r1 > 0 || r1 == "?") || r1 == "")
+            r1 = null;
+        if (!(r2 > 0 || r2 == "?") || r2 == "")
+            r2 = null;
+
+        return r1 == r2;
     },
 
     _makeBondR: function (pos, r, b, key) {
@@ -2016,7 +2073,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
     },
 
     addBond: function (a1, a2, r1, r2) {
-        if (a1 == null || a2 == null || a1 == a2 || !this.hasSpareR(a1, r1) || !this.hasSpareR(a2, r2))
+        if (a1 == null || a2 == null || a1 == a2 || r1 != "?" && !this.hasSpareR(a1, r1) || r2 != "?" && !this.hasSpareR(a2, r2))
             return null;
         //if (a1.biotype() == org.helm.webeditor.HELM.SUGAR && a2.biotype() == org.helm.webeditor.HELM.SUGAR || a1.biotype() == org.helm.webeditor.HELM.AA && a2.biotype() == org.helm.webeditor.HELM.AA) {
         //    if ((r1 == 1 || r1 == 2) && r1 == r2)
@@ -2818,6 +2875,12 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
 
     createIsolatedMonomer: function (cmd, a) {
         if (cmd == "helm_nucleotide") {
+            var s = this.monomerexplorer == null ? null : scil.Utils.getInnerText(this.monomerexplorer.lastdiv);
+            if (s == "*") {
+                this.setNodeType(a, org.helm.webeditor.HELM.NUCLEOTIDE, "*");
+                return true;
+            }
+
             var m = this.getDefaultNodeType(org.helm.webeditor.HELM.SUGAR);
             this.setNodeType(a, org.helm.webeditor.HELM.SUGAR, m);
 
@@ -2859,7 +2922,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
     }
 });
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -3468,7 +3531,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             //    continue;
 
             var bt = a.biotype();
-            if (bt == org.helm.webeditor.HELM.LINKER || bt == org.helm.webeditor.HELM.SUGAR)
+            if (bt == org.helm.webeditor.HELM.LINKER || bt == org.helm.webeditor.HELM.SUGAR || bt == org.helm.webeditor.HELM.NUCLEOTIDE)
                 bt = org.helm.webeditor.HELM.BASE;
             if (bt != lastbt || bt == org.helm.webeditor.HELM.CHEM || bt == org.helm.webeditor.HELM.BLOB) {
                 var prefix = null;
@@ -3900,7 +3963,7 @@ scil.apply(org.helm.webeditor.Chain, {
         return chains;
     }
 });﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -4286,7 +4349,7 @@ org.helm.webeditor.Layout = {
     }
 };
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -4321,6 +4384,13 @@ org.helm.webeditor.IO = {
     * @function getHelm
     */
     getHelm: function (m, highlightselection) {
+        // I#12164
+        for (var i = 0; i < m.atoms.length; ++i) {
+            var a = m.atoms[i];
+            if (!org.helm.webeditor.isHelmNode(a) && !a.hidden)
+                return null;
+        }
+
         var ret = { chainid: { RNA: 0, PEPTIDE: 0, CHEM: 0, BLOB: 0, G: 0 }, sequences: {}, connections: [], chains: {}, pairs: [], groupatoms: [], groups: {}, annotations: {}, singletons: {}, ratios: {} };
         this.getHelm2(m, highlightselection, ret);
 
@@ -4581,8 +4651,8 @@ org.helm.webeditor.IO = {
         for (var i = 0; i < ret.connections.length; ++i) {
             var c = ret.connections[i];
             s += (++count > 1 ? "|" : "") + this.renderConnection(ret, c);
-            if (c.ratio1 > 0 || c.ratio2 > 0) {
-                var s2 = c.c1 + (c.ratio1 > 0 ? ":" + c.ratio1 : "") + "+" + c.c2 + (c.ratio2 > 0 ? ":" + c.ratio2 : "");
+            if ((c.ratio1 > 0 || c.ratio1 == "?") && (c.ratio2 > 0 || c.ratio1 == "?")) {
+                var s2 = c.c1 + ":" + c.ratio1 + "+" + c.c2 + ":" + c.ratio2;
                 id = "G" + (++ret.chainid.G);
                 groups.push(id + "(" + s2 + ")");
             }
@@ -4915,6 +4985,7 @@ org.helm.webeditor.IO = {
                     c.chain2 = groups[c.chain2];
                 }
 
+                c.tag = e.tag;
                 connections.push(c);
                 connatoms[c.chain1] = true;
                 connatoms[c.chain2] = true;
@@ -5008,12 +5079,13 @@ org.helm.webeditor.IO = {
             var r1 = scil.Utils.startswith(c.r1, "R") ? parseInt(c.r1.substr(1)) : c.r1;
             var r2 = scil.Utils.startswith(c.r2, "R") ? parseInt(c.r2.substr(1)) : c.r2;
             var b = plugin.addBond(atom1, atom2, r1, r2);
-            b.tag = e.tag;
-
-            var bondratio = this.findBondRatio(bondratios, groups, c.chain1, c.chain2);
-            if (bondratio != null) {
-                b.ratio1 = bondratio.ratio1;
-                b.ratio2 = bondratio.ratio2;
+            if (b != null) {
+                b.tag = c.tag;
+                var bondratio = this.findBondRatio(bondratios, groups, c.chain1, c.chain2);
+                if (bondratio != null) {
+                    b.ratio1 = bondratio.ratio1 != null ? bondratio.ratio1 : org.helm.webeditor.defaultbondratio;
+                    b.ratio2 = bondratio.ratio2 != null ? bondratio.ratio2 : org.helm.webeditor.defaultbondratio;
+                }
             }
         }
 
@@ -5537,8 +5609,9 @@ org.helm.webeditor.IO = {
                     throw "Base attached to Linker: " + s;
 
                 // linker
+                var biotype = s == "*" ? org.helm.webeditor.HELM.NUCLEOTIDE : org.helm.webeditor.HELM.LINKER;
                 loop.p.x += loop.delta;
-                loop.a2 = this.addNode(plugin, chain, chain.atoms, loop.p.clone(), org.helm.webeditor.HELM.LINKER, c.symbol, renamedmonomers);
+                loop.a2 = this.addNode(plugin, chain, chain.atoms, loop.p.clone(), biotype, c.symbol, renamedmonomers);
                 chain.bonds.push(plugin.addBond(loop.a1, loop.a2, 2, 1));
                 loop.a1 = loop.a2;
                 ++loop.count;
@@ -5700,7 +5773,7 @@ org.helm.webeditor.IO = {
     }
 };
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -6657,26 +6730,28 @@ org.helm.webeditor.MonomerExplorer = scil.extend(scil._base, {
 
         var name = scil.Utils.getInnerText(div);
         if (helm == org.helm.webeditor.MonomerExplorer.kNucleotide) {
-            var s = org.helm.webeditor.MonomerExplorer.nucleotides[name];
-            var p1 = s.indexOf('(');
-            var p2 = s.indexOf(")");
-            var sugar = org.helm.webeditor.IO.trimBracket(s.substr(0, p1));
-            var base = org.helm.webeditor.IO.trimBracket(s.substr(p1 + 1, p2 - p1 - 1));
-            var linker = org.helm.webeditor.IO.trimBracket(s.substr(p2 + 1));
+            if (name != "*") {
+                var s = org.helm.webeditor.MonomerExplorer.nucleotides[name];
+                var p1 = s.indexOf('(');
+                var p2 = s.indexOf(")");
+                var sugar = org.helm.webeditor.IO.trimBracket(s.substr(0, p1));
+                var base = org.helm.webeditor.IO.trimBracket(s.substr(p1 + 1, p2 - p1 - 1));
+                var linker = org.helm.webeditor.IO.trimBracket(s.substr(p2 + 1));
 
-            if (scil.Utils.isNullOrEmpty(linker))
-                linker = "null";
+                if (scil.Utils.isNullOrEmpty(linker))
+                    linker = "null";
 
-            this.selected[org.helm.webeditor.HELM.BASE] = base;
-            this.selected[org.helm.webeditor.HELM.LINKER] = linker;
-            this.selected[org.helm.webeditor.HELM.SUGAR] = sugar;
+                this.selected[org.helm.webeditor.HELM.BASE] = base;
+                this.selected[org.helm.webeditor.HELM.LINKER] = linker;
+                this.selected[org.helm.webeditor.HELM.SUGAR] = sugar;
 
-            if (this.rnatabs != null) {
-                var tabs = this.rnatabs;
-                tabs.updateTabLabel("nucleotide", this.createRNATabCaption("nucleotide", s));
-                tabs.updateTabLabel("sugar", this.createRNATabCaption("sugar", sugar));
-                tabs.updateTabLabel("linker", this.createRNATabCaption("linker", linker));
-                tabs.updateTabLabel("base", this.createRNATabCaption("base", base));
+                if (this.rnatabs != null) {
+                    var tabs = this.rnatabs;
+                    tabs.updateTabLabel("nucleotide", this.createRNATabCaption("nucleotide", s));
+                    tabs.updateTabLabel("sugar", this.createRNATabCaption("sugar", sugar));
+                    tabs.updateTabLabel("linker", this.createRNATabCaption("linker", linker));
+                    tabs.updateTabLabel("base", this.createRNATabCaption("base", base));
+                }
             }
         }
         else {
@@ -6914,7 +6989,7 @@ scil.apply(org.helm.webeditor.MonomerExplorer, {
     }
 });
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -7195,7 +7270,7 @@ org.helm.webeditor.MolViewer = {
         }
     }
 };﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -7395,7 +7470,7 @@ org.helm.webeditor.Formula = {
         }
     }
 };﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -7559,7 +7634,7 @@ org.helm.webeditor.ExtinctionCoefficient = {
         return result;
     } 
 };﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -7894,7 +7969,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             skin: "w8", showabout: this.options.showabout, showtoolbar: this.options.canvastoolbar != false, helmtoolbar: true, showmonomerexplorer: true,
             inktools: false, width: width, height: height, ondatachange: function () { me.updateProperties(); },
             onselectionchanged: function () { me.onselectionchanged(); },
-            onselectcurrent: function (e, obj, ed) { me.onselectcurrent(e, obj, ed); }
+            onselectcurrent: function (e, obj, ed) { me.onselectcurrent(e, obj, ed); },
+            onvalidatetext: function (s, editor) { return me.onvalidatetext(s, editor); }
         };
 
         this.canvas = org.helm.webeditor.Interface.createCanvas(div, args);
@@ -7905,6 +7981,19 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             var src = e.target || e.srcElement;
             return scil.Utils.hasAnsestor(src, me.canvas.helm.monomerexplorer.div);
         };
+    },
+
+    onvalidatetext: function (s, editor) {
+        if (scil.Utils.isNullOrEmpty(s))
+            return;
+
+        var t = editor.text;
+        if (t != null && t.fieldtype == "BRACKET_TYPE" && t.anchors.length == 1 && JSDraw2.Bracket.cast(t.anchors[0]) != null) {
+            if (!/^[*]|([0-9]+([-][0-9]+)?)$/.test(s)) {
+                scil.Utils.alert("Invalid subscript");
+                return false;
+            }
+        }
     },
 
     /**
@@ -8004,10 +8093,15 @@ org.helm.webeditor.App = scil.extend(scil._base, {
                 format = this.getValueByKey(this.sequencebuttons, "format");
 
             s = scil.Utils.trim(scil.Utils.getInnerText(this.sequence));
-            // fasta
-            s = s.replace(/[\n][>|;].*[\r]?[\n]/ig, '').replace(/^[>|;].*[\r]?[\n]/i, '');
-            // other space
-            s = s.replace(/[ \t\r\n]+/g, '')
+            if (/^((RNA)|(PEPTIDE)|(CHEM)|(BLOB))[0-9]+/.test(s)) {
+                format = "HELM";
+            }
+            else {
+                // fasta
+                s = s.replace(/[\n][>|;].*[\r]?[\n]/ig, '').replace(/^[>|;].*[\r]?[\n]/i, '');
+                // other space
+                s = s.replace(/[ \t\r\n]+/g, '');
+            }
         }
         else {
             s = scil.Utils.getInnerText(this.notation);
@@ -8406,7 +8500,7 @@ org.helm.webeditor.App = scil.extend(scil._base, {
 });
 
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -8492,7 +8586,7 @@ org.helm.webeditor.AppToolbar.Resources = {
     'settings-1.png': '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',
     'settings-2.png': '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'
 };﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -8825,7 +8919,7 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
         return ["", "New", "Approved", "Retired"]
     }
 });﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -9097,7 +9191,7 @@ org.helm.webeditor.RuleSet = {
         callback(f, error);
     }
 };﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -9267,7 +9361,7 @@ scil.apply(org.helm.webeditor.RuleSetApp, {
         }
     }
 });﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -9402,7 +9496,7 @@ org.helm.webeditor.Adapter = {
                 if (!(page > 0))
                     page = 1;
                 var offset = (page - 1) * limit;
-                args.url = org.helm.webeditor.Adapter.url + "/rule?limit=" + limit + "&offset=" + offset;
+                args.url = org.helm.webeditor.Adapter.url + "/rules?limit=" + limit + "&offset=" + offset;
                 opts.verb = "get";
                 break;
             case "helm.rule.save":

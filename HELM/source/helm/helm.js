@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
-*  Version 2.1.0.2017-11-13
+* Copyright (C)2018, The Pistoia Alliance
+*  Version 2.1.0.2018-01-13
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -62,7 +62,8 @@ org.helm.webeditor = {
         LINKER: "HELM_LINKER",
         AA: "HELM_AA",
         CHEM: "HELM_CHEM",
-        BLOB: "HELM_BLOB"
+        BLOB: "HELM_BLOB",
+        NUCLEOTIDE: "HELM_NUCLETIDE" // only for the combo *
     },
 
     blobtypes: ["Bead", "Gold Particle"],
@@ -77,7 +78,7 @@ org.helm.webeditor = {
 
         var biotype = typeof (a) == "string" ? a : a.biotype();
         return biotype == org.helm.webeditor.HELM.BASE || biotype == org.helm.webeditor.HELM.SUGAR || biotype == org.helm.webeditor.HELM.LINKER ||
-            biotype == org.helm.webeditor.HELM.AA || biotype == org.helm.webeditor.HELM.CHEM || biotype == org.helm.webeditor.HELM.BLOB;
+            biotype == org.helm.webeditor.HELM.AA || biotype == org.helm.webeditor.HELM.CHEM || biotype == org.helm.webeditor.HELM.BLOB || biotype == org.helm.webeditor.HELM.NUCLEOTIDE;
     },
 
     /**

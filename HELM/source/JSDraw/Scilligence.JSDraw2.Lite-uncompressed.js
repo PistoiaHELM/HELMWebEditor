@@ -1,7 +1,7 @@
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -195,7 +195,7 @@ scilligence.getGeoLocation();
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -1527,10 +1527,8 @@ scilligence.Utils = {
                 var ss = tm.split('-');
                 if (ss.length == 3) {
                     var y = parseInt(ss[0]);
-                    var m = parseInt(ss[1]) - 1;
+                    var m = ss[1].length == 3 ? this._parseMonth(ss[1]) : (parseInt(ss[1]) - 1);
                     var d = parseInt(ss[2]);
-                    if (isNaN(m))
-                        m = scil.Utils.indexOf(this._months, ss[1]);
 
                     if (y > 0 && m >= 0 && m < 12 && d > 0 && d <= 31)
                         return new Date(y, m, d);
@@ -1552,6 +1550,13 @@ scilligence.Utils = {
 
     weekday: function (dt) {
         return this._weekdays[dt.getDay()];
+    },
+
+    _parseMonth: function (s) {
+        if (s == null || s.length != 3)
+            return -1;
+        s = s.substr(0, 1).toUpperCase() + s.substr(1).toLowerCase();
+        return scil.Utils.indexOf(this._months, s);
     },
 
     formatTime: function (tm, format) {
@@ -3552,7 +3557,7 @@ scil.Utils.padright = scil.Utils.padRight;
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2017 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -3730,7 +3735,7 @@ JSDraw2.RNATable = {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -3767,7 +3772,7 @@ scil.apply(JSDraw2, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -3871,7 +3876,7 @@ JSDraw2.PT = {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -4657,7 +4662,7 @@ scil.apply(JSDraw2.Atom, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -4946,7 +4951,7 @@ JSDraw2.BA = scilligence.extend(scilligence._base, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 //////////////////////////////////////////////////////////////////////////////////
@@ -5092,7 +5097,7 @@ JSDraw2.Base64 = {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -5363,27 +5368,51 @@ JSDraw2.Bond = scilligence.extend(scilligence._base, {
         return "black";
     },
 
-    _fmtBondAnn: function (r, ratio) {
-        var s = "";
-
-        if (!scil.Utils.isNullOrEmpty(r) && r != "?" && r != "?:?") {
-            s = r + "";
-            var p = s.indexOf(':');
-            if (p > 0)
-                s = "Pos: " + s.substr(0, p) + "; R#: " + s.substr(p + 1);
+    splitPosR: function (s) {
+        if (!scil.Utils.isNullOrEmpty(s)) {
+            var s2 = s == "?" ? "?:?" : s + "";
+            var p = s2.indexOf(':');
+            if (p >= 0) {
+                var pos = s2.substr(0, p);
+                var r = s2.substr(p + 1);
+                return { pos: (pos == "" ? "?" : pos), r: (r == "" ? "?" : r) };
+            }
         }
 
-        if (!scil.Utils.isNullOrEmpty(ratio))
-            s += (s == "" ? "" : "; ") + "Ratio: " + ratio;
+        return { pos: "?", r: "?" };
+    },
 
-        return s;
+    _fmtBondAnn: function () {
+        var s1 = "";
+        var s2 = "";
+
+        var r1 = this.splitPosR(this.r1);
+        var r2 = this.splitPosR(this.r2);
+        if (r1.pos != "?" || r2.pos != "?") {
+            s1 += (s1 == "" ? "" : "; ") + "Pos: " + r1.pos;
+            s2 += (s2 == "" ? "" : "; ") + "Pos: " + r2.pos;
+        }
+        if (r1.r != "?" || r2.r != "?") {
+            s1 += (s1 == "" ? "" : "; ") + "R#: " + r1.r;
+            s2 += (s2 == "" ? "" : "; ") + "R#: " + r2.r;
+        }
+
+        var defaultratio = org.helm.webeditor.defaultbondratio == null ? "" : org.helm.webeditor.defaultbondratio;
+        var ratio1 = scil.Utils.isNullOrEmpty(this.ratio1) ? defaultratio : this.ratio1;
+        var ratio2 = scil.Utils.isNullOrEmpty(this.ratio2) ? defaultratio : this.ratio2;
+        if (ratio1 != defaultratio || ratio2 != defaultratio /* https://github.com/PistoiaHELM/HELMWebEditor/issues/148 */) {
+            s1 += (s1 == "" ? "" : "; ") + "Ratio: " + ratio1;
+            s2 += (s2 == "" ? "" : "; ") + "Ratio: " + ratio2;
+        }
+
+        return { ba1: s1, ba2: s2 };
     },
 
     drawBondAnnotation: function (surface, fontsize, b) {
-        var ba1 = this._fmtBondAnn(this.r1, this.ratio1);
-        var ba2 = this._fmtBondAnn(this.r2, this.ratio2);
-
-        if (ba1 == "" || ba2 == "")
+        var s = this._fmtBondAnn();
+        var ba1 = s.ba1;
+        var ba2 = s.ba2;
+        if (ba1 == "" && ba2 == "")
             return;
 
         var dx = (b.p1.x - b.p2.x) / 90;
@@ -5632,7 +5661,7 @@ scil.apply(JSDraw2.Bond, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -6070,7 +6099,7 @@ JSDraw2.JSDrawIO = {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -11060,7 +11089,7 @@ JsMol = JSDraw2.Mol;
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -11398,7 +11427,7 @@ scil.apply(JSDraw2.Point, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -11774,7 +11803,7 @@ JSDraw2.Rect.fromString = function (s) {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -11904,7 +11933,7 @@ scil.Deque = scil.apply(scil._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -12137,7 +12166,7 @@ JSDraw2.SuperAtoms = {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -12934,7 +12963,7 @@ JSDraw2.FormulaParser = {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -13636,7 +13665,7 @@ JSDraw2.Toolbar = scil.extend(scil._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -13709,7 +13738,7 @@ JSDraw2.Lasso = scilligence.extend(scilligence._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -14265,11 +14294,30 @@ JSDraw2.Drawer = {
             { x: r.right(), y: c.y }
         ];
         return surface.createPolyline(points).setStroke({ color: color, width: linewidth });
+    },
+
+    drawPentagon: function (surface, r, color, linewidth) {
+        var c = r.center();
+        var p1 = c.clone().offset(0, -r.width / 2);
+        var p2 = p1.clone().rotateAround(c, 72);
+        var p3 = p2.clone().rotateAround(c, 72);
+        var p4 = p3.clone().rotateAround(c, 72);
+        var p5 = p4.clone().rotateAround(c, 72);
+        
+        var points = [
+            { x: p1.x, y: p1.y },
+            { x: p2.x, y: p2.y },
+            { x: p3.x, y: p3.y },
+            { x: p4.x, y: p4.y },
+            { x: p5.x, y: p5.y },
+            { x: p1.x, y: p1.y },
+        ];
+        return surface.createPolyline(points).setStroke({ color: color, width: linewidth });
     }
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -14287,7 +14335,7 @@ JSDraw2.Language = {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -14318,7 +14366,7 @@ JSDraw2.IDGenerator = scil.extend(scil._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -14377,7 +14425,7 @@ JSDraw2.Skin.reset();
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -15135,6 +15183,9 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             for (var i = 0; i < tlcplates.length; ++i)
                 this.addTlcPlate(tlcplates[i]);
 
+            if (m.chiral != null)
+                this.m.chiral = m.chiral;
+
             if (empty)
                 this.fitToWindow();
         }
@@ -15372,6 +15423,11 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         this.texteditor.ed.input.value = "";
         if (cancel == true)
             return;
+
+        if (this.options.onvalidatetext != null) {
+            if (this.options.onvalidatetext(s, this.texteditor, this) == false)
+                return;
+        }
 
         if (JSDraw2.Symbol != null)
             JSDraw2.Symbol.hide();
@@ -16760,6 +16816,11 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
                 if (t != null)
                     this.showTextEditor(t, null, "");
             }
+            else {
+                var t = JSDraw2.Text.cast(this.curObject);
+                if (t != null && t.fieldtype == "BRACKET_TYPE" && t.anchors.length == 1 && JSDraw2.Bracket.cast(t.anchors[0]) != null)
+                    this.showTextEditor(t, null, t.text);
+            }
             return;
         }
 
@@ -17388,11 +17449,11 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         var modified = false;
         var cloned = this.clone();
         switch (cmd) {
-            //            case "Chiral":                                                                                                               
-            //                this.pushundo();                                                                                                               
-            //                this.m.chiral = !this.m.chiral;                                                                                                               
-            //                this.refresh(true);                                                                                                               
-            //                break;                                                                                                               
+            //            case "Chiral":                                                                                                                       
+            //                this.pushundo();                                                                                                                       
+            //                this.m.chiral = !this.m.chiral;                                                                                                                       
+            //                this.refresh(true);                                                                                                                       
+            //                break;                                                                                                                       
             case "curveline":
                 obj.setAssayCurveLine(this);
                 break;
@@ -18381,7 +18442,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
 
             var c = null;
             switch (e.keyCode) {
-                //case 16: // *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+                //case 16: // *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
                 case 56:
                     c = '*';
                     break;
@@ -21128,7 +21189,7 @@ scilligence.mstouch = {
 JSDraw = JSDraw2.Editor;﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -21225,7 +21286,7 @@ JSDraw2.Table = {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 //////////////////////////////////////////////////////////////////////////////////
@@ -21477,7 +21538,7 @@ JSDraw2.Bracket.cast = function (a) {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 //////////////////////////////////////////////////////////////////////////////////
@@ -21623,7 +21684,7 @@ JSDraw2.Group.cast = function (a) {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 //////////////////////////////////////////////////////////////////////////////////
@@ -21850,7 +21911,7 @@ JSDraw2.Text.cast = function (a) {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -21977,7 +22038,7 @@ scil.Lang = {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -22034,7 +22095,7 @@ JSDraw2.Menu = scil.Menu;
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -22260,7 +22321,7 @@ scil.apply(scil.ContextMenu, {
 JSDraw2.ContextMenu = scil.ContextMenu;﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -22644,7 +22705,7 @@ scil.onload(function () {
 JsDialog = JSDraw2.Dialog = scil.Dialog;﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -22770,7 +22831,7 @@ scil.Form = scil.extend(scil._base, {
     * @param {dictonary} data the form data, *id* is the key
     */
     setData: function (data, overwritemode) {
-        this.dirty = false;
+        this.setDirty(false);
         for (var id in this.fields) {
             var field = this.fields[id];
             if (field == null)
@@ -22796,6 +22857,7 @@ scil.Form = scil.extend(scil._base, {
                 scil.Form.setFieldData(field, this.items[id], this.viewonly, v, data);
             }
         }
+        this.setDirty(false);
     },
 
     /**
@@ -22821,6 +22883,25 @@ scil.Form = scil.extend(scil._base, {
         this.dirty = true;
         if (this.options.onchange != null)
             this.options.onchange(field, this, args);
+    },
+
+    setDirty: function (f) {
+        this.dirty = f == null || f == true ? true : false;
+    },
+
+    preventUnsaved: function (msg) {
+        var me = this;
+        scil.connect(window, "onbeforeunload", function (e) {
+            if (me.dirty) {
+                if (msg == null)
+                    msg = "WARNING: Form data are not saved yet.";
+
+                var s = scil.Lang.res(msg);
+                if (e != null)
+                    e.returnValue = s;
+                return s;
+            }
+        });
     },
 
     switchForm: function (key) {
@@ -24650,7 +24731,7 @@ scil.apply(scil.Form, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -24932,7 +25013,7 @@ scil.apply(scil.AutoComplete, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -25022,7 +25103,7 @@ scilligence.Progress = {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -26224,7 +26305,7 @@ scilligence.apply(scilligence.Table, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -26538,7 +26619,7 @@ scil.Tree = scil.extend(scil._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -26918,7 +26999,7 @@ scil.DropdownInput = scil.extend(scilligence._base, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -27162,7 +27243,7 @@ scil.Popup.Event = scil.extend(scil._base, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -27233,7 +27314,7 @@ scil.UploadFile = {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -27605,7 +27686,7 @@ scil.apply(scil.Tabs, {
 });﻿﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Scilligence JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 //////////////////////////////////////////////////////////////////////////////////
@@ -27814,7 +27895,7 @@ scil.TabbedForm = scil.extend(scil._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -27956,7 +28037,7 @@ scil.FieldNumber = scil.extend(scil._base, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -28410,7 +28491,7 @@ scil.apply(scil.Chart, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -28438,7 +28519,7 @@ scil.Clipboard = {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -28502,7 +28583,7 @@ scil.apply(scil.Accordion, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -28583,7 +28664,7 @@ scil.DnD = scil.extend(scil._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -28646,7 +28727,7 @@ scil.Resizable = scil.extend(scil._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -28721,7 +28802,7 @@ scil.Favorite = scil.extend(scil._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -28934,7 +29015,7 @@ scilligence.DropdownButton = scilligence.extend(scilligence._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
-// Copyright (C) 2016 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 // (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
@@ -28951,7 +29032,7 @@ scil.App = {
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Scilligence JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // Version 1.0.0.2013-11-06
 // http://www.scilligence.com/
 //
@@ -29131,7 +29212,7 @@ scil.apply(scil.Page, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Scilligence JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // Version 1.0.0.2013-11-06
 // http://www.scilligence.com/
 //
@@ -29215,7 +29296,7 @@ scil.Page.Custom = scil.extend(scil._base, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 //////////////////////////////////////////////////////////////////////////////////
@@ -29278,7 +29359,7 @@ scil.Page.Explorer = scil.extend(scil._base, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
 //////////////////////////////////////////////////////////////////////////////////
@@ -29379,7 +29460,7 @@ scil.apply(scil.Page.ExplorerForm, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Scilligence JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // Version 1.0.0.2013-11-06
 // http://www.scilligence.com/
 //
@@ -29464,7 +29545,7 @@ scil.Page.Form = scil.extend(scil._base, {
 ﻿﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Scilligence JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // Version 1.0.0.2013-11-06
 // http://www.scilligence.com/
 //
@@ -29527,7 +29608,7 @@ scil.Page.Tab = scil.extend(scil._base, {
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Scilligence JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // Version 1.0.0.2013-11-06
 // http://www.scilligence.com/
 //
@@ -29852,7 +29933,7 @@ scil.Page.Table = scil.extend(scil._base, {
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Scilligence JSDraw
-// Copyright (C) 2014 Scilligence Corporation
+// Copyright (C) 2018 Scilligence Corporation
 // Version 1.0.0.2013-11-06
 // http://www.scilligence.com/
 //

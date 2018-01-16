@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -334,7 +334,8 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             skin: "w8", showabout: this.options.showabout, showtoolbar: this.options.canvastoolbar != false, helmtoolbar: true, showmonomerexplorer: true,
             inktools: false, width: width, height: height, ondatachange: function () { me.updateProperties(); },
             onselectionchanged: function () { me.onselectionchanged(); },
-            onselectcurrent: function (e, obj, ed) { me.onselectcurrent(e, obj, ed); }
+            onselectcurrent: function (e, obj, ed) { me.onselectcurrent(e, obj, ed); },
+            onvalidatetext: function (s, editor) { return me.onvalidatetext(s, editor); }
         };
 
         this.canvas = org.helm.webeditor.Interface.createCanvas(div, args);
@@ -345,6 +346,19 @@ org.helm.webeditor.App = scil.extend(scil._base, {
             var src = e.target || e.srcElement;
             return scil.Utils.hasAnsestor(src, me.canvas.helm.monomerexplorer.div);
         };
+    },
+
+    onvalidatetext: function (s, editor) {
+        if (scil.Utils.isNullOrEmpty(s))
+            return;
+
+        var t = editor.text;
+        if (t != null && t.fieldtype == "BRACKET_TYPE" && t.anchors.length == 1 && JSDraw2.Bracket.cast(t.anchors[0]) != null) {
+            if (!/^[*]|([0-9]+([-][0-9]+)?)$/.test(s)) {
+                scil.Utils.alert("Invalid subscript");
+                return false;
+            }
+        }
     },
 
     /**
@@ -444,10 +458,15 @@ org.helm.webeditor.App = scil.extend(scil._base, {
                 format = this.getValueByKey(this.sequencebuttons, "format");
 
             s = scil.Utils.trim(scil.Utils.getInnerText(this.sequence));
-            // fasta
-            s = s.replace(/[\n][>|;].*[\r]?[\n]/ig, '').replace(/^[>|;].*[\r]?[\n]/i, '');
-            // other space
-            s = s.replace(/[ \t\r\n]+/g, '')
+            if (/^((RNA)|(PEPTIDE)|(CHEM)|(BLOB))[0-9]+/.test(s)) {
+                format = "HELM";
+            }
+            else {
+                // fasta
+                s = s.replace(/[\n][>|;].*[\r]?[\n]/ig, '').replace(/^[>|;].*[\r]?[\n]/i, '');
+                // other space
+                s = s.replace(/[ \t\r\n]+/g, '');
+            }
         }
         else {
             s = scil.Utils.getInnerText(this.notation);

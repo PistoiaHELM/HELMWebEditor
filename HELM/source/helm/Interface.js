@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -186,6 +186,8 @@ org.helm.webeditor.Interface = {
             JSDraw2.Drawer.drawRect(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw).setFill(c.backgroundcolor);
         else if (biotype == org.helm.webeditor.HELM.BLOB)
             JSDraw2.Drawer.drawRect(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw * 2, linewidth * 5).setFill(c.backgroundcolor);
+        else if (biotype == org.helm.webeditor.HELM.NUCLEOTIDE)
+            JSDraw2.Drawer.drawPentagon(surface, org.helm.webeditor.Interface.createRect(p.x - w / 2, p.y - w / 2, w, w), c.linecolor, lw, linewidth * 3).setFill(c.backgroundcolor);
         var pt = p.clone();
         p.offset(0, -1);
         JSDraw2.Drawer.drawLabel(surface, p, a.elem, c.textcolor, fontsize * (a.elem.length > 1 ? 2 / a.elem.length : 1.0), null, null, null, false);
@@ -325,7 +327,7 @@ org.helm.webeditor.Interface = {
         else {
             var a = JSDraw2.Atom.cast(ed.curObject);
             if (a.bio == null)
-                items.push({ caption: "R Group", callback: function (cmd, obj) { ed.menuSetAtomType(cmd, obj); }, children: ["R", "R1", "R2", "R3", "R4", "R5"] });
+                items.push({ caption: "R Group", callback: function (cmd, obj) { ed.menuSetAtomType(cmd, obj); }, children: ["R1", "R2", "R3", "R4", "R5"] });
 
             items.push({ caption: "Copy Molfile", key: "copymolfile" });
         }

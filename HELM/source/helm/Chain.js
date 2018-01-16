@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -608,7 +608,7 @@ org.helm.webeditor.Chain = scil.extend(scil._base, {
             //    continue;
 
             var bt = a.biotype();
-            if (bt == org.helm.webeditor.HELM.LINKER || bt == org.helm.webeditor.HELM.SUGAR)
+            if (bt == org.helm.webeditor.HELM.LINKER || bt == org.helm.webeditor.HELM.SUGAR || bt == org.helm.webeditor.HELM.NUCLEOTIDE)
                 bt = org.helm.webeditor.HELM.BASE;
             if (bt != lastbt || bt == org.helm.webeditor.HELM.CHEM || bt == org.helm.webeditor.HELM.BLOB) {
                 var prefix = null;

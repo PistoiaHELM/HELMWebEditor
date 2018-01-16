@@ -1,5 +1,5 @@
 ﻿/*******************************************************************************
-* Copyright C 2017, The Pistoia Alliance
+* Copyright (C) 2018, The Pistoia Alliance
 * Created by Scilligence, built on JSDraw.Lite
 * 
 * Permission is hereby granted, free of charge, to any person obtaining
@@ -34,6 +34,13 @@ org.helm.webeditor.IO = {
     * @function getHelm
     */
     getHelm: function (m, highlightselection) {
+        // I#12164
+        for (var i = 0; i < m.atoms.length; ++i) {
+            var a = m.atoms[i];
+            if (!org.helm.webeditor.isHelmNode(a) && !a.hidden)
+                return null;
+        }
+
         var ret = { chainid: { RNA: 0, PEPTIDE: 0, CHEM: 0, BLOB: 0, G: 0 }, sequences: {}, connections: [], chains: {}, pairs: [], groupatoms: [], groups: {}, annotations: {}, singletons: {}, ratios: {} };
         this.getHelm2(m, highlightselection, ret);
 
@@ -294,8 +301,8 @@ org.helm.webeditor.IO = {
         for (var i = 0; i < ret.connections.length; ++i) {
             var c = ret.connections[i];
             s += (++count > 1 ? "|" : "") + this.renderConnection(ret, c);
-            if (c.ratio1 > 0 || c.ratio2 > 0) {
-                var s2 = c.c1 + (c.ratio1 > 0 ? ":" + c.ratio1 : "") + "+" + c.c2 + (c.ratio2 > 0 ? ":" + c.ratio2 : "");
+            if ((c.ratio1 > 0 || c.ratio1 == "?") && (c.ratio2 > 0 || c.ratio1 == "?")) {
+                var s2 = c.c1 + ":" + c.ratio1 + "+" + c.c2 + ":" + c.ratio2;
                 id = "G" + (++ret.chainid.G);
                 groups.push(id + "(" + s2 + ")");
             }
@@ -628,6 +635,7 @@ org.helm.webeditor.IO = {
                     c.chain2 = groups[c.chain2];
                 }
 
+                c.tag = e.tag;
                 connections.push(c);
                 connatoms[c.chain1] = true;
                 connatoms[c.chain2] = true;
@@ -721,12 +729,13 @@ org.helm.webeditor.IO = {
             var r1 = scil.Utils.startswith(c.r1, "R") ? parseInt(c.r1.substr(1)) : c.r1;
             var r2 = scil.Utils.startswith(c.r2, "R") ? parseInt(c.r2.substr(1)) : c.r2;
             var b = plugin.addBond(atom1, atom2, r1, r2);
-            b.tag = e.tag;
-
-            var bondratio = this.findBondRatio(bondratios, groups, c.chain1, c.chain2);
-            if (bondratio != null) {
-                b.ratio1 = bondratio.ratio1;
-                b.ratio2 = bondratio.ratio2;
+            if (b != null) {
+                b.tag = c.tag;
+                var bondratio = this.findBondRatio(bondratios, groups, c.chain1, c.chain2);
+                if (bondratio != null) {
+                    b.ratio1 = bondratio.ratio1 != null ? bondratio.ratio1 : org.helm.webeditor.defaultbondratio;
+                    b.ratio2 = bondratio.ratio2 != null ? bondratio.ratio2 : org.helm.webeditor.defaultbondratio;
+                }
             }
         }
 
@@ -1250,8 +1259,9 @@ org.helm.webeditor.IO = {
                     throw "Base attached to Linker: " + s;
 
                 // linker
+                var biotype = s == "*" ? org.helm.webeditor.HELM.NUCLEOTIDE : org.helm.webeditor.HELM.LINKER;
                 loop.p.x += loop.delta;
-                loop.a2 = this.addNode(plugin, chain, chain.atoms, loop.p.clone(), org.helm.webeditor.HELM.LINKER, c.symbol, renamedmonomers);
+                loop.a2 = this.addNode(plugin, chain, chain.atoms, loop.p.clone(), biotype, c.symbol, renamedmonomers);
                 chain.bonds.push(plugin.addBond(loop.a1, loop.a2, 2, 1));
                 loop.a1 = loop.a2;
                 ++loop.count;
