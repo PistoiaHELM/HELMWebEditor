@@ -1156,7 +1156,14 @@ org.helm.webeditor.IO = {
                 var atoms = [];
                 var rect = new JSDraw2.Rect(loop.p.x + loop.delta / 2, loop.p.y - loop.delta, 0, loop.delta * 2);
 
-                var ss2 = this.splitChars(e.str.substr(1, e.str.length - 2), '.');
+                // I#12364
+                var ss2;
+                var s = e.str.substr(1, e.str.length - 2);
+                if (s.indexOf(',') > 0 || s.indexOf('+') > 0)
+                    ss2 = [s]; // PEPTIDE1{A.A.A.A.(A:1.1,G:69.5,W:25.5,[Aha]:3.9)}$$$$
+                else
+                    ss2 = this.splitChars(s, '.'); // PEPTIDE1{A.A.A.A.(A.G)'2'.T}$$$$
+
                 if (ss2.length == 1) {
                     atoms.push(this._addOneAA(plugin, chain, e.str, null, renamedmonomers, loop));
                 }
