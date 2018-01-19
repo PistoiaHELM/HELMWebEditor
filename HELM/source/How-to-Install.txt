@@ -4,7 +4,7 @@
 
 1.1. Install HELM2MonomerService ( HELM2MonomerService.war )
 
-Download the war file from this URL: https://github.com/PistoiaHELM/HELMMonomerService/releases/download/0.0.2/HELM2MonomerService.war
+Download the war file from this URL: https://github.com/PistoiaHELM/HELMMonomerService/releases/download/0.0.4/HELM2MonomerService.war
 Copy the war file int0 this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
 
 
@@ -27,7 +27,7 @@ There will be two folders in this folder C:\Program Files\Apache Software Founda
 
 
 Run HELM Web Editor
-Load this url from the browser: http://SERVER/HELM2MonomerService/hwe/index.html
+Load this url from the browser: http://SERVER/HELM2MonomerService/hwe/
 
 
 
