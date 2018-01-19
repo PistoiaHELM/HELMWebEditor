@@ -1,6 +1,42 @@
+---------------------------
+1. Install on Tomcat
 
-The source code is built in MicroSoft Visual Studio.  The project file is "HELM.sln".
 
-For developer convience, all javascript source code are stored as separated file in .\helm\ folder.
+1.1. Install HELM2MonomerService
 
-For deployment conveience, it is able to run _merge.helm.bat Windows batch file to merge all source code into one file: .\JSDraw\Pistoia.HELM-uncompressed.js
+Download the war file from this URL: https://github.com/PistoiaHELM/HELMMonomerService/releases/download/0.0.2/HELM2MonomerService.war
+Copy the war file int0 this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
+
+
+1.2 Install HELM2WebService
+
+Download the war file from this URL: https://github.com/PistoiaHELM/HELMMonomerService/releases/download/0.0.2/HELM2MonomerService.war
+Copy the war file int0 this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
+
+
+1.3 Install HELMWebEditor
+
+Download the zip file from this URL: https://github.com/PistoiaHELM/HELMWebEditor/releases/download/1.1.0/hwe-1.1.0.zip
+Unzip it can copy the *hwe* folder to this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\HELM2MonomerService\
+
+
+Verification:
+There will be two folders in this folder C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
+- HELM2MonomerService
+- HelmWebService
+
+
+Run HELM Web Editor
+Load this url from the browser: http://SERVER/HELM2MonomerService/hwe/
+
+
+
+---------------------------
+2. Install on IIS
+
+Download the zip file from this URL: https://github.com/PistoiaHELM/HELMWebEditor/releases/download/1.1.0/hwe-1.1.0.zip
+Unzip it can copy the *hwe* folder to this folder on IIS Server: C:\inetpub\wwwroot\
+
+
+Run HELM Web Editor
+Load this url from the browser: http://SERVER/hwe/
