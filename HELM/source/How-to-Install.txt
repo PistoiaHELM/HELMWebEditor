@@ -10,7 +10,7 @@ Copy the war file int0 this folder on Tomcat server: C:\Program Files\Apache Sof
 
 1.2 Install HELM2WebService ( WebService.war )
 
-Download the war file from this URL: http://54.91.164.146/HELM2MonomerService/hwe/WebService.war
+Download the war file from this URL: http://54.91.164.146/HELM2MonomerService/hwe/WebService.war (temporary link)
 Copy the war file int0 this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
 
 
