@@ -1,5 +1,5 @@
 1. Install on Tomcat with Backend Web Services
----------------------------
+----------------------------------------------
 
 1.1. Install HELM2MonomerService ( HELM2MonomerService.war )
 
@@ -30,8 +30,8 @@ Load this url from the browser: http://SERVER/HELM2MonomerService/hwe/
 
 
 
-2. Install on IIS/Tomcat without Backend Web Service
----------------------------
+2. Install on IIS/Tomcat without Backend Web Services
+-----------------------------------------------------
 
 Download the zip file from this URL: https://github.com/PistoiaHELM/HELMWebEditor/releases/download/1.1.0/hwe-iis-1.1.0.zip
 Unzip it can copy the *hwe* folder to this folder on IIS Server: C:\inetpub\wwwroot\
