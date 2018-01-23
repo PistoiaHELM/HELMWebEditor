@@ -1,8 +1,41 @@
-Steps to install HELM Web Editor on your web server (such as IIS or Tomcat):
+1. Install on Tomcat with Backend Web Services
+----------------------------------------------
 
-1.	Download HELM Web Editor zip release package: https://github.com/PistoiaHELM/HELMWebEditor/releases/download/V1.0.0/HELMWebEditor1.0.0.zip 
-2.	Unzip it, and copy the whole *hwe* folder into your web site (e.g. C:\inetpub\wwwroot\ for IIS)
-3.	Then the HELM Web Editor can started as http://localhost/hwe/  
+1.1. Install HELM2MonomerService ( HELM2MonomerService.war )
 
-Please visit HELM Web Editor online page for more information:
-https://pistoiaalliance.atlassian.net/wiki/display/PUB/New...+HELM+web-editor
+Download the war file from this URL: https://github.com/PistoiaHELM/HELMMonomerService/releases/download/0.0.4/HELM2MonomerService.war
+Copy the war file int0 this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
+
+
+1.2 Install HELM2WebService ( WebService.war )
+
+Download the war file from this URL: http://54.91.164.146/HELM2MonomerService/hwe/WebService.war (temporary link)
+Copy the war file int0 this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
+
+
+1.3 Install HELMWebEditor ( hwe-1.1.0.zip )
+
+Download the zip file from this URL: https://github.com/PistoiaHELM/HELMWebEditor/releases/download/1.1.0/hwe-1.1.0.zip
+Unzip it can copy the *hwe* folder to this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\HELM2MonomerService\
+
+
+Verification:
+There will be two folders in this folder C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
+- HELM2MonomerService
+- WebService
+
+
+Run HELM Web Editor
+Load this url from the browser: http://SERVER/HELM2MonomerService/hwe/
+
+
+
+2. Install on IIS/Tomcat without Backend Web Services
+-----------------------------------------------------
+
+Download the zip file from this URL: https://github.com/PistoiaHELM/HELMWebEditor/releases/download/1.1.0/hwe-iis-1.1.0.zip
+Unzip it can copy the *hwe* folder to this folder on IIS Server: C:\inetpub\wwwroot\
+
+
+Run HELM Web Editor
+Load this url from the browser: http://SERVER/hwe/
