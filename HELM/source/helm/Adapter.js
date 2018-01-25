@@ -105,13 +105,15 @@ org.helm.webeditor.Adapter = {
                 opts.verb = "get";
                 break;
             case "helm.monomer.save":
-                if (scil.Utils.isNullOrEmpty(args.content.id)) {
-                    args.url = org.helm.webeditor.Adapter.url + "/insertMonomer";
-                    opts.verb = "post";
-                } else {
-                    args.url = org.helm.webeditor.Adapter.url + "/updateMonomer/" + args.content.id;
-                    opts.verb = "put";
-                }
+                //                if (scil.Utils.isNullOrEmpty(args.content.id)) {
+                //                    args.url = org.helm.webeditor.Adapter.url + "/insertMonomer";
+                //                    opts.verb = "post";
+                //                } else {
+                //                    args.url = org.helm.webeditor.Adapter.url + "/updateMonomer/" + args.content.id;
+                //                    opts.verb = "put";
+                //                }
+                args.url = org.helm.webeditor.Adapter.url + "/monomer/" + args.content.id;
+                opts.verb = "put";
                 args.content.id = null;
                 org.helm.webeditor.Adapter.fromHWE(args.content);
                 args.postData = scil.Utils.json2str(args.content, null, true);
@@ -134,7 +136,7 @@ org.helm.webeditor.Adapter = {
                 if (!(page > 0))
                     page = 1;
                 var offset = (page - 1) * limit;
-                args.url = org.helm.webeditor.Adapter.url + "/rules?limit=" + limit + "&offset=" + offset;
+                args.url = org.helm.webeditor.Adapter.url + "/rule?limit=" + limit + "&offset=" + offset;
                 opts.verb = "get";
                 break;
             case "helm.rule.save":
