@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright (C)2018, The Pistoia Alliance
-*  Version 2.1.0.2018-01-25
+*  Version 2.1.0.2018-01-26
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -9474,13 +9474,8 @@ org.helm.webeditor.Adapter = {
                 opts.verb = "get";
                 break;
             case "helm.monomer.save":
-                //                if (scil.Utils.isNullOrEmpty(args.content.id)) {
-                //                    args.url = org.helm.webeditor.Adapter.url + "/insertMonomer";
-                //                    opts.verb = "post";
-                //                } else {
-                //                    args.url = org.helm.webeditor.Adapter.url + "/updateMonomer/" + args.content.id;
-                //                    opts.verb = "put";
-                //                }
+                if (scil.Utils.isNullOrEmpty(args.content.id)) // new monomer
+                    args.content.id = args.polymerType + "/" + args.symbol;
                 args.url = org.helm.webeditor.Adapter.url + "/monomer/" + args.content.id;
                 opts.verb = "put";
                 args.content.id = null;
