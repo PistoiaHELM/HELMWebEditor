@@ -1,6 +1,0 @@
-
-The source code is built in MicroSoft Visual Studio.  The project file is "HELM.sln".
-
-For developer convience, all javascript source code are stored as separated file in .\helm\ folder.
-
-For deployment conveience, it is able to run _merge.helm.bat Windows batch file to merge all source code into one file: .\JSDraw\Pistoia.HELM-uncompressed.js
