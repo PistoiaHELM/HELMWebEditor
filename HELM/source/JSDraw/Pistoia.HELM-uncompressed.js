@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright (C)2018, The Pistoia Alliance
-*  Version 2.1.0.2018-01-19
+*  Version 1.1.0.2018--02-22
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -29,7 +29,7 @@
 
 /**
 @project HELM Web Editor
-@version 2.1.0
+@version 1.1.0
 @description HELM Web Editor built on JSDraw.Lite
 */
 
@@ -50,7 +50,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.1.0.2017-11-13",
+    kVersion: "1.1.0.2018-02-22",
     atomscale: 2,
     bondscale: 1.6,
     allowHeadToHeadConnection: true,
@@ -96,7 +96,7 @@ org.helm.webeditor = {
     },
 
     symbolCase: function (s) {
-        return s == null ? null : s.toLowerCase();
+        return s == null || org.helm.webeditor.kCaseSensitive ? s : s.toLowerCase();
     },
 
     /**
@@ -379,8 +379,10 @@ org.helm.webeditor.Interface = {
         buttons.push(main);
 
         buttons.push({ c: "new", t: "New", label: "New" });
-        buttons.push({ c: "open", t: "Load", label: "Load" });
-        buttons.push({ c: "save", t: "Save", label: "Save" });
+        if (typeof (JSDrawServices) != "undefined") {
+            buttons.push({ c: "open", t: "Load", label: "Load" });
+            buttons.push({ c: "save", t: "Save", label: "Save" });
+        }
         buttons.push({ c: "|" });
     },
 
@@ -2319,7 +2321,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         }
 
         this.chooseRDlg.hide();
-        this.chooseRDlg.callback(d.r1 == null || d.r1 == "?" ? d.r1 : parseInt(d.r1), d.r2 == null || d.r2 == "?" ? d.r1 : parseInt(d.r2));
+        this.chooseRDlg.callback(d.r1 == null || d.r1 == "?" ? d.r1 : parseInt(d.r1), d.r2 == null || d.r2 == "?" ? d.r2 : parseInt(d.r2));
     },
 
     _listRs: function (sel, list, v) {
@@ -2913,6 +2915,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         }
         else if (cmd == "helm_blob") {
             this.setNodeType(a, org.helm.webeditor.HELM.BLOB, this.getDefaultNodeType(org.helm.webeditor.HELM.BLOB));
+            this.setHelmBlobType(a, org.helm.webeditor.blobtypes[0]);
         }
         else {
             return false;
@@ -4578,7 +4581,9 @@ org.helm.webeditor.IO = {
     },
 
     addConnection: function (ret, c1, c2, a1, a2, r1, r2, ratio1, ratio2, tag, h) {
-        ret.connections.push({ c1: c1, c2: c2, ai1: a1._aaid, ai2: a2._aaid, r1: r1, r2: r2, ratio1: ratio1, ratio2: ratio2, tag: tag, h: h });
+        var ai1 = a1.biotype() == org.helm.webeditor.HELM.BLOB ? "?" : a1._aaid;
+        var ai2 = a2.biotype() == org.helm.webeditor.HELM.BLOB ? "?" : a2._aaid;
+        ret.connections.push({ c1: c1, c2: c2, ai1: ai1, ai2: ai2, r1: r1, r2: r2, ratio1: ratio1, ratio2: ratio2, tag: tag, h: h });
     },
 
     renderConnection: function (ret, conn) {
@@ -8700,10 +8705,6 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         var me = this;
         this.buttons = [
             "-",
-            { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomers", onclick: function () { me.uploadFile(true); } },
-            "-",
-            { type: "a", src: scil.Utils.imgSrc("img/save.gif"), title: "Export Monomers", items: ["JSON", "SDF"], onclick: function (cmd) { me.exportFile(cmd); } },
-            "-",
             { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); }, onchange: function () { me.clearFilterValue("name"); } },
             { type: "input", key: "name", labelstyle: { fontSize: "90%" }, label: "Name", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); }, onchange: function () { me.clearFilterValue("symbol"); } },
             { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
@@ -8711,6 +8712,13 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         //{ type: "select", key: "status", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getStatuses(), label: "Status", styles: { width: 100 }, onchange: function () { me.refresh(); } },
             {type: "select", key: "countperpage", labelstyle: { fontSize: "90%" }, label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
         ];
+
+        if (typeof(JSDrawServices) != "undefined") {
+            this.buttons.splice(0, 0, "-");
+            this.buttons.splice(0, 0, { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomers", onclick: function () { me.uploadFile(true); } });
+            this.buttons.splice(0, 0, "-");
+            this.buttons.splice(0, 0, { type: "a", src: scil.Utils.imgSrc("img/save.gif"), title: "Export Monomers", items: ["JSON", "SDF"], onclick: function (cmd) { me.exportFile(cmd); } });
+        }
 
         var ver = null;
         if (scil.helm != null && JSDraw2.Security.kEdition != "Lite") {
@@ -9474,13 +9482,10 @@ org.helm.webeditor.Adapter = {
                 opts.verb = "get";
                 break;
             case "helm.monomer.save":
-                if (scil.Utils.isNullOrEmpty(args.content.id)) {
-                    args.url = org.helm.webeditor.Adapter.url + "/insertMonomer";
-                    opts.verb = "post";
-                } else {
-                    args.url = org.helm.webeditor.Adapter.url + "/updateMonomer/" + args.content.id;
-                    opts.verb = "put";
-                }
+                if (scil.Utils.isNullOrEmpty(args.content.id)) // new monomer
+                    args.content.id = args.content.polymertype + "/" + args.content.symbol;
+                args.url = org.helm.webeditor.Adapter.url + "/monomer/" + args.content.id;
+                opts.verb = "put";
                 args.content.id = null;
                 org.helm.webeditor.Adapter.fromHWE(args.content);
                 args.postData = scil.Utils.json2str(args.content, null, true);
@@ -9489,6 +9494,7 @@ org.helm.webeditor.Adapter = {
             case "helm.monomer.del":
                 args.url = org.helm.webeditor.Adapter.url + "/monomer/" + args.content.id;
                 opts.verb = "del";
+                args.content = {};
                 break;
 
             case "helm.rule.load":
@@ -9517,6 +9523,7 @@ org.helm.webeditor.Adapter = {
             case "helm.rule.del":
                 args.url = org.helm.webeditor.Adapter.url + "/delete/" + args.content.id;
                 opts.verb = "del";
+                args.content = {};
                 break;
 
             default:

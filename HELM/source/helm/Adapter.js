@@ -105,13 +105,10 @@ org.helm.webeditor.Adapter = {
                 opts.verb = "get";
                 break;
             case "helm.monomer.save":
-                if (scil.Utils.isNullOrEmpty(args.content.id)) {
-                    args.url = org.helm.webeditor.Adapter.url + "/insertMonomer";
-                    opts.verb = "post";
-                } else {
-                    args.url = org.helm.webeditor.Adapter.url + "/updateMonomer/" + args.content.id;
-                    opts.verb = "put";
-                }
+                if (scil.Utils.isNullOrEmpty(args.content.id)) // new monomer
+                    args.content.id = args.content.polymertype + "/" + args.content.symbol;
+                args.url = org.helm.webeditor.Adapter.url + "/monomer/" + args.content.id;
+                opts.verb = "put";
                 args.content.id = null;
                 org.helm.webeditor.Adapter.fromHWE(args.content);
                 args.postData = scil.Utils.json2str(args.content, null, true);
@@ -120,6 +117,7 @@ org.helm.webeditor.Adapter = {
             case "helm.monomer.del":
                 args.url = org.helm.webeditor.Adapter.url + "/monomer/" + args.content.id;
                 opts.verb = "del";
+                args.content = {};
                 break;
 
             case "helm.rule.load":
@@ -148,6 +146,7 @@ org.helm.webeditor.Adapter = {
             case "helm.rule.del":
                 args.url = org.helm.webeditor.Adapter.url + "/delete/" + args.content.id;
                 opts.verb = "del";
+                args.content = {};
                 break;
 
             default:

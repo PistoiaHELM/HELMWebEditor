@@ -228,7 +228,9 @@ org.helm.webeditor.IO = {
     },
 
     addConnection: function (ret, c1, c2, a1, a2, r1, r2, ratio1, ratio2, tag, h) {
-        ret.connections.push({ c1: c1, c2: c2, ai1: a1._aaid, ai2: a2._aaid, r1: r1, r2: r2, ratio1: ratio1, ratio2: ratio2, tag: tag, h: h });
+        var ai1 = a1.biotype() == org.helm.webeditor.HELM.BLOB ? "?" : a1._aaid;
+        var ai2 = a2.biotype() == org.helm.webeditor.HELM.BLOB ? "?" : a2._aaid;
+        ret.connections.push({ c1: c1, c2: c2, ai1: ai1, ai2: ai2, r1: r1, r2: r2, ratio1: ratio1, ratio2: ratio2, tag: tag, h: h });
     },
 
     renderConnection: function (ret, conn) {

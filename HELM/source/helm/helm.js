@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright (C)2018, The Pistoia Alliance
-*  Version 2.1.0.2018-01-13
+*  Version 1.1.0.2018--02-22
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -29,7 +29,7 @@
 
 /**
 @project HELM Web Editor
-@version 2.1.0
+@version 1.1.0
 @description HELM Web Editor built on JSDraw.Lite
 */
 
@@ -50,7 +50,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "2.1.0.2017-11-13",
+    kVersion: "1.1.0.2018-02-22",
     atomscale: 2,
     bondscale: 1.6,
     allowHeadToHeadConnection: true,
@@ -96,7 +96,7 @@ org.helm.webeditor = {
     },
 
     symbolCase: function (s) {
-        return s == null ? null : s.toLowerCase();
+        return s == null || org.helm.webeditor.kCaseSensitive ? s : s.toLowerCase();
     },
 
     /**

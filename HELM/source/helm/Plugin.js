@@ -997,7 +997,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         }
 
         this.chooseRDlg.hide();
-        this.chooseRDlg.callback(d.r1 == null || d.r1 == "?" ? d.r1 : parseInt(d.r1), d.r2 == null || d.r2 == "?" ? d.r1 : parseInt(d.r2));
+        this.chooseRDlg.callback(d.r1 == null || d.r1 == "?" ? d.r1 : parseInt(d.r1), d.r2 == null || d.r2 == "?" ? d.r2 : parseInt(d.r2));
     },
 
     _listRs: function (sel, list, v) {
@@ -1591,6 +1591,7 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         }
         else if (cmd == "helm_blob") {
             this.setNodeType(a, org.helm.webeditor.HELM.BLOB, this.getDefaultNodeType(org.helm.webeditor.HELM.BLOB));
+            this.setHelmBlobType(a, org.helm.webeditor.blobtypes[0]);
         }
         else {
             return false;

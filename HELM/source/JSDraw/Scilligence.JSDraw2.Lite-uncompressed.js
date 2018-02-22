@@ -1107,6 +1107,7 @@ scilligence.Utils = {
         var error = null;
         var doc = null;
         try {
+            xml = xml.replace(/&nbsp;/g, " "); // I#12324
             if (window.DOMParser) {
                 doc = new DOMParser().parseFromString(xml, "text/xml");
             }
@@ -2395,8 +2396,13 @@ scilligence.Utils = {
         switch (typeof (data)) {
             case "string":
                 try {
-                    eval("var o=" + data);
-                    ret = o;
+                    if (data == "") {
+                        ret = null;
+                    }
+                    else {
+                        eval("var o=" + data);
+                        ret = o;
+                    }
                 }
                 catch (e) {
                     scil.Utils.alert("Error when parsing Ajax results:\n" + e.message + "\n" + data);
@@ -3566,7 +3572,7 @@ scil.Utils.padright = scil.Utils.padRight;
 
 /**
 @project JSDraw
-@version 5.3.1
+@version 5.3.2
 @description JSDraw Chemical/Biological Structure Editor
 */
 
@@ -3584,7 +3590,7 @@ JSDraw2.speedup = { fontsize: 4, gap: 0, disableundo: false, minbondlength: 1 };
 * JSDraw Version
 * @property scilligence.JSDraw2.version
 */
-JSDraw2.version = "JSDraw V5.3.1";
+JSDraw2.version = "JSDraw V5.3.2";
 
 // JSDraw file version
 JSDraw2.kFileVersion = "5.0";
@@ -4950,7 +4956,7 @@ JSDraw2.BA = scilligence.extend(scilligence._base, {
 });
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
-// JSDraw
+// JSDraw.Lite
 // Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
@@ -5675,7 +5681,7 @@ JSDraw2.JSDrawIO = {
     jsdFiles2: { jsd: "JSDraw XML", png: "PNG Picture" },
     jsdFiles3: { helm: "HELM", xhelm: "xHELM" },
     jsssavedlg: null,
-    jssFiles: { sdf: "SDF File", csv: "CSV File", jssdf: "Xml File", json: "Json File" },
+    jssFiles: { sdf: "SDF File", csv: "CSV File", xlsx: "Excel File", jssdf: "Xml File", json: "Json File" },
 
     callWebservice: function (cmd, data, callback) {
         if (JSDrawServices.url == null || JSDrawServices.url == "")
@@ -6084,6 +6090,7 @@ JSDraw2.JSDrawIO = {
                 args.contents = JSDraw2.JSDrawIO.jsssavedlg.jss.getSdf();
                 break;
             case "jssdf":
+            case "xlsx":
                 args.contents = JSDraw2.JSDrawIO.jsssavedlg.jss.getXml();
                 break;
             case "json":
@@ -8173,7 +8180,7 @@ JSDraw2.Mol = scil.extend(scil._base, {
 
         var lines = null;
         if (molfile.indexOf('\n') >= 0)
-            lines = molfile.split("\n");
+            lines = molfile.replace(/[\r]/g, "").split("\n");
         else
             lines = molfile.split('|');
 
@@ -8607,6 +8614,11 @@ JSDraw2.Mol = scil.extend(scil._base, {
             }
         }
 
+        this.readSgroups(sgroups);
+        return this;
+    },
+
+    readSgroups: function (sgroups) {
         var superatoms = [];
         var brackets = [];
         var gap = this.medBondLength(1.56) / 2;
@@ -8725,7 +8737,6 @@ JSDraw2.Mol = scil.extend(scil._base, {
             if (this.hasStereoCenter() && chiral == "  0")
                 this.chiral = "and";
         }
-        return this;
     },
 
     hasRGroup: function () {
@@ -16995,7 +17006,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             }
         }
 
-        if (this.options.helmtoolbar) {
+        if (this.options.helmtoolbar || this.helm.isHelmCmd(cmd)) {
             if (this.helm.connnectGroup(p1, this.curObject)) {
                 this.pushundo(cloned);
                 this.redraw();
@@ -21537,7 +21548,7 @@ JSDraw2.Bracket.cast = function (a) {
     return a != null && a.T == 'BRACKET' ? a : null;
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
-// JSDraw
+// JSDraw.Lite
 // Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
 //
@@ -25451,6 +25462,10 @@ scil.Table = scil.extend(scil._base, {
             dojo.connect(addbtn, "onclick", function () { if (me.options.onAdd != null) me.options.onAdd(me); else me.addRow(); });
         }
 
+        var style = scil.clone(scil.Table.headerstyles);
+        style.borderBottom = JSDraw2.Skin.jssdf.border;
+        style.borderLeft = JSDraw2.Skin.jssdf.border;
+
         var r0 = scil.Utils.createElement(this.tbody, "tr");
         var header0 = this.options.header0;
         var r = scil.Utils.createElement(this.tbody, "tr");
@@ -25463,7 +25478,7 @@ scil.Table = scil.extend(scil._base, {
                     scil.Utils.createElement(r0, "td");
                 }
                 else {
-                    var td = scil.Utils.createElement(r0, "td", scil.Lang.res(item.label), scil.Table.headerstyles, { colSpan: item.colspan });
+                    var td = scil.Utils.createElement(r0, "td", scil.Lang.res(item.label), style, { colSpan: item.colspan });
                     td.style.textAlign = "center";
                 }
             }
@@ -25487,10 +25502,6 @@ scil.Table = scil.extend(scil._base, {
         else {
             td.style.display = "none";
         }
-
-        var style = scil.clone(scil.Table.headerstyles);
-        style.borderBottom = JSDraw2.Skin.jssdf.border;
-        style.borderLeft = JSDraw2.Skin.jssdf.border;
 
         for (var id in this.items) {
             var item = this.items[id];
@@ -29635,6 +29646,8 @@ scil.Page.Table = scil.extend(scil._base, {
                 buttons.push({ src: scil.App.imgSmall("add.png"), title: "New", onclick: function () { me.add(); } });
             if (this.options.canedit != false)
                 buttons.push({ src: scil.App.imgSmall("edit.png"), title: "Edit", onclick: function () { me.edit(); } });
+            if (this.options.allowcopy)
+                buttons.push({ src: scil.App.imgSmall("copy.png"), title: "Copy", onclick: function () { me.edit(null, true); } });
         }
         if (this.options.buttons != null)
             buttons = buttons.concat(this.options.buttons);
@@ -29763,10 +29776,10 @@ scil.Page.Table = scil.extend(scil._base, {
         if (this.options.onAddNew != null && this.options.onAddNew(this.args) == false)
             return;
 
-        this.add2(values);
+        this.add2(values, "create");
     },
 
-    add2: function (values) {
+    add2: function (values, action) {
         this.create();
         this.dlg.show();
         if (this.options.usetabs)
@@ -29783,7 +29796,7 @@ scil.Page.Table = scil.extend(scil._base, {
         this.dlg.form.setData(data);
         this.dlg.editkey = null;
 
-        this.showDelButton(false);
+        this.setButtons(action);
     },
 
     copyNew: function (key) {
@@ -29799,34 +29812,34 @@ scil.Page.Table = scil.extend(scil._base, {
             return;
 
         var me = this;
-        this.edit(function (ret) { ret[key] = " "; me.dlg.editkey = null; });
+        this.edit(function (ret) { ret[key] = " "; me.dlg.editkey = null; }, true);
     },
 
-    edit: function (onsetdata) {
+    edit: function (onsetdata, copying) {
         if (this.table.currow == null) {
             scil.Utils.alert("please select a row first");
             return;
         }
 
-        this.add2();
-        this.showDelButton(true);
+        this.add2(null, copying ? "copy" : "save");
 
         var me = this;
         var data = {};
         data[this.options.key] = this.table.currow.getAttribute("key");
-        this.dlg.editkey = data[this.options.key];
+        this.dlg.editkey = copying ? null : data[this.options.key];
 
-        if (this.options.onEdit != null && this.options.onEdit(data) == false)
+        if (!copying && this.options.onEdit != null && this.options.onEdit(data) == false)
             return;
 
         scil.Utils.ajax(this.page.url + this.options.object + ".load", function (ret) {
             //me.applyArgs(ret);
             if (me.options.onloaddata)
-                me.options.onloaddata(ret, me.args, me.dlg);
+                me.options.onloaddata(ret, me.args, me.dlg, copying);
 
             if (onsetdata != null)
                 onsetdata(ret, me);
 
+            me.dlg.__copying = copying;
             if (me.options.savedoc && ret.doc != null && ret.doc != "") {
                 me.dlg.form.setXml(ret.doc);
                 me.dlg.form.setData(ret, true);
@@ -29862,6 +29875,8 @@ scil.Page.Table = scil.extend(scil._base, {
                 return false;
         }
 
+        data.__copying = this.dlg.__copying;
+
         scil.Utils.ajax(this.page.url + this.options.object + ".save", function (ret) {
             me.dlg.hide();
             if (ret != null && ret.rows != null && ret.rows.length > 0) {
@@ -29892,16 +29907,22 @@ scil.Page.Table = scil.extend(scil._base, {
         });
     },
 
-    showDelButton: function (f) {
+    setButtons: function (action) {
         if (this.dlg == null)
             return;
 
         for (var i = 0; i < this.dlg.form.buttons.length; ++i) {
             var b = this.dlg.form.buttons[i];
-            if (b != null && b.getAttribute("key") == "delete") {
-                b.style.display = f ? "" : "none";
-                break;
-            }
+            if (b == null)
+                continue;
+
+            var key = b.getAttribute("key");
+            if (key == "delete")
+                b.style.display = action == "save" ? "" : "none";
+            else if (key == "save")
+                b.style.display = action != "copy" ? "" : "none";
+            else if (key == "copy")
+                b.style.display = action == "copy" ? "" : "none";
         }
     },
 
@@ -29911,6 +29932,8 @@ scil.Page.Table = scil.extend(scil._base, {
 
         var me = this;
         var buttons = [{ src: scil.App.imgSmall("submit.png"), label: "Save", key: "save", onclick: function () { me.save(); } }];
+        if (this.options.allowcopy)
+            buttons.push({ src: scil.App.imgSmall("copy.png"), label: "Copy", key: "copy", onclick: function () { me.save(); } });
         if (this.options.candelete != false)
             buttons.push({ src: scil.App.imgSmall("del.png"), label: "Delete", key: "delete", onclick: function () { me.del(); } });
         buttons.push({ src: scil.App.imgSmall("cancel.png"), label: "Cancel", key: "cancel", onclick: function () { me.cancel(); } });

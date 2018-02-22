@@ -231,8 +231,10 @@ org.helm.webeditor.Interface = {
         buttons.push(main);
 
         buttons.push({ c: "new", t: "New", label: "New" });
-        buttons.push({ c: "open", t: "Load", label: "Load" });
-        buttons.push({ c: "save", t: "Save", label: "Save" });
+        if (typeof (JSDrawServices) != "undefined") {
+            buttons.push({ c: "open", t: "Load", label: "Load" });
+            buttons.push({ c: "save", t: "Save", label: "Save" });
+        }
         buttons.push({ c: "|" });
     },
 

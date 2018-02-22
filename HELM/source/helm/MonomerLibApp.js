@@ -106,10 +106,6 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         var me = this;
         this.buttons = [
             "-",
-            { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomers", onclick: function () { me.uploadFile(true); } },
-            "-",
-            { type: "a", src: scil.Utils.imgSrc("img/save.gif"), title: "Export Monomers", items: ["JSON", "SDF"], onclick: function (cmd) { me.exportFile(cmd); } },
-            "-",
             { type: "input", key: "symbol", labelstyle: { fontSize: "90%" }, label: "Symbol", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); }, onchange: function () { me.clearFilterValue("name"); } },
             { type: "input", key: "name", labelstyle: { fontSize: "90%" }, label: "Name", styles: { width: 100 }, autosuggesturl: this.options.ajaxurl + "helm.monomer.suggest", onenter: function () { me.refresh(); }, onchange: function () { me.clearFilterValue("symbol"); } },
             { type: "select", key: "polymertype", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), label: "Polymer Type", styles: { width: 100 }, onchange: function () { me.refresh(); } },
@@ -117,6 +113,13 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
         //{ type: "select", key: "status", labelstyle: { fontSize: "90%" }, items: org.helm.webeditor.MonomerLibApp.getStatuses(), label: "Status", styles: { width: 100 }, onchange: function () { me.refresh(); } },
             {type: "select", key: "countperpage", labelstyle: { fontSize: "90%" }, label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
         ];
+
+        if (typeof(JSDrawServices) != "undefined") {
+            this.buttons.splice(0, 0, "-");
+            this.buttons.splice(0, 0, { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomers", onclick: function () { me.uploadFile(true); } });
+            this.buttons.splice(0, 0, "-");
+            this.buttons.splice(0, 0, { type: "a", src: scil.Utils.imgSrc("img/save.gif"), title: "Export Monomers", items: ["JSON", "SDF"], onclick: function (cmd) { me.exportFile(cmd); } });
+        }
 
         var ver = null;
         if (scil.helm != null && JSDraw2.Security.kEdition != "Lite") {
