@@ -1093,32 +1093,34 @@ org.helm.webeditor.Monomers = {
     },
 
     chemAxon2JSDrawSmiles: function (smiles) {
-        // "C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|"
-        var s = smiles;
-        var p = s.indexOf(" |$");
-        if (p <= 0 || !scil.Utils.endswith(smiles, "$|"))
-            return smiles;
+        return smiles;
 
-        var rs = this.findSmilesRs(s);
-        s = s.substr(0, p);
-        if (rs != null && rs.length > 0) {
-            for (var i = 0; i < rs.length; ++i) {
-                p = s.indexOf("[*]");
-                if (p > 0) {
-                    ++p;
-                    s = s.substr(0, p) + rs[i] + s.substr(p + 1);
-                }
-                else {
-                    p = s.indexOf("*");
-                    if (p > 0)
-                        s = s.substr(0, p) + "[" + rs[i] + "]" + s.substr(p + 1);
-                    else
-                        return smiles;
-                }
-            }
-        }
+        //        // "C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|"
+        //        var s = smiles;
+        //        var p = s.indexOf(" |$");
+        //        if (p <= 0 || !scil.Utils.endswith(smiles, "$|"))
+        //            return smiles;
 
-        return s;
+        //        var rs = this.findSmilesRs(s);
+        //        s = s.substr(0, p);
+        //        if (rs != null && rs.length > 0) {
+        //            for (var i = 0; i < rs.length; ++i) {
+        //                p = s.indexOf("[*]");
+        //                if (p > 0) {
+        //                    ++p;
+        //                    s = s.substr(0, p) + rs[i] + s.substr(p + 1);
+        //                }
+        //                else {
+        //                    p = s.indexOf("*");
+        //                    if (p > 0)
+        //                        s = s.substr(0, p) + "[" + rs[i] + "]" + s.substr(p + 1);
+        //                    else
+        //                        return smiles;
+        //                }
+        //            }
+        //        }
+
+        //        return s;
     },
 
     findSmilesRs: function (s) {
