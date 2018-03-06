@@ -32,8 +32,8 @@ There will be two folders in this folder `C:\Program Files\Apache Software Found
 
 
 ## How to Build ##
-The source code is built in MicroSoft Visual Studio.  The project file is "HELM.sln".
-For developer convenience, all javascript source code are stored as separated file in .\helm\ folder. After making any change, _merge.helm.bat, a Windows batch file, can be used to merge all source code files into one file: .\JSDraw\Pistoia.HELM-uncompressed.js
+For developer convenience, all JavaScript source code are stored as separate files in .\helm\ folder.
+There is a _merge.helm.bat, a Windows batch file, which can be used to merge all source code files into one file: .\JSDraw\Pistoia.HELM-uncompressed.js. Alternatively you can use your preferred tools from the many modern JS packaging tools available today. (webpack as an example).
 
 
 ## How to Access the Demo Version ##
