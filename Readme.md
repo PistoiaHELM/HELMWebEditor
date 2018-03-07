@@ -6,7 +6,7 @@ For general information and user guides, please visit the HELM [wiki page](https
 ## How to Install ##
 
 ### 1 Install on Tomcat ###
-#### 1.1. Install HELM2MonomerService ( HELM2MonomerService.war )####
+#### 1.1. Install HELM2MonomerService ( HELM2MonomerService.war ) ####
 
 - Download the [war file](https://oss.sonatype.org/#nexus-search;quick~helmmonomerservice) 
 - Copy the war file into this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
@@ -15,7 +15,7 @@ For general information and user guides, please visit the HELM [wiki page](https
 - Download the [war file](https://oss.sonatype.org/#nexus-search;quick~helm2-webservice) 
 - Copy the war file int0 this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
 
-#### 1.3 Install HELMWebEditor ( hwe-1.1.0.zip )####
+#### 1.3 Install HELMWebEditor ( hwe-1.1.0.zip ) ####
 - Download the [zip file](https://github.com/PistoiaHELM/HELMWebEditor/releases/download/1.1.0/hwe-1.1.0.zip)
 - Unzip it and copy the *hwe* folder to this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\HELM2MonomerService\
 
@@ -50,14 +50,14 @@ The monomers provided may change over time as we do not regulate public use of t
 ## Further Information ##
 
 
-### How to change monomer repository ###
+### How to change the monomer repository ###
 You can change the HWE configuration, `helm_config.js`, to point to your own monomer repository. 
 This config file is in: [https://github.com/PistoiaHELM/HELMWebEditor/blob/master/HELM/source/examples/helm_config.js](https://github.com/PistoiaHELM/HELMWebEditor/blob/master/HELM/source/examples/helm_config.js "https://github.com/PistoiaHELM/HELMWebEditor/blob/master/HELM/source/examples/helm_config.js")
 
 
 *url* is the parameter should be changed:
 
-The default URL calls the HELM Monomoer RESTful web service, which includes an API that allows you to retrieve monomers. 
+The default URL calls the HELMMonomerService which is a RESTful web service that includes an API to retrieve monomers. 
 
 
 ### How to show HELM molecules in view-only mode ###
