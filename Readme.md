@@ -1,6 +1,5 @@
-
 # HELM Web Editor #
-HELM Web Editor (HWE) is a tool to draw, display and edit HELM molecules, which is built on 100% Javascript.
+HELM Web Editor (HWE) is a tool to draw, display and edit HELM molecules, which is built in Javascript.
 
 For general information and user guides, please visit the HELM [wiki page](https://pistoiaalliance.atlassian.net/wiki/spaces/PUB/pages/35028994/HELM+Web-editor)
 
@@ -9,7 +8,7 @@ For general information and user guides, please visit the HELM [wiki page](https
 ### 1 Install on Tomcat ###
 #### 1.1. Install HELM2MonomerService ( HELM2MonomerService.war )####
 
-- Download the [war file](https://github.com/PistoiaHELM/HELMMonomerService/releases) 
+- Download the [war file](https://oss.sonatype.org/#nexus-search;quick~helmmonomerservice) 
 - Copy the war file into this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
 
 #### 1.2 Install HELM2WebService ( WebService.war ) ####
@@ -23,26 +22,27 @@ For general information and user guides, please visit the HELM [wiki page](https
 **Verification**:
 There will be two folders in this folder `C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\` : HELM2MonomerService and WebService
 
-- Run HELM Web Editor by loading this url from the browser: http://SERVER/HELM2MonomerService/hwe/ 
+- Run HELM Web Editor by loading this url from the browser: `http://SERVER/HELM2MonomerService/hwe/` 
 
 ### 2. Install on IIS ###
 - Download the [zip file](https://github.com/PistoiaHELM/HELMWebEditor/releases)
-- Unzip it can copy the *hwe* folder to this folder on IIS Server: C:\inetpub\wwwroot\
+- Unzip it and copy the *hwe* folder to this folder on IIS Server: `C:\inetpub\wwwroot\`
 - Run HELM Web Editor
-- Load this url from the browser: http://SERVER/hwe/
+- Load this url from the browser: `http://SERVER/hwe/`
 
 
 ## How to Build ##
-For developer convenience, all JavaScript source code are stored as separate files in .\helm\ folder.
 
-There is a _merge.helm.bat, a Windows batch file, which can be used to merge all source code files into one file: .\JSDraw\Pistoia.HELM-uncompressed.js. Alternatively you can use your preferred tools from the many modern JS packaging tools available today. (webpack as an example).
+For developer convenience, all JavaScript source code is stored as separate files in the .\helm\ folder. 
+
+There is a _merge.helm.bat, a Windows batch file, which can be used to merge all source code files into one file: .\JSDraw\Pistoia.HELM-uncompressed.js. Alternatively you can use your preferred tools from the many modern JS packaging tools available today. ([webpack](https://webpack.js.org/) as an example).
+
 
 
 ## How to Access the Demo Version ##
 
-A demo version is available at:  
-
-`http://webeditor.openhelm.org/hwe`
+A demo version is available at: 
+[http://webeditor.openhelm.org/hwe](http://webeditor.openhelm.org/hwe)
   
 **Health warning:**  
 The monomers provided may change over time as we do not regulate public use of the monomer manager. The demo version is only available to give interested parties a quick way to try out the functionality and should not be used for serious purposes. 
@@ -50,18 +50,17 @@ The monomers provided may change over time as we do not regulate public use of t
 ## Further Information ##
 
 
-### How to change monomer repository? ###
+### How to change monomer repository ###
 You can change the HWE configuration, `helm_config.js`, to point to your own monomer repository. 
-This config file is in: 
+This config file is in: [https://github.com/PistoiaHELM/HELMWebEditor/blob/master/HELM/source/examples/helm_config.js](https://github.com/PistoiaHELM/HELMWebEditor/blob/master/HELM/source/examples/helm_config.js "https://github.com/PistoiaHELM/HELMWebEditor/blob/master/HELM/source/examples/helm_config.js")
 
-    https://github.com/PistoiaHELM/HELMWebEditor/blob/master/HELM/source/examples/helm_config.js
 
 *url* is the parameter should be changed:
 
-The default URL calls the HELM Monomoer RESTful web service, which includes an API to retrieve all monomers
+The default URL calls the HELM Monomoer RESTful web service, which includes an API that allows you to retrieve monomers. 
 
 
-### How to show HELM molecules in view-only mode? ###
+### How to show HELM molecules in view-only mode ###
 
 Technically you need only the Canvas for viewonly mode to display HELM structure. The Canvas is JSDraw. So you need to do the following:
 
