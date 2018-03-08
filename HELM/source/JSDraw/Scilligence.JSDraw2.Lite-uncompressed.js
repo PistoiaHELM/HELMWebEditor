@@ -3581,6 +3581,7 @@ scil.Utils.padright = scil.Utils.padRight;
 * @namespace scilligence.JSDraw2
 */
 JSDraw2 = {};
+JSDrawServices = {};
 scilligence.JSDraw2 = JSDraw2;
 scilligence.JSDraw3 = JSDraw3 = JSDraw2;
 
@@ -8614,11 +8615,11 @@ JSDraw2.Mol = scil.extend(scil._base, {
             }
         }
 
-        this.readSgroups(sgroups);
+        this.readSgroups(sgroups, chiral);
         return this;
     },
 
-    readSgroups: function (sgroups) {
+    readSgroups: function (sgroups, chiral) {
         var superatoms = [];
         var brackets = [];
         var gap = this.medBondLength(1.56) / 2;
@@ -13840,7 +13841,7 @@ JSDraw2.Drawer = {
     },
 
     splitFormula: function (s) {
-        if (/^[A-Z]+$/.test(s) || /^[\(][^\(\)]+[\)]$/.test(s) || /^[\[][^\[\]]+[\]]$/.test(s))
+        if ((/^[A-Z]+$/.test(s) || /^[\(][^\(\)]+[\)]$/.test(s) || /^[\[][^\[\]]+[\]]$/.test(s)) && s != "COOH")
             return [{ str: s}];
 
         var ret = [];
@@ -22734,7 +22735,7 @@ JsDialog = JSDraw2.Dialog = scil.Dialog;﻿/////////////////////////////////////
 *    chemistry and biology: jsdraw, jdraw.fm, jsdraw.se, jsdraw.table, plate, sketches, plates
 *    file: file, filepath, filelink, filedblink, image
 *    form: subform
-* <b>Example:</b>
+* <b>Example 1:</b>
 *    &lt;script type="text/javascript"&gt;
 *        dojo.ready(function () {
 *            var parent = scil.Utils.createElement(document.body, "div");
@@ -22746,6 +22747,16 @@ JsDialog = JSDraw2.Dialog = scil.Dialog;﻿/////////////////////////////////////
 *            var form = new scil.Form({ viewonly: false });
 *            form.render(parent, columns, { immediately: true });
 *        });
+*    &lt;/script&gt;
+*
+* <b>Example 2. File Upload Dialog:</b>
+*    &lt;script type="text/javascript"&gt;
+*        var fields = {
+*            projectcode: { label: "Project Code", required: true, width: 300 },
+*            file: { label: "Word File", type: "postfile", attributes: { name: "file"} }
+*        };
+*        var dlg;
+*        dlg = scil.Form.createDlgForm("Import Word", fields, { label: "Import", onclick: function () { dlg.form.post('ajax.ashx?cmd=abc.import', null, function(ret) { } } }, { usepostform: true });
 *    &lt;/script&gt;
 * </pre>
 */
@@ -25509,8 +25520,6 @@ scil.Table = scil.extend(scil._base, {
             if (item.unit != null && item.unit != "")
                 s += " (" + scil.Lang.res(item.unit) + ")";
             var td = scil.Utils.createElement(r, "td", s, style, { key: id });
-            if (item.width != null)
-                td.style.width = item.width + "px";
             if (item.type == "hidden" || item.ishidden)
                 td.style.display = "none";
 
@@ -25518,6 +25527,11 @@ scil.Table = scil.extend(scil._base, {
                 var chk = scil.Utils.createElement(td, "checkbox");
                 this.connectCheckAll(chk, id);
             }
+
+            if (item.width > 0)
+                td.style.width = item.width + "px";
+            if (item.whitespace != null)
+                td.style.whiteSpace = item.whitespace;
         }
         if (this.header == false)
             r.style.display = "none";
@@ -26034,7 +26048,7 @@ scil.Table = scil.extend(scil._base, {
             var viewonly = this.viewonly || item.viewonly || lockeditems != null && lockeditems[id];
             td.field = scil.Form.createField(td, item, viewonly, values == null ? item.value : values[id], values, true, true);
             if (viewonly && item.type != "img") {
-                td.field.style.width = "100%";
+                td.field.style.width = item.width > 0 ? item.width + "px" : "100%";
             }
             else {
                 if (td.field.tagName == "INPUT" || td.field.tagName == "SELECT" || td.field.tagName == "TEXTAREA") {
@@ -26042,6 +26056,13 @@ scil.Table = scil.extend(scil._base, {
                     if (item.addrowonenter && beforerow == null)
                         td.field.focus();
                 }
+            }
+
+            if (viewonly) {
+                if (item.width > 0)
+                    td.style.width = item.width + "px";
+                if (item.whitespace != null)
+                    td.style.whiteSpace = item.whitespace;
             }
 
             td.setAttribute("__tid", id);
@@ -29663,6 +29684,12 @@ scil.Page.Table = scil.extend(scil._base, {
 
         this.tablediv = scil.Utils.createElement(this.form.div, "div");
         this.recreateTable();
+    },
+
+    addSubform: function (options, margin) {
+        if (margin > 0)
+            this.form.dom.style.marginBottom = margin + "px";
+        scil.Page.addForm(this.page, options, this, this.form.dom.parentNode);
     },
 
     recreateTable: function () {
