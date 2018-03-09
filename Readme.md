@@ -42,7 +42,7 @@ There is a _merge.helm.bat, a Windows batch file, which can be used to merge all
 ## How to Access the Demo Version ##
 
 A demo version is available at: 
-[http://webeditor.openhelm.org/hwe](http://webeditor.openhelm.org/hwe)
+[http://webeditor.openhelm.org/hwe/examples/App.htm](http://webeditor.openhelm.org/hwe/examples/App.htm)
   
 **Health warning:**  
 The monomers provided may change over time as we do not regulate public use of the monomer manager. The demo version is only available to give interested parties a quick way to try out the functionality and should not be used for serious purposes. 
