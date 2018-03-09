@@ -231,7 +231,7 @@ org.helm.webeditor.Interface = {
         buttons.push(main);
 
         buttons.push({ c: "new", t: "New", label: "New" });
-        if (typeof (JSDrawServices) != "undefined") {
+        if (typeof (JSDrawServices) != "undefined" && JSDrawServices.url != null) {
             buttons.push({ c: "open", t: "Load", label: "Load" });
             buttons.push({ c: "save", t: "Save", label: "Save" });
         }

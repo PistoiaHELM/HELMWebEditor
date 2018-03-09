@@ -191,7 +191,7 @@ org.helm.webeditor.Adapter = {
         m.naturalanalog = ret.naturalAnalog;
         m.polymertype = ret.polymerType;
         m.monomertype = ret.monomerType;
-        m.author = "";
+        m.author = ret.author;
 
         if (ret.rgroups == null)
             return;

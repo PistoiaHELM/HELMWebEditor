@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Copyright (C)2018, The Pistoia Alliance
-*  Version 1.1.0.2018--02-22
+*  Version 1.1.0.2018--03-09
 * 
 * Created by Scilligence, built on JSDraw.Lite
 * 
@@ -379,7 +379,7 @@ org.helm.webeditor.Interface = {
         buttons.push(main);
 
         buttons.push({ c: "new", t: "New", label: "New" });
-        if (typeof (JSDrawServices) != "undefined") {
+        if (typeof (JSDrawServices) != "undefined" && JSDrawServices.url != null) {
             buttons.push({ c: "open", t: "Load", label: "Load" });
             buttons.push({ c: "save", t: "Save", label: "Save" });
         }
@@ -8715,7 +8715,7 @@ org.helm.webeditor.MonomerLibApp = scil.extend(scil._base, {
             {type: "select", key: "countperpage", labelstyle: { fontSize: "90%" }, label: "Count", items: ["", 10, 25, 50, 100], onchange: function () { me.refresh(); } }
         ];
 
-        if (typeof(JSDrawServices) != "undefined") {
+        if (typeof (JSDrawServices) != "undefined" && JSDrawServices.url != null) {
             this.buttons.splice(0, 0, "-");
             this.buttons.splice(0, 0, { type: "a", src: scil.Utils.imgSrc("img/open.gif"), title: "Import Monomers", onclick: function () { me.uploadFile(true); } });
             this.buttons.splice(0, 0, "-");
@@ -8858,9 +8858,9 @@ scil.apply(org.helm.webeditor.MonomerLibApp, {
             name: { label: "Name", required: true, width: 800 },
             polymertype: { label: "Polymer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getPolymerTypes(), width: 100 },
             monomertype: { label: "Monomer Type", required: true, type: "select", items: org.helm.webeditor.MonomerLibApp.getMonomerTypes(), width: 100 },
-            naturalanalog: { label: "Natural Analog", width: 100 },
+            naturalanalog: { label: "Natural Analog", required: true, width: 100 },
             author: { label: "Author", width: 100 },
-            smiles: { label: "SMILES", width: 800 },
+            smiles: { label: "SMILES", width: 800, viewonly: true },
             molfile: { label: "Structure", type: "jsdraw", width: 800, height: 300 },
             r1: { label: "R1", type: "select", items: this.caps },
             r2: { label: "R2", type: "select", items: this.caps },
@@ -9570,7 +9570,7 @@ org.helm.webeditor.Adapter = {
         m.naturalanalog = ret.naturalAnalog;
         m.polymertype = ret.polymerType;
         m.monomertype = ret.monomerType;
-        m.author = "";
+        m.author = ret.author;
 
         if (ret.rgroups == null)
             return;
