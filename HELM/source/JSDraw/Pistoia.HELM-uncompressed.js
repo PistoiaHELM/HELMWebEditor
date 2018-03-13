@@ -476,7 +476,7 @@ org.helm.webeditor.Interface = {
         }
         else {
             var a = JSDraw2.Atom.cast(ed.curObject);
-            if (a.bio == null)
+            if (a != null && a.bio == null)
                 items.push({ caption: "R Group", callback: function (cmd, obj) { ed.menuSetAtomType(cmd, obj); }, children: ["R1", "R2", "R3", "R4", "R5"] });
 
             items.push({ caption: "Copy Molfile", key: "copymolfile" });
