@@ -24,9 +24,9 @@
 
 /**
 * Formula class
-* @class org.helm.webeditor.Formula
+* @class scil.helm.Formula
 */
-org.helm.webeditor.Formula = {
+scil.helm.Formula = {
     /**
     * Calculate the MF of a molecule (internal use)
     * @function getMF
@@ -75,7 +75,7 @@ org.helm.webeditor.Formula = {
         var sum = 0;
         for (var e in stats) {
             if (e != "R")
-                sum += stats[e] * org.helm.webeditor.Interface.getElementMass(e);
+                sum += stats[e] * scil.helm.Interface.getElementMass(e);
         }
         return Math.round(sum * 10000) / 10000.0;
     },
@@ -85,6 +85,12 @@ org.helm.webeditor.Formula = {
     * @function getAtomStats
     */
     getAtomStats: function (m) {
+        var stats = {};
+        this.getAtomStats2(m, stats);
+        return stats;
+    },
+
+    getAtomStats2: function (m, stats) {
         var brackets = [];
         for (var i = 0; i < m.graphics.length; ++i) {
             var br = JSDraw2.Bracket.cast(m.graphics[i]);
@@ -104,38 +110,44 @@ org.helm.webeditor.Formula = {
             if (a.elem == "?")
                 return null;
 
-            if (org.helm.webeditor.isHelmNode(a)) {
-                list.push(a);
-                var n = this.getRepeat(brackets, a);
-                if (n > 0) {
-                    for (var k = 1; k < n; ++k)
-                        list.push(a);
+            if (scil.helm.isHelmNode(a)) {
+                if (a.biotype() == scil.helm.HELM.BLOB && a.superatom != null) {
+                    //group
+                    this.getAtomStats2(a.superatom, stats);
+                }
+                else {
+                    list.push(a);
+                    var n = this.getRepeat(brackets, a);
+                    if (n > 0) {
+                        for (var k = 1; k < n; ++k)
+                            list.push(a);
+                    }
                 }
             }
-            else
+            else {
                 atoms.push(a);
+            }
         }
 
         // chemistry
-        var ret = atoms.length == null ? null : org.helm.webeditor.Interface.getAtomStats(m, atoms);
-        if (ret == null)
-            ret = {};
+        var ret = atoms.length == null ? null : scil.helm.Interface.getAtomStats(m, atoms);
+        JSDraw2.FormulaParser.mergeStats(stats, ret);
 
         if (list.length == 0)
-            return ret;
+            return stats;
 
         for (var i = 0; i < list.length; ++i)
-            this.countMonomer(ret, org.helm.webeditor.Monomers.getMonomer(list[i]));
+            this.countMonomer(stats, scil.helm.Monomers.getMonomer(list[i]));
 
         for (var i = 0; i < m.bonds.length; ++i) {
             var b = m.bonds[i];
-            if (org.helm.webeditor.isHelmNode(b.a1))
-                this.deduceR(ret, org.helm.webeditor.Monomers.getMonomer(b.a1), b.r1);
-            if (org.helm.webeditor.isHelmNode(b.a2))
-                this.deduceR(ret, org.helm.webeditor.Monomers.getMonomer(b.a2), b.r2);
+            if (scil.helm.isHelmNode(b.a1))
+                this.deductR(stats, scil.helm.Monomers.getMonomer(b.a1), b.r1);
+            if (scil.helm.isHelmNode(b.a2))
+                this.deductR(stats, scil.helm.Monomers.getMonomer(b.a2), b.r2);
         }
 
-        return ret;
+        return stats;
     },
 
     getRepeat: function (brackets, a) {
@@ -153,8 +165,11 @@ org.helm.webeditor.Formula = {
     * @function countMonomer
     */
     countMonomer: function (ret, m) {
+        if (m == null)
+            return;
+
         if (m.stats == null) {
-            m.stats = org.helm.webeditor.Interface.molStats(org.helm.webeditor.monomers.getMolfile(m));
+            m.stats = scil.helm.Interface.molStats(scil.helm.monomers.getMolfile(m));
             for (var r in m.at) {
                 var s = m.at[r];
                 if (s == "H" || s == "OH") {
@@ -183,10 +198,10 @@ org.helm.webeditor.Formula = {
 
     /**
     * Deduct R group (internal use)
-    * @function deduceR
+    * @function deductR
     */
-    deduceR: function (ret, m, r) {
-        if (m.at == null)
+    deductR: function (ret, m, r) {
+        if (m == null || m.at == null)
             return;
 
         var s = m.at["R" + r];

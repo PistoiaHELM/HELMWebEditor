@@ -79,6 +79,10 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         if (m == null)
             return null;
 
+        // https://github.com/PistoiaHELM/HELMWebEditor/issues/213
+        if (m.id == "?")
+            return "?";
+
         if (rs == null)
             rs = [];
         else
@@ -1304,16 +1308,16 @@ org.helm.webeditor.Plugin = scil.extend(scil._base, {
         var n = 0;
         var cloned = this.jsd.clone();
         this.jsd.clear();
-        //try {
-        n = org.helm.webeditor.IO.read(this, seq, format, null, sugar, linker, separator);
-        //        }
-        //        catch (e) {
-        //            this.jsd.restoreClone(cloned);
-        //            var s = e.message == null ? e : e.message;
-        //            if (!scil.Utils.isNullOrEmpty(s))
-        //                scil.Utils.alert("Error: " + s);
-        //            return false;
-        //        }
+        try {
+            n = org.helm.webeditor.IO.read(this, seq, format, null, sugar, linker, separator);
+        }
+        catch (e) {
+            this.jsd.restoreClone(cloned);
+            var s = e.message == null ? e : e.message;
+            if (!scil.Utils.isNullOrEmpty(s))
+                scil.Utils.alert("Error: " + s);
+            return false;
+        }
 
         if (n > 0) {
             this.jsd.pushundo(cloned);

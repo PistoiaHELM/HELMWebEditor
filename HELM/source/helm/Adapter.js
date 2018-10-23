@@ -45,6 +45,10 @@ org.helm.webeditor.Adapter = {
         scil.Utils.ajax(org.helm.webeditor.Adapter.url + "/monomer/ALL", function (ret) {
             org.helm.webeditor.Adapter.startApp2(div, options);
         });
+
+        scil.Utils.ajax(org.helm.webeditor.Adapter.url + "/rule", function (ret) {
+            org.helm.webeditor.RuleSet.rules = ret;
+        });
     },
 
     onAjaxCallback: function (ret) {
@@ -101,7 +105,7 @@ org.helm.webeditor.Adapter = {
                 if (!scil.Utils.isNullOrEmpty(args.content.symbol))
                     args.url += "&filter=" + escape(args.content.symbol) + "&filterField=symbol";
                 else if (!scil.Utils.isNullOrEmpty(args.content.name))
-                    args.url += "&filter=" + escape(args.content.name) + "&filterField=name";
+                    args.url += "&filter=" + escape(args.content.name);// + "&filterField=name";
                 opts.verb = "get";
                 break;
             case "helm.monomer.save":
@@ -138,13 +142,13 @@ org.helm.webeditor.Adapter = {
             case "helm.rule.save":
                 args.url = org.helm.webeditor.Adapter.url + "/rule";
                 opts.verb = "put";
-                args.content.id = null;
+                //args.content.id = null;
                 org.helm.webeditor.Adapter.fromHWE(args.content);
                 args.postData = scil.Utils.json2str(args.content, null, true);
                 delete args.content;
                 break;
             case "helm.rule.del":
-                args.url = org.helm.webeditor.Adapter.url + "/delete/" + args.content.id;
+                args.url = org.helm.webeditor.Adapter.url + "/rule/" + args.content.id;
                 opts.verb = "del";
                 args.content = {};
                 break;
@@ -187,6 +191,9 @@ org.helm.webeditor.Adapter = {
     },
 
     toHWE: function (m, ret) {
+        if (ret.polymerType == null)
+            return;
+
         m.id = ret.polymerType + "/" + ret.symbol;
         m.naturalanalog = ret.naturalAnalog;
         m.polymertype = ret.polymerType;

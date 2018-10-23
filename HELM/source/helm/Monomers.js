@@ -30,6 +30,7 @@
 org.helm.webeditor.Monomers = {
     smilesmonomerid: 0,
     smilesmonomers: {},
+    aliasset: {},
     defaultmonomers: { HELM_BASE: null, HELM_SUGAR: null, HELM_LINKER: null, HELM_AA: null, HELM_CHEM: null },
     blobs: { blob: { n: 'Blob', id: "Blob", na: 'B', rs: 0, at: {}, m: '' }, group: { n: 'Group', id: "Group", na: 'G', rs: 0, at: {}, m: ''} },
 
@@ -295,6 +296,10 @@ org.helm.webeditor.Monomers = {
         });
     },
 
+    getAliases: function (biotype) {
+        return null;
+    },
+
     /**
     * Get the monomer set by its type (internal use)
     * @function getMonomerSet
@@ -379,7 +384,7 @@ org.helm.webeditor.Monomers = {
         }
 
         if (s == "?") {
-            var m = { id: '?', n: "?", na: '?', rs: 2, at: { R1: 'H', R2: 'H' }, m: "" };
+            var m = { id: '?', n: "?", na: '?', rs: 2, at: {}, m: "" }; // https://github.com/PistoiaHELM/HELMWebEditor/issues/213
             if (biotype == org.helm.webeditor.HELM.SUGAR)
                 m.at.R3 = "H";
             return m;
@@ -389,8 +394,21 @@ org.helm.webeditor.Monomers = {
             return { id: 'null', n: "?", na: '?', rs: 2, at: { R1: 'H', R2: 'H' }, m: "" };
 
         var set = this.getMonomerSet(biotype);
-        return set == null ? null : set[scil.helm.symbolCase(s)];
-    },
+        if (set == null)
+            return null;
+
+        var m = set[scil.helm.symbolCase(s)];
+        if (m != null)
+            return m;
+
+        var set = this.getAliases(biotype);
+        if (set == null)
+            return null;
+
+        var m = set[scil.helm.symbolCase(s)];
+        if (m != null)
+            return m;
+  },
 
     /**
     * Check if the monomer have a R group (internal use)
@@ -480,7 +498,18 @@ org.helm.webeditor.Monomers = {
         return null;
     },
 
+    convertAtomMapping2Rs: function (smiles) {
+        if (smiles == null)
+            return null;
+
+        // represented with atom mapping: CHEM1{[[*:2]C(=O)[C@H](C)N([*:1])CC]}$$$$
+        for (var i = 1; i <= 10; ++i)
+            smiles = smiles.replace(new RegExp("\\[\\*\\:" + i + "\\]"), "[R" + i + "]");
+        return smiles;
+    },
+
     addSmilesMonomer: function (type, smiles) {
+        smiles = this.convertAtomMapping2Rs(smiles);
         var ss = this.findSmilesRs(smiles);
         if (ss == null || ss.length == 0)
             return null;
@@ -515,32 +544,7 @@ org.helm.webeditor.Monomers = {
     },
 
     chemAxon2JSDrawSmiles: function (smiles) {
-        // "C[13C@H](N[*])C([*])=O |$;;;_R1;;_R2;$|"
-        var s = smiles;
-        var p = s.indexOf(" |$");
-        if (p <= 0 || !scil.Utils.endswith(smiles, "$|"))
-            return smiles;
-
-        var rs = this.findSmilesRs(s);
-        s = s.substr(0, p);
-        if (rs != null && rs.length > 0) {
-            for (var i = 0; i < rs.length; ++i) {
-                p = s.indexOf("[*]");
-                if (p > 0) {
-                    ++p;
-                    s = s.substr(0, p) + rs[i] + s.substr(p + 1);
-                }
-                else {
-                    p = s.indexOf("*");
-                    if (p > 0)
-                        s = s.substr(0, p) + "[" + rs[i] + "]" + s.substr(p + 1);
-                    else
-                        return smiles;
-                }
-            }
-        }
-
-        return s;
+        return smiles;
     },
 
     findSmilesRs: function (s) {
@@ -548,7 +552,7 @@ org.helm.webeditor.Monomers = {
 
         var ret = [];
         // JSDraw like Rs
-        for (var i = 1; i <= 5; ++i) {
+        for (var i = 1; i <= 10; ++i) {
             var s2 = s.replace(new RegExp("\\[R" + i + "\\]"), "");
             if (s2.length == s.length)
                 continue;
@@ -558,7 +562,7 @@ org.helm.webeditor.Monomers = {
 
         if (ret.length == 0) {
             // ChemAxon like Rs
-            for (var i = 1; i <= 5; ++i) {
+            for (var i = 1; i <= 10; ++i) {
                 var s2 = s.replace(new RegExp("_R" + i), "");
                 if (s2.length == s.length)
                     continue;
