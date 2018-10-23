@@ -317,6 +317,7 @@ scilligence.Utils = {
     isFirefox: navigator.userAgent.indexOf('Firefox') >= 0,
     isOpera: navigator.userAgent.indexOf('Opera') >= 0,
     isChrome: navigator.userAgent.indexOf('Chrome') >= 0,
+    isEdge: navigator.userAgent.indexOf('Edge/') >= 0,
     isLinux: navigator.userAgent.indexOf('Linux') >= 0,
     isUbuntu: navigator.userAgent.indexOf('Ubuntu') >= 0,
     isIpad: getiOSVersion(),
@@ -378,10 +379,7 @@ scilligence.Utils = {
     * @returns a number
     */
     round: function (val, n) {
-        if (val == null || isNaN(val))
-            return null;
-        var d = Math.pow(10, n);
-        return Math.round(val * d) / d;
+        return scil.Math.round(val, n);
     },
 
     /**
@@ -762,6 +760,7 @@ scilligence.Utils = {
     getOffset: function (e, scroll) {
         var d = scil.Utils.scrollOffset();
         var p = new JSDraw2.Point(0, 0);
+        var e2 = e;
         while (e != null) {
             if (e.offsetLeft > 0 || e.offsetTop > 0)
                 p.offset(e.offsetLeft, e.offsetTop);
@@ -775,22 +774,25 @@ scilligence.Utils = {
                 }
             }
 
-            //            if (e.style.position == "absolute") {
-            //                if (__ieversion && __ieversion < 8) {
-            //                    p.offset(-d.x, -d.y);
-            //                    break;
-            //                }
-            //                //break;
-            //            }
-
             e = e.offsetParent;
+        }
+
+        var fixed = false;
+        while (e2 != null) {
+            if (e2.style != null && e2.style.position == "fixed") {
+                fixed = true;
+                break;
+            }
+            e2 = e2.parentNode;
         }
 
         //if (__ieversion && __ieAppVersion < 8)
         //    p.offset(d.x, d.y);
 
-        if (scroll != false)
+        if (scroll != false && !fixed)
             p.offset(-d.x, -d.y);
+        if (fixed)
+            p.fixedposition = true;
         return p;
     },
 
@@ -882,12 +884,14 @@ scilligence.Utils = {
             scil.Utils.parsePixel(e.style.height));
     },
 
-    parsePixel: function (s) {
-        if (s == null || !scil.Utils.endswith(s, "px"))
+    parsePixel: function (s, defaultvalue) {
+        if (s == null)
             return null;
+        if (!scil.Utils.endswith(s, "px"))
+            return defaultvalue;
 
         s = s.substr(0, s.length - 2);
-        return isNaN(s) ? null : parseInt(s);
+        return isNaN(s) ? defaultvalue : parseInt(s);
     },
 
     /**
@@ -1475,11 +1479,11 @@ scilligence.Utils = {
             var store = new dojox.storage.LocalStorageProvider();
             if (store.isAvailable()) {
                 store.initialize();
-                return store.remove(name);
+                store.remove(name);
             }
         }
 
-        createCookie(name, "", -1);
+        this.createCookie(name, "", -1);
     },
 
     /**
@@ -1560,6 +1564,14 @@ scilligence.Utils = {
         return scil.Utils.indexOf(this._months, s);
     },
 
+    isnull: function (s, defaultvalue) {
+        return this.isNullOrEmpty(s) ? defaultvalue : s;
+    },
+
+    iif: function(condition, yes, no) {
+        return condition ? yes : no;
+    },
+
     formatTime: function (tm, format) {
         if (tm == 0)
             return "";
@@ -1619,12 +1631,15 @@ scilligence.Utils = {
         var days = (scil.Utils.today().getTime() - scil.Utils.trunc2date(tm).getTime()) / 1000 / 60 / 60 / 24;
 
         var ret = null;
+        if (classic == null)
+            classic = JSDraw2.config.classicdate; // I#13091
         if (!classic) {
             if (days == 0)
                 ret = JSDraw2.Language.res("Today");
             else if (days == 1)
                 ret = JSDraw2.Language.res("Yesterday");
         }
+
         if (ret == null) {
             if (scil.Utils.isNullOrEmpty(format)) {
                 format = JSDraw2.defaultoptions.dateformat;
@@ -1953,7 +1968,7 @@ scilligence.Utils = {
     * @returns null
     */
     listOptions: function (select, items, val, removeall, sortitems) {
-        if (removeall != null)
+        if (removeall)
             this.removeAll(select);
         if (items == null)
             return;
@@ -3039,7 +3054,7 @@ scilligence.Utils = {
         if (parent != null && parent.childNodes != null) {
             for (var i = 0; i < parent.childNodes.length; ++i) {
                 var a = parent.childNodes[i];
-                if (a.tagName == name || ignorecase && a.tagName != null && name != null && a.tagName.toLowerCase() == name.toLowerCase())
+                if (name == null || a.tagName == name || ignorecase && a.tagName != null && name != null && a.tagName.toLowerCase() == name.toLowerCase())
                     ret.push(a);
             }
         }
@@ -3552,6 +3567,27 @@ scilligence.Utils = {
 
     stdev: function (list) {
         return scil.Math.stdev(list);
+    },
+
+    xml2Lines: function (xml) {
+        var doc = xml == null ? null : scil.Utils.parseXml("<d> " + xml + "</d>");
+        var root = doc == null ? null : doc.documentElement || doc.firstElementChild;
+        if (root == null)
+            return null;
+
+        var ret = [];
+        var lines = scil.Utils.getElements(root, null);
+        for (var i = 0; i < lines.length; ++i) {
+            var e = lines[i];
+            var line = {};
+            for (var k = 0; k < e.attributes.length; ++k) {
+                var a = e.attributes[k];
+                line[a.name] = a.value;
+            }
+            ret.push(line);
+        }
+
+        return ret;
     }
 };
 
@@ -3572,7 +3608,7 @@ scil.Utils.padright = scil.Utils.padRight;
 
 /**
 @project JSDraw
-@version 5.3.2
+@version 6.0.0
 @description JSDraw Chemical/Biological Structure Editor
 */
 
@@ -3585,13 +3621,13 @@ JSDrawServices = {};
 scilligence.JSDraw2 = JSDraw2;
 scilligence.JSDraw3 = JSDraw3 = JSDraw2;
 
-JSDraw2.speedup = { fontsize: 4, gap: 0, disableundo: false, minbondlength: 1 };
+JSDraw2.speedup = { fontsize: 2, gap: 0, disableundo: false, minbondlength: 1 };
 
 /**
 * JSDraw Version
 * @property scilligence.JSDraw2.version
 */
-JSDraw2.version = "JSDraw V5.3.2";
+JSDraw2.version = "JSDraw V6.0.0";
 
 // JSDraw file version
 JSDraw2.kFileVersion = "5.0";
@@ -3601,6 +3637,7 @@ JSDraw2.kFileVersion = "5.0";
 * @property {dictionay} scilligence.JSDraw2.defaultoptions default Editor options: { skin: "w8" or null, delheteroatom: false, salts: { name: MF, ...}, abbreviations: {}, tlc: {}, popupwidth: number, popupheight: number, popupxdraw: true or false, monocolor: true or false, jdrawpath: "http://server/jdraw/" }
 */
 JSDraw2.defaultoptions = {};
+JSDraw2.config = {};
 JSDraw2.password = {encrypt:true};
 
 JSDraw2.TEXTKEYWORDS = ["°C", "rt", "reflux", "hr", "min", "sec", "psi", "atm", "overnight", "microwave", "Δ"];
@@ -5814,12 +5851,12 @@ JSDraw2.JSDrawIO = {
             var sel = scil.Utils.createElement(div, "select");
             scil.Utils.createElement(sel, "option");
             if (JSDraw2.Security.kEdition == "Lite") {
-                if (jsd.options.helmtoolbar)
+                if (jsd.options.toolbarmode == "helm")
                     scil.Utils.listOptions(sel, JSDraw2.JSDrawIO.jsdFiles3, null, false);
                 else
                     scil.Utils.listOptions(sel, JSDraw2.JSDrawIO.jsdFiles, null, false);
             }
-            else if (jsd.options.tlcplate)
+            else if (jsd.options.toolbarmode == "tlc")
                 scil.Utils.listOptions(sel, JSDraw2.JSDrawIO.jsdFiles2, null, false);
             else
                 scil.Utils.listOptions(sel, JSDraw2.JSDrawIO.jsdFiles, null, false);
@@ -5852,7 +5889,7 @@ JSDraw2.JSDrawIO = {
             s = jsd.getXml();
 
         var dt = new Date();
-        var prefix = JSDraw2.Security.kEdition == "Lite" && jsd.options.helmtoolbar ? "HELM" : "JSDraw";
+        var prefix = JSDraw2.Security.kEdition == "Lite" && jsd.options.toolbarmode == "helm" ? "HELM" : "JSDraw";
         var filename = prefix + dt.getFullYear() + "-" + (dt.getMonth() + 1) + "-" + dt.getDate() + "." + ext;
         var args = { client: "jsdraw", wrapper: "none", filename: filename, contents: s };
         scil.Utils.post(JSDrawServices.url + "?cmd=savefile", args, "_blank");
@@ -6091,8 +6128,10 @@ JSDraw2.JSDrawIO = {
                 args.contents = JSDraw2.JSDrawIO.jsssavedlg.jss.getSdf();
                 break;
             case "jssdf":
-            case "xlsx":
                 args.contents = JSDraw2.JSDrawIO.jsssavedlg.jss.getXml();
+                break;
+            case "xlsx":
+                args.contents = JSDraw2.JSDrawIO.jsssavedlg.jss.getXml(null, true);
                 break;
             case "json":
                 args.contents = scil.Utils.json2str(JSDraw2.JSDrawIO.jsssavedlg.jss.getJson());
@@ -9358,124 +9397,7 @@ JSDraw2.Mol = scil.extend(scil._base, {
     },
 
     _getMolV3000: function (rxn) {
-        var len = this.bondlength > 0 ? this.bondlength : this.medBondLength();
-        var scale = len > 0 ? (1.56 / len) : 1.0;
-
-        this.resetIds();
-
-        var dt = new Date();
-        var yr = dt.getFullYear() + "";
-
-        var s = '';
-        if (!rxn) {
-            s += (this.name == null ? "" : this.name) + '\n';
-            s += "   JSDraw " + scil.Utils.formatStr(dt.getMonth() + 1, 2, 0).replace(' ', '0') +
-            scil.Utils.formatStr(dt.getDate(), 2, 0).replace(' ', '0') +
-            yr.substr(2) +
-            scil.Utils.formatStr(dt.getHours(), 2, 0).replace(' ', '0') +
-            scil.Utils.formatStr(dt.getMinutes(), 2, 0).replace(' ', '0') + "2D\n";
-            s += "\n";
-            s += "  0  0        0               999 V3000\n";
-        }
-
-        var enhancedstereochemistry = this.getEnhancedStereochemistry();
-        var chiral = this.hasStereoCenter() || !scil.Utils.isNullOrEmpty(enhancedstereochemistry);
-
-        s += "M  V30 BEGIN CTAB\n";
-        s += "M  V30 COUNTS " + this.atoms.length + " " + this.bonds.length + " 0 0 " + (chiral ? 1 : 0) + "\n";
-
-        s += "M  V30 BEGIN ATOM\n";
-        for (var i = 0; i < this.atoms.length; ++i) {
-            var a = this.atoms[i];
-            var elem = a.elem;
-            if (elem == "R") {
-                if (a.iR > 0)
-                    elem = "R#";
-                else
-                    elem = "R";
-            }
-            else if (elem == "H") {
-                if (a.isotope == 2)
-                    elem = "D";
-                else if (a.isotope == 3)
-                    element = "T";
-            }
-
-            s += "M  V30 " + a.id + ' ' + elem;
-            s += ' ' + scil.Utils.formatStr(a.p.x * scale, 0, 4);
-            s += ' ' + scil.Utils.formatStr(-a.p.y * scale, 0, 4);
-            s += " 0 " + (rxn && a.atommapid > 0 ? a.atommapid : 0);
-            if (a.charge != null && a.charge != 0)
-                s += " CHG=" + a.charge;
-            if (a.radical >= 1 && a.radical <= 3)
-                s += " RAD=" + a.radical;
-
-            //if (chiralatoms[a.id] != null)
-            //    s += " CFG=" + chiralatoms[a.id];
-
-            s += "\n";
-        }
-        s += "M  V30 END ATOM\n";
-        s += "M  V30 BEGIN BOND\n";
-        for (var i = 0; i < this.bonds.length; ++i) {
-            var b = this.bonds[i];
-            var order = 0;
-            var stereo = 0;
-            switch (b.type) {
-                case JSDraw2.BONDTYPES.UNKNOWN:
-                    order = 8;
-                    break;
-                case JSDraw2.BONDTYPES.DUMMY:
-                    order = 9;
-                    break;
-                case JSDraw2.BONDTYPES.DOUBLEORAROMATIC:
-                    order = 7;
-                    break;
-                case JSDraw2.BONDTYPES.SINGLEORAROMATIC:
-                    order = 6;
-                    break;
-                case JSDraw2.BONDTYPES.SINGLEORDOUBLE:
-                    order = 5;
-                    break;
-                case JSDraw2.BONDTYPES.SINGLE:
-                case JSDraw2.BONDTYPES.DOUBLE:
-                case JSDraw2.BONDTYPES.TRIPLE:
-                case JSDraw2.BONDTYPES.DELOCALIZED:
-                    order = b.type;
-                    stereo = 0;
-                    break;
-                case JSDraw2.BONDTYPES.WEDGE:
-                    order = 1;
-                    stereo = 1;
-                    break;
-                case JSDraw2.BONDTYPES.HASH:
-                    order = 1;
-                    stereo = 3;
-                    break;
-                case JSDraw2.BONDTYPES.WIGGLY:
-                    order = 1;
-                    stereo = 2;
-                    break;
-                case JSDraw2.BONDTYPES.EITHER:
-                    order = 2;
-                    stereo = 2;
-                    break;
-            }
-            s += "M  V30 " + (i + 1) + ' ' + order + ' ' + b.a1.id + ' ' + b.a2.id;
-            if (stereo > 0)
-                s += " CFG=" + stereo;
-            if (b.ring != null)
-                s += " TOPO=" + (b.ring ? 1 : 2);
-            if (rxn && b.rcenter > 0)
-                s += " RXCTR=" + b.rcenter;
-            s += "\n";
-        }
-
-        s += "M  V30 END BOND\n";
-        s += enhancedstereochemistry;
-        s += "M  V30 END CTAB\n";
-        s += "M  END\n";
-        return s;
+        return null;
     },
 
     hasStereoCenter: function () {
@@ -12320,9 +12242,11 @@ JSDraw2.FormulaParser = {
         else {
             mf = s;
             mw = this.mf2mw(mf, true);
+
+            // I#12284
+            if (mw == null || mw == 0)
+                return null;
         }
-        if (mw == null || mw == 0)
-            return null;
 
         return { coef: coef, mf: coef == 1 ? mf : coef + "(" + mf + ")", mw: Math.round(mw * (coef > 0 ? coef : 1) * 1000) / 1000, s: coef == 1 ? s : coef + s, stats: this.mf2Stats(mf, true) };
     },
@@ -13158,7 +13082,7 @@ JSDraw2.Toolbar = scil.extend(scil._base, {
             { c: "selfrag", t: "Select Fragment", label: "Fragment" }, { c: "selectall", t: "Select All", label: "All"}];
 
         var addabout = false;
-        if (this.options.tlcplate) {
+        if (this.options.toolbarmode == "tlc") {
             buttons.push({ c: "new", t: "New", label: "New", sub: filesubmenus });
             buttons.push({ c: "tlctemplate", t: "Template", label: "Template" });
             buttons.push({ c: "|" });
@@ -13191,7 +13115,26 @@ JSDraw2.Toolbar = scil.extend(scil._base, {
 
             addabout = true;
         }
-        else if (this.options.workflow) {
+        else if (this.options.toolbarmode == "spectrum") {
+            buttons.push({ c: "new", t: "New", label: "New", sub: filesubmenus });
+            buttons.push({ c: "|" });
+            buttons.push({ c: "assaycurve", t: "Assay Curve", label: "Assay" });
+            buttons.push({ c: "spectrum", t: "Spectrum", label: "Spectrum" });
+            buttons.push({ c: "|" });
+            buttons.push({ c: "eraser", t: "Eraser", label: "Eraser" });
+            buttons.push({ c: "|" });
+            buttons.push({ c: "select", t: "Box Selection", label: "Box", sub: selecttools });
+            buttons.push({ c: "|" });
+            buttons.push({ c: "undo", t: "Undo", label: "Undo" });
+            buttons.push({ c: "redo", t: "Redo", label: "Redo" });
+            buttons.push({ c: "|" });
+            buttons.push({ c: "center", t: "Move to center", label: "Center" });
+            buttons.push({ c: "zoomin", t: "Zoom in", label: "Zoom" });
+            buttons.push({ c: "zoomout", t: "Zoom out", label: "Zoom" });
+
+            addabout = true;
+        }
+        else if (this.options.toolbarmode == "workflow") {
             buttons.push({ c: "new", t: "New", label: "New", sub: filesubmenus });
             buttons.push({ c: "|" });
             buttons.push({ c: "select", t: "Box Selection", label: "Box", sub: selecttools });
@@ -13218,7 +13161,7 @@ JSDraw2.Toolbar = scil.extend(scil._base, {
 
             addabout = true;
         }
-        else if (this.options.helmtoolbar) {
+        else if (this.options.toolbarmode == "helm") {
             org.helm.webeditor.Interface.getHelmToolbar(buttons, filesubmenus, selecttools, this.options);
             if (this.options.showabout != false)
                 addabout = true;
@@ -13393,9 +13336,9 @@ JSDraw2.Toolbar = scil.extend(scil._base, {
         else if (n < 0) {
             n = -n;
             var ranks;
-            if (this.options.workflow)
+            if (this.options.toolbarmode == "workflow")
                 ranks = ["zoomout", "zoombox", "redo", "zoomin", "eraser", "moveview"];
-            else if (this.options.helmtoolbar)
+            else if (this.options.toolbarmode == "helm")
                 ranks = ["zoombox", "zoomout", "zoomin", "redo", "eraser"];
             else
                 ranks = ["double", "chain", "pubchem", "pentane", "hexane", "zoombox", "moveview", "zoomout", "zoomin", "redo", "n2s", "eraser", "seq", "chemdraw", "chargep", "rectangle", "arrow", "text"];
@@ -14386,15 +14329,17 @@ JSDraw2.IDGenerator = scil.extend(scil._base, {
 //////////////////////////////////////////////////////////////////////////////////
 
 JSDraw2.Skin = {
-    jsdraw: null,
-    jssdf: null,
-    dialog: null,
+    jsdraw: {},
+    jssdf: {},
+    dialog: {},
+    menu: {},
 
     reset: function () {
         this.jsdraw = { bkcolor: "#e1e1e1", bkimg: scil.Utils.imgSrc("img/hbg.gif"), toolbarbk: scil.Utils.imgSrc("img/toolbarbk.jpg"), hovercolor: "#eef", btnselcolor: "#bbf" };
         this.jssdf = { bgcolor: "#eee", headerimg: scil.Utils.imgSrc("img/header-bg.gif"), headercolor: "#eee", rowcolor: "#f96", oddcolor: "", evencolor: "#eee", border: "solid 1px #ccc" };
         scilligence.apply(this.jssdf, this.jsdraw);
-        this.dialog = { bkimg: scil.Utils.imgSrc("img/dlgheader.gif"), bkcolor: "#6badf6", border: "1px solid #4f6d81" };
+        this.menu = { boxshadow: "5px 5px 15px 5px rgba(0,0,0,0.2)" };
+        this.dialog = { bkimg: scil.Utils.imgSrc("img/dlgheader.gif"), bkcolor: "#6badf6", border: "1px solid #4f6d81", boxshadow: "5px 5px 20px 8px rgba(0,0,0,0.5)" };
     },
 
     red: function () {
@@ -14611,6 +14556,13 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             this.options.buttonshape = "btnrec";
         else if (this.options.buttonshape == "circle")
             this.options.buttonshape = "btncir";
+
+        if (this.options.tlcplate)
+            this.options.toolbarmode = "tlc";
+        else if (this.options.helmtoolbar)
+            this.options.toolbarmode = "helm";
+        else if (this.options.workflow)
+            this.options.toolbarmode = "workflow";
 
         if (!(this.options.scale > 0)) {
             if (JSDraw2.defaultoptions.scale != null) {
@@ -14881,7 +14833,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         this.loaded = true;
 
         if (hastoolbar) {
-            if (this.options.tlcplate)
+            if (this.options.toolbarmode == "tlc")
                 this.doCmd("tlc");
             else
                 this.doCmd("select");
@@ -14931,7 +14883,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
                         if (ret == null && ret.jsdraw == null)
                             return;
                         var m = new JSDraw2.Mol();
-                        if (m.setXml(ret.jsdraw) == null)
+                        if (m.setXml(JSDraw2.Base64.decode(ret.jsdraw)) == null)
                             return;
                         var f = me.pasteMol(m);
                         if (f)
@@ -14979,7 +14931,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         this._undostack.clear();
         this._redostack.clear();
 
-        if (this.options.tlcplate)
+        if (this.options.toolbarmode == "tlc")
             this.doCmd("tlc");
         else
             this.doCmd("select");
@@ -16285,10 +16237,17 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
     mousemove: function (e, viewonly) {
         if (!this.activated) {
             //this.mousedownPoint = null;
-            if (viewonly && this.start != null && !this.frozen) {
-                var p = this.eventPoint(e);
-                this.moveview(new JSDraw2.Point(p.x - this.start.x, p.y - this.start.y));
-                e.preventDefault();
+            if (viewonly) {
+                if (this.start != null && !this.frozen) {
+                    var p = this.eventPoint(e);
+                    this.moveview(new JSDraw2.Point(p.x - this.start.x, p.y - this.start.y));
+                    e.preventDefault();
+                }
+                else if (this.options.showhelmpopup) {
+                    var p = this.eventPoint(e);
+                    var obj = this.toggle(p);
+                    this.onHelmSelectCurrent(e, obj);
+                }
             }
             return;
         }
@@ -16948,7 +16907,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             }
 
             if (!f && this.curObject == null) {
-                if (this.options.helmtoolbar && !this.helm.isHelmCmd(cmd))
+                if (this.options.toolbarmode == "helm" && !this.helm.isHelmCmd(cmd))
                     return;
 
                 var bondtype = this.Cmd2BondType(cmd);
@@ -17007,7 +16966,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             }
         }
 
-        if (this.options.helmtoolbar || this.helm.isHelmCmd(cmd)) {
+        if (this.options.toolbarmode == "helm" || this.helm.isHelmCmd(cmd)) {
             if (this.helm.connnectGroup(p1, this.curObject)) {
                 this.pushundo(cloned);
                 this.redraw();
@@ -17434,7 +17393,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             return;
 
         var items = org.helm.webeditor.Interface.onContextMenu(this, e, viewonly);
-        if (items == null)
+        if (items == null || items.length == 0)
             return;
 
         var me = this;
@@ -17461,13 +17420,16 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         var modified = false;
         var cloned = this.clone();
         switch (cmd) {
-            //            case "Chiral":                                                                                                                       
-            //                this.pushundo();                                                                                                                       
-            //                this.m.chiral = !this.m.chiral;                                                                                                                       
-            //                this.refresh(true);                                                                                                                       
-            //                break;                                                                                                                       
+            //            case "Chiral":                                                                                                                           
+            //                this.pushundo();                                                                                                                           
+            //                this.m.chiral = !this.m.chiral;                                                                                                                           
+            //                this.refresh(true);                                                                                                                           
+            //                break;                                                                                                                           
             case "curveline":
-                obj.setAssayCurveLine(this);
+                obj.setIC50CurveLine(this);
+                break;
+            case "icxline":
+                obj.setICxCurveLine(this);
                 break;
             case "curveonly":
                 obj.setAssayCurveOnly(this);
@@ -17606,7 +17568,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
                 this.showSequences(obj);
                 break;
             case "rgroup_define":
-                this.rgroupDefine(obj);
+                modified = this.rgroupDefine(obj);
                 break;
             case "rgroup_remove":
                 var a = JSDraw2.Atom.cast(obj);
@@ -17731,14 +17693,22 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             return;
 
         this.pushundo();
+        curve.setDisplayRange();
         for (var i = 0; i < list.length; ++i) {
             list[i].curveline = false;
+            list[i].icxline = false;
             if (list[i] == curve) {
                 list[i].curveonly = false;
+                //list[i].showline = "";
             }
             else {
                 list[i]._rect = curve._rect.clone();
                 list[i].curveonly = true;
+                //list[i].showline = "curve";
+                list[i].x1 = curve.x1;
+                list[i].x2 = curve.x2;
+                list[i].y1 = curve.y1;
+                list[i].y2 = curve.y2;
             }
         }
 
@@ -17811,10 +17781,12 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
 
     rgroupDefine: function (obj) {
         JSDraw2.needPro();
+        return false;
     },
 
     createMulticenter: function () {
         JSDraw2.needPro();
+        return null;
     },
 
     viewLarge: function () {
@@ -18454,7 +18426,7 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
 
             var c = null;
             switch (e.keyCode) {
-                //case 16: // *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+                //case 16: // *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
                 case 56:
                     c = '*';
                     break;
@@ -19675,13 +19647,13 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             case "new":
                 if (!this.m.isEmpty()) {
                     var me = this;
-                    scil.Utils.confirmYes("Clear all contents?", function () {
+                    //scil.Utils.confirmYes("Clear all contents?", function () {
                         me.pushundo();
                         me.clear(null, true);
                         me.refresh(true);
                         if (me.options.filenew != null)
                             me.options.filenew(me);
-                    }, this);
+                    //}, this);
                 }
                 else {
                     if (this.ink != null)
@@ -20041,12 +20013,12 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         if (me.openfiledlg == null) {
             var fileformats = null;
             if (JSDraw2.Security.kEdition == "Lite") {
-                if (this.options.helmtoolbar)
+                if (this.options.toolbarmode == "helm")
                     fileformats = { helm: "HELM", xhelm: "xHELM" };
                 else
-                    fileformats = { mol: "Mol File", smiles: "SMILES" };
+                    fileformats = { mol: "Mol File" };
             }
-            else if (jsd.options.tlcplate)
+            else if (jsd.options.toolbarmode == "tlc")
                 fileformats = JSDraw2.JSDrawIO.jsdFiles2;
             else
                 fileformats = JSDraw2.JSDrawIO.jsdFiles;
@@ -20054,8 +20026,14 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
             var fields = { filetype: { label: "File Type", type: "select", items: fileformats }, contents: { label: "Contents", type: "textarea", width: 800, height: 400} };
             me.openfiledlg = scil.Form.createDlgForm("Import File", fields, { label: "Import", onclick: function () { me.onOpenFile(); } });
         }
+
+        var data = {};
+        var list = scil.Utils.getDictKeys(me.openfiledlg.form.items.filetype.items);
+        if (list.length == 1)
+            data = { filetype: list[0] };
+
         me.openfiledlg.show();
-        me.openfiledlg.form.setData({});
+        me.openfiledlg.form.setData(data);
         me.openfiledlg.jsd = this;
     },
 
@@ -20064,25 +20042,34 @@ JSDraw2.Editor = scilligence.extend(scilligence._base, {
         if (me.savefiledlg == null) {
             var fileformats = null;
             if (JSDraw2.Security.kEdition == "Lite") {
-                if (this.options.helmtoolbar)
+                if (this.options.toolbarmode == "helm")
                     fileformats = { helm: "HELM", xhelm: "xHELM" };
                 else
-                    fileformats = { mol: "Mol File", smiles: "SMILES" };
+                    fileformats = { mol: "Mol File" };
             }
-            else if (jsd.options.tlcplate)
+            else if (jsd.options.toolbarmode == "tlc")
                 fileformats = JSDraw2.JSDrawIO.jsdFiles2;
             else
                 fileformats = JSDraw2.JSDrawIO.jsdFiles;
 
-            var fields = { filetype: { label: "File Type", type: "select", items: fileformats }, contents: { label: "Contents", type: "textarea", width: 800, height: 400} };
-            me.savefiledlg = scil.Form.createDlgForm("Export File", fields, null, { onchange: function (field) {
-                if (field == me.savefiledlg.form.fields.filetype) me.onSaveFile();
-            }
+            var fields = { filetype: { label: "File Type", addblank: false, type: "select", items: fileformats }, contents: { label: "Contents", type: "textarea", width: 800, height: 400 } };
+            me.savefiledlg = scil.Form.createDlgForm("Export File", fields, null, {
+                onchange: function (field) {
+                    if (field == me.savefiledlg.form.fields.filetype) me.onSaveFile();
+                }
             });
         }
+
+        var data = {};
+        var list = scil.Utils.getDictKeys(me.savefiledlg.form.items.filetype.items);
+        if (list.length == 1)
+            data = { filetype: list[0] };
         me.savefiledlg.show();
-        me.savefiledlg.form.setData({});
+        me.savefiledlg.form.setData(data);
         me.savefiledlg.jsd = this;
+
+        if (list.length == 1)
+            me.onSaveFile();
     },
 
     onPT: function (elem) {
@@ -22217,7 +22204,7 @@ scil.ContextMenu = scil.extend(scil._base, {
             this.items = items;
         if (this.tbody == null) {
             var me = this;
-            this.tbody = scil.Utils.createTable(this.document.body, 0, 0, { position: "absolute", display: "none", backgroundColor: "#eee", color: "#000", border: "solid 1px #ddd" });
+            this.tbody = scil.Utils.createTable(this.document.body, 0, 0, { position: "absolute", display: "none", backgroundColor: "#eee", color: "#000", border: "solid 1px #ddd", boxShadow: JSDraw2.Skin.menu.boxshadow });
             this.tbody.setAttribute("jspopupmenu", "1");
             dojo.connect(this.tbody.parentNode, "onmousedown", function (e) { if (e.button != 2) me.click(e); });
             dojo.connect(this.tbody.parentNode, "onmouseover", function (e) { me.hilit(e); });
@@ -22428,9 +22415,6 @@ scil.Dialog = scil.extend(scil._base, {
         if (modal == null)
             modal = true;
 
-        if (!(scil.Dialog.kTimer > 0))
-            immediately = true;
-
         this._create();
         this.movingSt = null;
         if (title != null && this.dialog.titleElement != null)
@@ -22439,7 +22423,6 @@ scil.Dialog = scil.extend(scil._base, {
         if (JSDraw2.defaultoptions.minDlgZindex > 0 && maxZindex < JSDraw2.defaultoptions.minDlgZindex)
             maxZindex = JSDraw2.defaultoptions.minDlgZindex;
         var z = zindex == null ? maxZindex + 10 : zindex;
-        this.dialog.alpha = 0;
         this.dialog.style.display = "";
         this.dialogmask.style.display = "";
         this.dialogmask.style.minHeight = "100%";
@@ -22455,19 +22438,16 @@ scil.Dialog = scil.extend(scil._base, {
         }
 
         this.dialog.style.borderColor = modal ? "#fff" : JSDraw2.Skin.dialog.bkcolor;
+        this.dialog.style.display = "";
 
-        if (scilligence.Utils.isTouch || immediately) {
-            dojo.style(this.dialog, { display: "", opacity: 1.00, filter: 'alpha(opacity=100)' });
-        }
-        else {
-            dojo.style(this.dialog, { display: "", opacity: .00, filter: 'alpha(opacity=0)' });
-            this.dialog.timer = setInterval("scil.Dialog.get('" + this.id + "').fade(1)", scil.Dialog.kTimer);
-        }
         this.moveCenter();
         scil.Dialog.stack.push(this);
 
         if (this._scilform && this.form != null && this.form.fields != null)
             this.form.focus();
+
+        if (!immediately)
+            scil.Animation.zoomin(this.dialog, 1000);
     },
 
     setTitle: function (title) {
@@ -22497,7 +22477,7 @@ scil.Dialog = scil.extend(scil._base, {
         var me = this;
         var topBody = this.parentWindow.document.body;
         var zi = 200;
-        var tbody = scilligence.Utils.createTable(topBody, 0, 0, { position: "absolute", borderRadius: "3px", width: w, height: h, zIndex: zi, backgroundColor: JSDraw2.Skin.dialog.bkcolor, border: JSDraw2.Skin.dialog.border });
+        var tbody = scilligence.Utils.createTable(topBody, 0, 0, { position: "absolute", borderRadius: "1px", width: w, height: h, zIndex: zi, backgroundColor: JSDraw2.Skin.dialog.bkcolor, boxShadow: JSDraw2.Skin.dialog.boxshadow });
         this.dialog = tbody.parentNode;
         this.dialog.setAttribute("__scilligence_dlg", this.id);
 
@@ -22550,7 +22530,7 @@ scil.Dialog = scil.extend(scil._base, {
         else
             div.appendChild(this.body);
 
-        var opacity = this.options.opacity > 0 ? this.options.opacity : 75;
+        var opacity = this.options.opacity > 0 ? this.options.opacity : 35;
         this.dialogmask = scilligence.Utils.createElement(topBody, 'div', null, { position: "absolute", top: "0", left: "0", minHeight: "100%", height: "100%", width: "100%", background: "#999", opacity: opacity / 100.0, filter: "alpha(opacity=" + opacity + ")", zIndex: zi - 1 });
         dojo.connect(window, "onresize", function () { me.resize(); });
         dojo.connect(window, "onscroll", function () { me.scroll(); });
@@ -22627,17 +22607,12 @@ scil.Dialog = scil.extend(scil._base, {
         if (this.options.onhide != null)
             this.options.onhide();
 
-        if (!(scil.Dialog.kTimer > 0))
-            immediately = true;
-
-        if (immediately || scilligence.Utils.isTouch) {
+        if (immediately) {
             this.close();
         }
         else {
-            if (this.dialog != null) {
-                clearInterval(this.dialog.timer);
-                this.dialog.timer = setInterval("scil.Dialog.get('" + this.id + "').fade(0)", scil.Dialog.kTimer);
-            }
+            var me = this;
+            scil.Animation.zoomout(this.dialog, 1000, function () { me.close(); });
         }
 
         scil.Dialog.stack.pop();
@@ -22648,35 +22623,15 @@ scil.Dialog = scil.extend(scil._base, {
         if (this.dialog == null)
             return;
 
-        clearInterval(this.dialog.timer);
-        this.dialog.timer = null;
         this.dialog.style.display = "none";
         this.dialogmask.style.display = "none";
         this.dialogmask.style.width = "0px";
         this.dialogmask.style.height = "0px";
-    },
-
-    fade: function (flag) {
-        if (flag == null)
-            flag = 1;
-
-        var value = flag == 1 ? this.dialog.alpha + scil.Dialog.kSpeed : this.dialog.alpha - scil.Dialog.kSpeed;
-        this.dialog.alpha = value;
-        dojo.style(this.dialog, { opacity: value / 100, filter: 'alpha(opacity=' + value + ')' });
-
-        if (value >= 99) {
-            clearInterval(this.dialog.timer);
-            this.dialog.timer = null;
-        } else if (value <= 1) {
-            this.close();
-        }
     }
 });
 
 scil.apply(scil.Dialog, {
     stack: [],
-    kTimer: 10,
-    kSpeed: 40,
 
     keydown: function (e) {
         if (e.keyCode == 27 && this.stack.length > 0)
@@ -22728,13 +22683,52 @@ JsDialog = JSDraw2.Dialog = scil.Dialog;﻿/////////////////////////////////////
 * Form class
 * @class scilligence.Form
 * <pre>
-* Supported field types: 
+* <b>Constructor Parameters:</b>
+* - viewonly: {bool}
+* - alternativeforms: {dict}
+* - usepostform: {bool}
+* - hidelabel: {bool}
+* - centerbuttons: {bool}
+* - onselectrow: function(item)
+* - onchange: function(field, this, args)
+* - oncreated: function(form)
+*
+* items of .render(parent, items, options)
+*    Format: { key1: { label, width, render, ... }, key2: { ... }}
+*      - align: left|right|center
+*      - attibutes: {dict}
+*      - autosugesturl: {string}
+*      - button: {label, icon, type, onclick}
+*      - colspan: {int}
+*      - disable: {bool},
+*      - formula: {string}, 
+*      - icon: {string}
+*      - height: {int}
+*      - hidelabel: {bool}
+*      - labelstyle: {dict}
+*      - leading: {string}
+*      - label: {string}
+*      - padding: {int}
+*      - render: function(v, values) { return v; }
+*      - required: {bool}
+*      - str: {string}
+*      - style: {dict}
+*      - unit: {string}
+*      - value: {string}
+*      - viewonly: {bool}
+*      - was: {string}, the old key
+*      - width: {int}
+*      - onenter: function(field)
+*      - onclick: function(field, item, form)
+*
+* Supported Item Types:
 *    basic types: hidden, number, text, radio, date, color
 *    list types: select, dropdowninput, editableselect, dropdowncheck, multiselect
 *    table and text: table, tabtext, richtext, html, plaintext
 *    chemistry and biology: jsdraw, jdraw.fm, jsdraw.se, jsdraw.table, plate, sketches, plates
-*    file: file, filepath, filelink, filedblink, image
+*    file: file, filepath, filelink, filedblink, image, rawfile
 *    form: subform
+*
 * <b>Example 1:</b>
 *    &lt;script type="text/javascript"&gt;
 *        dojo.ready(function () {
@@ -22757,6 +22751,24 @@ JsDialog = JSDraw2.Dialog = scil.Dialog;﻿/////////////////////////////////////
 *        };
 *        var dlg;
 *        dlg = scil.Form.createDlgForm("Import Word", fields, { label: "Import", onclick: function () { dlg.form.post('ajax.ashx?cmd=abc.import', null, function(ret) { } } }, { usepostform: true });
+*    &lt;/script&gt;
+*
+* <b>Example 3. Form Forumla:</b>
+*    &lt;script type="text/javascript"&gt;
+*        var table;
+*        scil.ready(function () {
+*            var parent = scil.Utils.createElement(document.body, "div");
+*            var columns = {
+*                a: { label: "A", type: "number" },
+*                b: { label: "B", value: 5, viewonly: true },
+*                ab: { label: "A+B", formula: "{a}+{b}", viewonly: true },
+*                table: { label: "Table", formula: "cny=scil.Math.round({.usd}/{a},2)", type: "jsdraw.table", columns: [{ key: "usd", type: "float" }, { key: "cny", type: "float" }] },
+*                sum: { label: "Sum(USD)", formula: "{table}.getColSum('usd')", viewonly: true },
+*                sum2: { label: "Sum(CNY)", formula: "{table}.getColSum('cny')", viewonly: true }
+*            };
+*            table = new scil.Form({ viewonly: false });
+*            table.render(parent, columns);
+*        });
 *    &lt;/script&gt;
 * </pre>
 */
@@ -22838,7 +22850,7 @@ scil.Form = scil.extend(scil._base, {
         var ret = {};
         for (var id in this.fields) {
             var field = this.fields[id];
-            if (field != null) {
+            if (field != null && this.items[id].type != "rawfile") {
                 var v = scil.Form.getFieldData(field, this.items[id]);
                 if (includeNullValues || !scil.Utils.isNullOrEmpty(v))
                     ret[id] = v;
@@ -22905,6 +22917,51 @@ scil.Form = scil.extend(scil._base, {
         this.dirty = true;
         if (this.options.onchange != null)
             this.options.onchange(field, this, args);
+        this.onformula(field.getAttribute("key"));
+    },
+
+    onformula: function (fieldkey) {
+        var vars = [fieldkey];
+        while (vars.length > 0) {
+            var field = vars[0];
+            vars.splice(0, 1);
+
+            for (var k in this.items) {
+                var formula = this.items[k].formula;
+                if (k == fieldkey || scil.Utils.isNullOrEmpty(formula))
+                    continue;
+
+                if (formula.indexOf("{" + field + "}") >= 0) {
+                    if (this.updateValueByFormula(k))
+                        vars.push(k);
+                }
+            }
+        }
+    },
+
+    updateValueByFormula: function (fieldkey) {
+        if (this.items[fieldkey] == null)
+            return false;
+
+        var formula = this.items[fieldkey].formula;
+        if (scil.Utils.isNullOrEmpty(formula))
+            return false;
+
+        if (this.items[fieldkey].type == "jsdraw.table") {
+            return this.fields[fieldkey].jsd.applyFormula(formula, this);
+        }
+        else {
+            var v = scil.Form.evalFormula(formula, this);
+            if (v == null)
+                return false;
+
+            var v2 = this.getFieldValue(fieldkey);
+            if (v2 == v)
+                return false;
+
+            this.setFieldValue(fieldkey, v);
+            return true;
+        }
     },
 
     setDirty: function (f) {
@@ -23074,8 +23131,10 @@ scil.Form = scil.extend(scil._base, {
             }
 
             var field = this.newField(item, tr, immediately, (options == null ? null : options.hidelabel), (options == null ? null : options.vertical));
-            if (field != null)
+            if (field != null) {
                 item.field = this.fields[id] = field;
+                field.setAttribute("key", id)
+            }
 
             if (item.type == "group" && cols > 1)
                 item.td1.colSpan = cols * 2;
@@ -23121,21 +23180,41 @@ scil.Form = scil.extend(scil._base, {
         }
     },
 
+    /**
+    * Post data, particularly for post form with files
+    * @function pst
+    * @param {string} url: destination
+    * @param {dict} params: extra data
+    * @param {function} callback: function(ret) {}
+    * <b>Example</b>
+    * <pre>
+    *    &lt;script type="text/javascript"&gt;
+    *        var fields = {
+    *            file: { label: "Select Files", type: "rawfile", attributes: { multiple: "multiple" } },
+    *            attachtype: { label: "Attachment Type", type: "select", items: scil.Config.attachtypes }
+    *        };
+    *
+    *        var dlg = scil.Form.createDlgForm("Upload Files", fields, { label: "Upload", onclick: function (e) {
+	*	        e.preventDefault(); dlg.form.post("http://localhost/ajax.ashx?cmd=test", {name:"Scilligence"}, function(ret) { alert(ret); } )
+	*        } }, { usepostform: true });
+    *    &lt;/script&gt;
+    * </pre>
+    */
     post: function (url, params, callback) {
         if (this.postform == null)
             return;
 
-        if (params == null)
-            params = {};
-        scil.apply(params, this.getData());
+        for (var k in this.fields) {
+            var f = this.fields[k];
+            if (scil.Utils.isNullOrEmpty(f.getAttribute("name")))
+                f.setAttribute("name", k);
+        }
 
         scil.Utils.ajaxUploadFile(this.postform, url, params, callback);
     },
 
     postForm: function (url, params, callback) {
-        if (this.postform == null)
-            return;
-        scil.Utils.ajaxUploadFile(this.postform, url, params, callback);
+        this.post(url, params, callback);
     },
 
     /**
@@ -23262,7 +23341,7 @@ scil.Form = scil.extend(scil._base, {
             return null;
         }
         else {
-            if (hidelabel) {
+            if (hidelabel || item.hidelabel) {
                 item.td1 = scil.Utils.createElement(tr, "td");
             }
             else {
@@ -23289,10 +23368,16 @@ scil.Form = scil.extend(scil._base, {
                 tr.style.display = "none";
                 tr.setAttribute("hidden", "1");
             }
+            if (item.type == "number")
+                td.style.whiteSpace = "nowrap";
             return field;
         }
     },
 
+    /**
+    * Get the value of a field by its key
+    * @function getFieldValue
+    */
     getFieldValue: function (key) {
         return scil.Form.getFieldData(this.fields[key]);
     },
@@ -23440,7 +23525,6 @@ scil.apply(scil.Form, {
 
         switch (itemtype) {
             case "":
-            case "hidden":
             case "date":
             case "color":
             case "editableselect":
@@ -23449,6 +23533,9 @@ scil.apply(scil.Form, {
             case "multiselect":
                 tag = "input";
                 break;
+            case "hidden":
+                tag = item.render != null ? "div" : "input";
+                break;
             case "password":
                 tag = "password";
                 break;
@@ -23456,7 +23543,7 @@ scil.apply(scil.Form, {
                 tag = "file";
                 break;
             case "number":
-                tag = "input";
+                tag = viewonly ? "span" : "input";
                 break;
             case "htmltext":
                 tag = "texarea";
@@ -23565,7 +23652,7 @@ scil.apply(scil.Form, {
                 scil.Utils.listOptions(field, list, value, null, item.sort != false ? true : false);
             }
             else if (item.url != null) {
-                scil.Form.listOptions(field, item.url);
+                scil.Form.listOptions(field, item.url, item.addblank);
             }
         }
 
@@ -23582,11 +23669,13 @@ scil.apply(scil.Form, {
         if (item.button2 != null)
             scil.Utils.createButton(parent, item.button2);
 
-        if (!fortable && (item.str != null || item.unit != null) && itemtype != "checkbox")
+        if ((!fortable || fortable == "card" && !scil.Utils.isNullOrEmpty(value)) && (item.str != null || item.unit != null) && itemtype != "checkbox")
             scil.Utils.createElement(parent, "span", "&nbsp;" + (item.str || item.unit), { whiteSpace: "nowrap" });
-        var w = fortable && item.listwidth != null ? item.listwidth : item.width;
-        if (w != null && w > 0)
-            field.style.width = w + 'px';
+        if (fortable != "card") {
+            var w = fortable && item.listwidth != null ? item.listwidth : item.width;
+            if (w != null && w > 0)
+                field.style.width = w + 'px';
+        }
 
         if (item.height > 0 && !(viewonly && tag == "div" && (item.type == "htmltext" || item.type == "textarea")))
             field.style.height = item.height + 'px';
@@ -23821,8 +23910,6 @@ scil.apply(scil.Form, {
                 args.buttons = [];
             else if (typeof (args.buttons) == "string")
                 args.buttons = [args.buttons];
-            args.buttons.push({ iconurl: scil.Utils.imgSrc("img/uploadimg.gif"), tooltips: "Insert Image", onclick: function (ed) { scil.Richtext.insertImage(ed); } });
-            args.buttons.push({ iconurl: scil.Utils.imgSrc("img/benzene.gif"), tooltips: "Insert Structure", onclick: function (ed) { scil.Richtext.insertStructure(ed); } });
             if (args.extrabuttons != null)
                 args.buttons.push(args.extrabuttons);
             if (value != null && value == "")
@@ -23921,7 +24008,7 @@ scil.apply(scil.Form, {
         else if (field.stype == "postfile" || field.stype == "button")
             return null;
         else {
-            if (field.value == null)
+            if (field.value == null && field.getAttribute != null) // I#12753
                 return field.getAttribute("originalvalue");
             return field.value == "" ? null : field.value;
         }
@@ -24103,8 +24190,12 @@ scil.apply(scil.Form, {
         return s;
     },
 
-    listOptions: function (select, url) {
-        scil.Utils.ajax(url, function (ret) { scil.Utils.listOptions(select, ret); });
+    listOptions: function (select, url, addblank) {
+        scil.Utils.ajax(url, function (ret) {
+            if (addblank)
+                scil.Utils.listOptions(select, [""]);
+            scil.Utils.listOptions(select, ret);
+        });
     },
 
     /**
@@ -24225,11 +24316,12 @@ scil.apply(scil.Form, {
         }
         var div = scil.Utils.createElement(null, "div", null, args);
         var dlg = new JSDraw2.Dialog(caption, div, options);
-        dlg.show();
+        dlg.show2({ immediately: true });
         dlg.form = this.createForm2(div, items, buttons, options);
         dlg._scilform = true;
-        dlg.hide(true);
-        dlg.show2({ owner: this });
+        //dlg.hide(true);
+        //dlg.show2({ owner: this, immediately: options == null ? null : options.immediately });
+        dlg.moveCenter();
         if (options != null && options.oncreated)
             options.oncreated(dlg.form);
         return dlg;
@@ -24519,8 +24611,8 @@ scil.apply(scil.Form, {
         if (typeof (padding) != "number" || padding <= 0)
             padding = 3;
 
-        if (button == "-" || button == "|") {
-            scil.Utils.createElement(parent, "span", "|", { margin: "0 " + (2 * padding) + "px 0 " + (2 * padding) + "px" });
+        if (typeof(button) == "string") {
+            scil.Utils.createElement(parent, "span", (button == "-" ? "|" : button), { margin: "0 " + (2 * padding) + "px 0 " + (2 * padding) + "px" });
             return;
         }
 
@@ -24561,6 +24653,9 @@ scil.apply(scil.Form, {
 
             if (button.value != null)
                 b.value = button.value;
+
+            if (button.autoshrink > 0)
+                new scil.AutoShrink(b, button, true);
         }
         else {
             b = scil.Utils.createButton(parent, button);
@@ -24635,6 +24730,67 @@ scil.apply(scil.Form, {
         }
 
         return data;
+    },
+
+    evalFormula: function (formula, form, jss, irow) {
+        if (scil.Utils.isNullOrEmpty(formula))
+            return null;
+        var ss = scil.Form.splitVars(formula);
+
+        var expression = "";
+        for (var i = 0; i < ss.length; ++i) {
+            var s = ss[i];
+            if (scil.Utils.startswith(s, "{") && scil.Utils.endswith(s, "}")) {
+                var k = s.substr(1, s.length - 2);
+                if (k.substr(0, 1) == '.') {
+                    s = jss.getCellValue(irow, k.substr(1));
+                }
+                else {
+                    var type = form.items[k].type;
+                    if (type == "jsdraw.table" || type == "jsdraw" || type == "jsdraw.se")
+                        s = "form.fields['" + k + "'].jsd";
+                    else
+                        s = form.getFieldValue(k);
+                }
+            }
+
+            s = s.trim();
+            if (scil.Utils.endswith(s, '%')) {
+                var s2 = s.substr(0, s.length - 1);
+                if (!isNaN(s2))
+                    s = parseFloat(s2) / 100;
+            }
+            expression += s;
+        }
+
+        try {
+            return eval(expression);
+        }
+        catch (e) {
+            return null;
+        }
+    },
+
+    splitVars: function (s) {
+        var ret = [];
+        var p;
+        while ((p = s.indexOf("{")) >= 0) {
+            if (p > 0) {
+                ret.push(s.substr(0, p));
+                s = s.substr(p);
+            }
+
+            p = s.indexOf("}");
+            if (p < 0)
+                break;
+
+            ret.push(s.substr(0, p + 1));
+            s = s.substr(p + 1);
+        }
+
+        if (!scil.Utils.isNullOrEmpty(s))
+            ret.push(s);
+        return ret;
     },
 
     ext2Icon: function (filename) {
@@ -24887,22 +25043,8 @@ scil.AutoComplete = scil.extend(scilligence._base, {
             return;
         }
 
-        if (this.auto.style.display != "") {
-            var p = scilligence.Utils.getOffset(this.input);
-            var scroll = scilligence.Utils.scrollOffset();
-            var zIndex = scil.Utils.getZindex(this.input) + 1;
-            if (scil.Utils.isIE) {
-                var s2 = JsUtils.getScrollOffset(this.e);
-                scroll.offset(-s2.x, -s2.y);
-            }
-            var w = this.input.offsetWidth;
-            if (this.options.minautowidth > 0 && this.options.minautowidth > w)
-                w = this.options.minautowidth;
-            if (w < 100)
-                w = 100;
-            var pos = scil.Utils.isFixedPosition(this.input) ? "fixed" : "absolute";
-            dojo.style(this.auto, { zIndex: zIndex, position: pos, display: "", width: (w - 2) + "px", left: (p.x + scroll.x) + "px", top: (p.y + scroll.y + this.input.offsetHeight) + "px" });
-        }
+        if (this.auto.style.display != "")
+            this.position();
 
         this.items = items;
         scilligence.Utils.removeAll(this.auto);
@@ -24913,6 +25055,24 @@ scil.AutoComplete = scil.extend(scilligence._base, {
             dojo.connect(div, "onmouseover", function (e) { me.mouseover(e); });
             dojo.connect(div, "onmouseout", function (e) { me.mouseout(e); });
         }
+    },
+
+    position: function () {
+        var p = scilligence.Utils.getOffset(this.input);
+        var scroll = p.fixedposition ? new JSDraw2.Point(0, 0) : scilligence.Utils.scrollOffset();
+        this.auto.style.position = p.fixedposition ? "fixed" : "absolute";
+        var zIndex = scil.Utils.getZindex(this.input) + 1;
+        if (scil.Utils.isIE) {
+            var s2 = JsUtils.getScrollOffset(this.e);
+            scroll.offset(-s2.x, -s2.y);
+        }
+        var w = this.input.offsetWidth;
+        if (this.options.minautowidth > 0 && this.options.minautowidth > w)
+            w = this.options.minautowidth;
+        if (w < 100)
+            w = 100;
+        var pos = scil.Utils.isFixedPosition(this.input) ? "fixed" : "absolute";
+        dojo.style(this.auto, { zIndex: zIndex, position: pos, display: "", width: (w - 2) + "px", left: (p.x + scroll.x) + "px", top: (p.y + scroll.y + this.input.offsetHeight) + "px" });
     },
 
     highlight: function (e) {
@@ -25136,6 +25296,32 @@ scilligence.Progress = {
 * Table class - Table Control
 * @class scilligence.Table
 * <pre>
+* <b>Constructor Parameters:</b>
+* - addrow: {bool}, allow to add rows
+* - columns: {key1: {labe, width, type}, key2: { ... } }
+*    = label: {string}
+*    = width: {int}
+*    = type: {string}, any field type defined in scil.Form
+*    = render: function(v, values) { return v; }
+* - draggable: {bool}, be able to drag rows
+* - delrow: {bool},  be able to delete rows
+* - grouplinestyle: {string}
+* - header: {bool}, indicate if showing headers
+* - header0: [{label, colspan}]
+* - hidecolumncookiekey: {string}
+* - grouping: {bool}, group rows
+* - pushleft: {bool}, push columns to the left side
+* - rowcheck: {bool}, show row check
+* - selectrow: {bool}, be able to select rows
+* - viewonly: {bool}
+* - ondrop: function(src, dest, this)
+* - onAdd: function(this)
+* - onselectrow: function(row, old)
+* - onchange: function(this, e, item)
+* - onBeforeAddRow: function(values)
+* - onrowcheck: function(r, checked)
+* - onAddRow: function(r, values)
+*
 * <b>Example 1:</b>
 *    dojo.ready(function () {
 *        var parent = scil.Utils.createElement(document.body, "div");
@@ -25254,41 +25440,7 @@ scil.Table = scil.extend(scil._base, {
     * @returns null
     */
     setXml: function (xml, lockeditems) {
-        var root = null;
-        if (typeof xml == "object") {
-            root = xml;
-        }
-        else if (typeof xml == "string") {
-            var doc = scil.Utils.parseXml(xml);
-            if (doc != null)
-                root = doc.documentElement || doc.firstElementChild;
-        }
-
-        var data = [];
-        try {
-            if (root != null && root.getElementsByTagName == null)
-                root = null;
-        }
-        catch (e) {
-        }
-
-        if (root != null) {
-            var rows = root.getElementsByTagName("r");
-            for (var i = 0; i < rows.length; ++i) {
-                var row = {};
-
-                var cells = rows[i].getElementsByTagName("i");
-                for (var j = 0; j < cells.length; ++j) {
-                    var e = cells[j];
-                    var k = e.getAttribute("n");
-                    row[k] = e.text || e.textContent;
-                }
-
-                data.push(row);
-            }
-        }
-
-        this.setData(data);
+        this.setData(scil.Table.xml2rows(xml), lockeditems);
     },
 
     getCsv: function () {
@@ -25460,6 +25612,8 @@ scil.Table = scil.extend(scil._base, {
             }
         }
         this._hideCookieCols(this.items);
+        if (this.options.pushleft)
+            this.items[""] = { label: "", width: this.options.pushleft > 100 ? this.options.pushleft : 5000 };
 
         if (typeof (parent) == "string")
             parent = dojo.byId(parent);
@@ -25473,6 +25627,41 @@ scil.Table = scil.extend(scil._base, {
             dojo.connect(addbtn, "onclick", function () { if (me.options.onAdd != null) me.options.onAdd(me); else me.addRow(); });
         }
 
+        if (this.options.draggable) {
+            var me = this;
+            scil.Utils.unselectable(this.tbody.parentNode);
+            new scil.DnD(this.tbody.parentNode, {
+                onstartdrag: function (e) {
+                    var src = e.target || e.srcElement;
+                    if (src.tagName == "DIV" && src.parentNode.tagName == "TD")
+                        return src.parentNode.parentNode;
+                },
+                oncreatecopy: function (e, dd) {
+                    var src = dd.src;
+                    var tbody = scil.Utils.createTable(document.body, 0, 0, { position: "absolute", border: "solid 1px #888", background: "white", opacity: 0.6 });
+                    var tr = scil.Utils.createElement(tbody, "tr");
+                    var list = src.childNodes;
+                    for (var i = 0; i < Math.min(8, list.length); ++i) {
+                        td = list[i].cloneNode(true);
+                        td.style.width = list[i].offsetWidth + "px";
+                        td.style.height = list[i].offsetHeight + "px";
+                        tr.appendChild(td);
+                    }
+                    return tbody.parentNode;
+                },
+                ondrop: function (e, dd) {
+                    if (dd.copy != null)
+                        dd.copy.parentNode.removeChild(dd.copy);
+
+                    var src = e.target || e.srcElement;
+                    if (src.tagName == "DIV" && src.parentNode.tagName == "TD") {
+                        if (me.options.ondrop != null)
+                            me.options.ondrop(dd.src, src.parentNode.parentNode, me);
+                    }
+                },
+            });
+        }
+
         var style = scil.clone(scil.Table.headerstyles);
         style.borderBottom = JSDraw2.Skin.jssdf.border;
         style.borderLeft = JSDraw2.Skin.jssdf.border;
@@ -25482,7 +25671,9 @@ scil.Table = scil.extend(scil._base, {
         var r = scil.Utils.createElement(this.tbody, "tr");
         if (header0 != null) {
             scil.Utils.createElement(r0, "td", null, { display: this.options.grouping ? "" : "none" });
-            scil.Utils.createElement(r0, "td", null, { display: this.options.rowcheck ? "" : "none" });
+            var td = scil.Utils.createElement(r0, "td", null, style);
+            td.style.display = this.options.rowcheck ? "" : "none";
+
             for (var i = 0; i < header0.length; ++i) {
                 var item = header0[i];
                 if (item == null) {
@@ -25519,19 +25710,20 @@ scil.Table = scil.extend(scil._base, {
             var s = scil.Lang.res(item.label);
             if (item.unit != null && item.unit != "")
                 s += " (" + scil.Lang.res(item.unit) + ")";
-            var td = scil.Utils.createElement(r, "td", s, style, { key: id });
+            var td = scil.Utils.createElement(r, "td", null, style, { key: id });
+            var div = scil.Utils.createElement(td, "div", s, { width: "100%" });
+            if (item.width > 0)
+                td.style.width = item.width + "px";
             if (item.type == "hidden" || item.ishidden)
                 td.style.display = "none";
+
+            if (item.whitespace != null)
+                td.style.whiteSpace = item.whitespace;
 
             if (item.type == "checkbox" && item.headercheckbox != false && !this.viewonly && !item.viewonly) {
                 var chk = scil.Utils.createElement(td, "checkbox");
                 this.connectCheckAll(chk, id);
             }
-
-            if (item.width > 0)
-                td.style.width = item.width + "px";
-            if (item.whitespace != null)
-                td.style.whiteSpace = item.whitespace;
         }
         if (this.header == false)
             r.style.display = "none";
@@ -25629,30 +25821,57 @@ scil.Table = scil.extend(scil._base, {
         }
     },
 
+    _isChecked: function (tr) {
+        return tr.childNodes[this.checkIndex].firstChild.checked;
+    },
+
     /**
     * Get checked rows
     * @function getCheckedRows
     */
-    getCheckedRows: function () {
+    getCheckedRows: function (withcurrent) {
         var ret = [];
         var list = this.tbody.childNodes;
         for (var i = this._startrow; i < list.length; ++i) {
-            if (list[i].childNodes[this.checkIndex].firstChild.checked)
+            if (this._isChecked(list[i]))
                 ret.push(i - this._startrow);
         }
+
+        if (ret.length == 0 && withcurrent && this.currow != null) {
+            for (var i = this._startrow; i < list.length; ++i) {
+                if (this.currow == list[i]) {
+                    ret.push(i - this._startrow);
+                    break;
+                }
+            }
+        }
         return ret;
+    },
+
+    /**
+    * Check a row by using its key.  If no row checked, it returns selected row.
+    * @function getCheckedKeys2
+    */
+    getCheckedRows2: function () {
+        return this.getCheckedKeys(true);
     },
 
     /**
     * Get checked row data
     * @function getCheckedRowData
     */
-    getCheckedRowData: function () {
+    getCheckedRowData: function (withcurrent) {
         var ret = [];
         var list = this.tbody.childNodes;
         for (var i = this._startrow; i < list.length; ++i) {
-            if (list[i].childNodes[this.checkIndex].firstChild.checked)
+            if (this._isChecked(list[i]))
                 ret.push(this.getRowData(list[i]));
+        }
+
+        if (ret.length == 0 && withcurrent) {
+            var d = this.getCurrentRowData();
+            if (d != null)
+                ret.push(d);
         }
         return ret;
     },
@@ -25662,16 +25881,7 @@ scil.Table = scil.extend(scil._base, {
     * @function getCheckedRowData2
     */
     getCheckedRowData2: function () {
-        var ret = [];
-        var list = this.tbody.childNodes;
-        for (var i = this._startrow; i < list.length; ++i) {
-            if (list[i].childNodes[this.checkIndex].firstChild.checked)
-                ret.push(this.getRowData(list[i]));
-        }
-
-        if (ret.length == 0 && this.cur != null)
-            ret.push(this.getCurrentRowData());
-        return ret;
+        return this.getCheckedRowData(true);
     },
 
     /**
@@ -25691,10 +25901,9 @@ scil.Table = scil.extend(scil._base, {
             return;
 
         if (typeof key == "string") {
-            var list = this.tbody.childNodes;
-            for (var i = this._startrow; i < list.length; ++i)
-                if (list[i].getAttribute("key") == key)
-                    list[i].childNodes[this.checkIndex].firstChild.checked = true;
+            var tr = this._findByKey(key);
+            if (tr != null)
+                tr.childNodes[this.checkIndex].firstChild.checked = true;
         }
         else if (typeof key == "object") {
             var tr = key;
@@ -25703,16 +25912,41 @@ scil.Table = scil.extend(scil._base, {
         }
     },
 
+    _findByKey: function (key) {
+        var list = this.tbody.childNodes;
+        for (var i = this._startrow; i < list.length; ++i)
+            if (list[i].getAttribute("key") == key)
+                return list[i];
+        return null;
+    },
+
+    checkRows: function (keys) {
+        if (keys == null)
+            return;
+
+        var list = this.tbody.childNodes;
+        for (var i = 0; i < list.length; ++i) {
+            if (scil.Utils.indexOf(keys, list[i].getAttribute("key")) >= 0)
+                this.checkRow(list[i], true);
+        }
+    },
+
     /**
     * Get all keys of checked rows
     * @function getCheckedKeys
     */
-    getCheckedKeys: function () {
+    getCheckedKeys: function (withcurrent) {
         var ret = [];
         var list = this.tbody.childNodes;
         for (var i = this._startrow; i < list.length; ++i) {
-            if (list[i].childNodes[this.checkIndex].firstChild.checked)
+            if (this._isChecked(list[i]))
                 ret.push(list[i].getAttribute("key"));
+        }
+
+        if (ret.length == 0 && withcurrent) {
+            var key = this.getCurrentKey();
+            if (key != null)
+                ret.push(key);
         }
         return ret;
     },
@@ -25722,26 +25956,7 @@ scil.Table = scil.extend(scil._base, {
     * @function getCheckedKeys2
     */
     getCheckedKeys2: function () {
-        var ret = this.getCheckedKeys();
-        if (ret.length == 0) {
-            var key = this.getCurrentKey();
-            if (key != null)
-                ret.push(key);
-        }
-        return ret;
-    },
-
-    /**
-    * Check a row by using its key.  If no row checked, it returns selected row.
-    * @function getCheckedKeys2
-    */
-    getCheckedRows2: function () {
-        var ret = this.getCheckedRows();
-        if (ret.length == 0) {
-            if (this.currow != null)
-                ret.push(this.currow);
-        }
-        return ret;
+        return this.getCheckedKeys(true);
     },
 
     /**
@@ -25788,6 +26003,10 @@ scil.Table = scil.extend(scil._base, {
     selectRow: function (tr) {
         if (typeof (tr) == "string")
             tr = this.findRow(tr);
+
+        var i = scil.Utils.indexOf(this.tbody.childNodes, tr);
+        if (i < this._startrow)
+            return;
 
         var old = this.currow;
         if (this.currow != null)
@@ -26046,24 +26265,23 @@ scil.Table = scil.extend(scil._base, {
                 td.style.display = "none";
 
             var viewonly = this.viewonly || item.viewonly || lockeditems != null && lockeditems[id];
-            td.field = scil.Form.createField(td, item, viewonly, values == null ? item.value : values[id], values, true, true);
-            if (viewonly && item.type != "img") {
-                td.field.style.width = item.width > 0 ? item.width + "px" : "100%";
-            }
-            else {
-                if (td.field.tagName == "INPUT" || td.field.tagName == "SELECT" || td.field.tagName == "TEXTAREA") {
-                    this._connectOnchange(td.field, item);
-                    if (item.addrowonenter && beforerow == null)
-                        td.field.focus();
+            var v = values == null ? item.value : values[id];
+            if (!(viewonly && this.options.notshowifnovalue && scil.Utils.isNullOrEmpty(v))) {
+                td.field = scil.Form.createField(td, item, viewonly, v, values, true, true);
+                if (viewonly && item.type != "img") {
+                    td.field.style.width = "100%";
+                }
+                else {
+                    if (td.field.tagName == "INPUT" || td.field.tagName == "SELECT" || td.field.tagName == "TEXTAREA") {
+                        this._connectOnchange(td.field, item);
+                        if (item.addrowonenter && beforerow == null)
+                            td.field.focus();
+                    }
                 }
             }
 
-            if (viewonly) {
-                if (item.width > 0)
-                    td.style.width = item.width + "px";
-                if (item.whitespace != null)
-                    td.style.whiteSpace = item.whitespace;
-            }
+            if (item.whitespace != null)
+                td.style.whiteSpace = item.whitespace;
 
             td.setAttribute("__tid", id);
             this.connectKeydown(td, item);
@@ -26175,7 +26393,7 @@ scil.Table = scil.extend(scil._base, {
             };
 
             var me = this;
-            var fields = { table: { type: "table", columns: columns, options: { rowcheck: true, viewonly: true}} };
+            var fields = { table: { type: "table", columns: columns, options: { rowcheck: true, viewonly: true } } };
             this.showhideDlg = scil.Form.createDlgForm("Show/Hide Columns", fields, { label: "OK", onclick: function () { me.showHideColumns2(); } }, { hidelabel: true });
         }
 
@@ -26226,7 +26444,7 @@ scil.Table = scil.extend(scil._base, {
 
 
 scilligence.apply(scilligence.Table, {
-    headerstyles: { /*border: "solid 1px #eee", */whiteSpace: "nowrap", textAlign: "center", verticalAlign: "top", backgroundColor: "#bbb"}, //scil.Utils.imgSrc("img/header-bg.gif", true) + " repeat-x" },
+    headerstyles: { /*border: "solid 1px #eee", */whiteSpace: "nowrap", textAlign: "center", verticalAlign: "top", backgroundColor: "#bbb" }, //scil.Utils.imgSrc("img/header-bg.gif", true) + " repeat-x" },
 
     /**
     * Create a table
@@ -26332,6 +26550,44 @@ scilligence.apply(scilligence.Table, {
         }
         s += "</table>";
         return s;
+    },
+
+    xml2rows: function (xml) {
+        var root = null;
+        if (typeof xml == "object") {
+            root = xml;
+        }
+        else if (typeof xml == "string") {
+            var doc = scil.Utils.parseXml(xml);
+            if (doc != null)
+                root = doc.documentElement || doc.firstElementChild;
+        }
+
+        var data = [];
+        try {
+            if (root != null && root.getElementsByTagName == null)
+                root = null;
+        }
+        catch (e) {
+        }
+
+        if (root != null) {
+            var rows = root.getElementsByTagName("r");
+            for (var i = 0; i < rows.length; ++i) {
+                var row = {};
+
+                var cells = rows[i].getElementsByTagName("i");
+                for (var j = 0; j < cells.length; ++j) {
+                    var e = cells[j];
+                    var k = e.getAttribute("n");
+                    row[k] = e.text || e.textContent;
+                }
+
+                data.push(row);
+            }
+        }
+
+        return data;
     }
 });
 ﻿//////////////////////////////////////////////////////////////////////////////////
@@ -26397,8 +26653,10 @@ scil.Tree = scil.extend(scil._base, {
         if (node.firstChild.nextSibling != null)
             node.removeChild(node.firstChild.nextSibling);
 
-        var img = this._expand(node);
-        this.onExpand(img);
+        if (!node.item.leaf) {
+            var img = this._expand(node);
+            this.onExpand(img);
+        }
         return true;
     },
 
@@ -26453,19 +26711,19 @@ scil.Tree = scil.extend(scil._base, {
 
         n.item = item;
 
-        var m = scilligence.Utils.createElement(n, "div", null, { padding: "3px 0 3px 0", whiteSpace: "nowrap" });
-        var img = scilligence.Utils.createElement(m, "img", null, { width: "16px" }, item.leaf || item.disabled ? { src: scil.Utils.imgSrc("img/blank.gif")} : { src: scil.Utils.imgSrc("img/plus.gif"), title: "Expand" });
+        var m = scil.Utils.createElement(n, "div", null, { padding: "3px 0 3px 0", whiteSpace: "nowrap" });
+        var img = scil.Utils.createElement(m, "img", null, { width: "16px" }, item.leaf || item.disabled ? { src: scil.Utils.imgSrc("img/blank.gif")} : { src: scil.Utils.imgSrc("img/plus.gif"), title: "Expand" });
         var me = this;
         dojo.connect(img, "onclick", function (e) { me.onExpand(e.srcElement || e.target); });
         if (this.dropdown)
-            scilligence.Utils.createElement(m, "img", null, null, { src: item.shortcut ? "img/status_shortcut.gif" : "img/status_" + (item.status == null || item.status == "" ? "open" : item.status) + ".gif" });
+            scil.Utils.createElement(m, "img", null, null, { src: item.shortcut ? "img/status_shortcut.gif" : "img/status_" + (item.status == null || item.status == "" ? "open" : item.status) + ".gif" });
         if (item.icon != null) {
             if (item.icon.indexOf('/') < 0)
                 item.icon = "img/icons/" + item.icon + ".gif";
-            scilligence.Utils.createElement(m, "img", null, { paddingRight: this.options.icongap }, { src: item.icon });
+            scil.Utils.createElement(m, "img", null, { paddingRight: this.options.icongap }, { src: item.icon });
         }
 
-        scil.Utils.createElement(m, "span", item._more ? "<u style='color:blue;cursor:pointer'>more...</u>" : item.name);
+        scil.Utils.createElement(m, "span", item._more ? "<u style='color:blue;cursor:pointer'>more...</u>" : item.name, null, { title: item.tooltip });
         m.className = "tbar";
         if (item.disabled) {
             m.style.color = "gray";
@@ -26516,6 +26774,9 @@ scil.Tree = scil.extend(scil._base, {
     },
 
     onExpand: function (img) {
+        if (img == null)
+            return null;
+
         var bar = img.parentNode;
         if (bar.tagName != "DIV" || bar.className != "tbar")
             return;
@@ -26569,7 +26830,13 @@ scil.Tree = scil.extend(scil._base, {
 
         var beforeload = function () { n.firstChild.firstChild.src = scil.Utils.imgSrc("img/animatorsmall.gif") };
         var afterload = function () { n.firstChild.firstChild.src = scil.Utils.imgSrc("img/plus.gif") };
+
         var args = n.item;
+        if (args._more) {
+            var p = this.getParent(n);
+            args = scil.clone(p.item);
+            scil.apply(args, n.item);
+        }
         if (this.onAjaxData != null)
             args = this.onAjaxData(n);
         if (this.options.url != null && this.options.url != "")
@@ -26580,8 +26847,14 @@ scil.Tree = scil.extend(scil._base, {
         if (typeof node == "string")
             node = this.find(null, node);
 
-        if (node == null || node.item != null && node.item.selectable == false)
+        if (node == null)
+            return null;
+
+        if (node.item != null && node.item.selectable == false) {
+            if (node.firstChild != null)
+                this.onExpand(node.firstChild.firstChild);
             return;
+        }
 
         if (node.item != null && node.item._more) {
             this.loadNodes(node);
@@ -26768,7 +27041,6 @@ scil.DropdownInput = scil.extend(scilligence._base, {
                 this.options.onsuggest(args);
             scil.Utils.jsonp(this.options.autosuggest, function (ret) { me.list(ret.items == null ? ret : ret.items, sugid); me.itemschanged = true; }, args);
         }
-
     },
 
     filterlist: function (list, q) {
@@ -27272,78 +27544,78 @@ scil.Popup.Event = scil.extend(scil._base, {
         this.srcElement = e.target || e.srcElement;
     }
 });
-﻿//////////////////////////////////////////////////////////////////////////////////
-//
-// JSDraw.Lite
-// Copyright (C) 2018 Scilligence Corporation
-// http://www.scilligence.com/
-//
-// (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
-//
-//////////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////////////
+////
+//// JSDraw.Lite
+//// Copyright (C) 2018 Scilligence Corporation
+//// http://www.scilligence.com/
+////
+//// (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
+////
+////////////////////////////////////////////////////////////////////////////////////
 
-scil.UploadFile = {
-    dlg: null,
-    form: null,
-    msg: null,
-    files: [],
-    filetypes: [],
-    kIframe: "__scil_uploadfile_iframe",
+//scil.UploadFile = {
+//    dlg: null,
+//    form: null,
+//    msg: null,
+//    files: [],
+//    filetypes: [],
+//    kIframe: "__scil_uploadfile_iframe",
 
-    show: function (options) {
-        this.create();
-        this.dlg.show();
-        this.form.reset();
-        this.options = options == null ? {} : options;
+//    show: function (options) {
+//        this.create();
+//        this.dlg.show();
+//        this.form.reset();
+//        this.options = options == null ? {} : options;
 
-        if (options.msg != null)
-            this.msg.innerHTML = options.msg;
+//        if (options.msg != null)
+//            this.msg.innerHTML = options.msg;
 
-        for (var i = 0; i < this.files.length; ++i)
-            this.files[i].value = "";
-        for (var i = 0; i < this.filetypes.length; ++i) {
-            scil.Utils.removeAll(this.filetypes[i]);
-            this.filetypes[i].style.display = this.options.filetypes != null ? "" : "none";
-            if (this.options.filetypes != null)
-                scil.Utils.listOptions(this.filetypes[i], this.options.filetypes);
-        }
-    },
+//        for (var i = 0; i < this.files.length; ++i)
+//            this.files[i].value = "";
+//        for (var i = 0; i < this.filetypes.length; ++i) {
+//            scil.Utils.removeAll(this.filetypes[i]);
+//            this.filetypes[i].style.display = this.options.filetypes != null ? "" : "none";
+//            if (this.options.filetypes != null)
+//                scil.Utils.listOptions(this.filetypes[i], this.options.filetypes);
+//        }
+//    },
 
-    upload: function () {
-        var me = this;
-        var params = this.options.params;
-        scil.Utils.ajaxUploadFile(this.form, this.options.url, params == null ? {} : params, function (ret) { me.dlg.hide(); me.options.callback(ret); });
-    },
+//    upload: function () {
+//        var me = this;
+//        var params = this.options.params;
+//        scil.Utils.ajaxUploadFile(this.form, this.options.url, params == null ? {} : params, function (ret) { me.dlg.hide(); me.options.callback(ret); });
+//    },
 
-    create: function (parent) {
-        if (this.dlg != null)
-            return;
+//    create: function (parent) {
+//        if (this.dlg != null)
+//            return;
 
-        var me = this;
-        // form method='post' id='__newfile' enctype=''
-        var div = JsUtils.createElement(null, "div", "<form method='post' enctype='multipart/form-data'></form>", { padding: "15px" });
-        this.form = div.firstChild;
-        this.msg = scil.Utils.createElement(this.form, "div", "Please specify files to be uploaded");
-        var tbody = scil.Utils.createTable(this.form);
-        for (var i = 0; i < 5; ++i) {
-            var tr = scil.Utils.createElement(tbody, "tr");
-            var td = scil.Utils.createElement(tr, "td");
-            var file = scil.Utils.createElement(td, "file", null, null, { name: "f" + i });
+//        var me = this;
+//        // form method='post' id='__newfile' enctype=''
+//        var div = JsUtils.createElement(null, "div", "<form method='post' enctype='multipart/form-data'></form>", { padding: "15px" });
+//        this.form = div.firstChild;
+//        this.msg = scil.Utils.createElement(this.form, "div", "Please specify files to be uploaded");
+//        var tbody = scil.Utils.createTable(this.form);
+//        for (var i = 0; i < 5; ++i) {
+//            var tr = scil.Utils.createElement(tbody, "tr");
+//            var td = scil.Utils.createElement(tr, "td");
+//            var file = scil.Utils.createElement(td, "file", null, null, { name: "f" + i });
 
-            td = scil.Utils.createElement(tr, "td");
-            var type = scil.Utils.createElement(td, "select", null, null, { name: "filetype.f" + i });
+//            td = scil.Utils.createElement(tr, "td");
+//            var type = scil.Utils.createElement(td, "select", null, null, { name: "filetype.f" + i });
 
-            this.files.push(file);
-            this.filetypes.push(type);
-        }
+//            this.files.push(file);
+//            this.filetypes.push(type);
+//        }
 
-        var tr = scil.Utils.createElement(tbody, "tr");
-        var td = scil.Utils.createElement(tr, "td", null, { paddingTop: "10px", textAlign: "center" }, { colSpan: 2 });
-        scil.Utils.createButton(td, { src: scil.App.imgSmall("submit.png"), label: "Upload", onclick: function () { me.upload(); } });
+//        var tr = scil.Utils.createElement(tbody, "tr");
+//        var td = scil.Utils.createElement(tr, "td", null, { paddingTop: "10px", textAlign: "center" }, { colSpan: 2 });
+//        scil.Utils.createButton(td, { src: scil.App.imgSmall("submit.png"), label: "Upload", onclick: function () { me.upload(); } });
 
-        this.dlg = new scil.Dialog("Upload File", div);
-    }
-};﻿//////////////////////////////////////////////////////////////////////////////////
+//        this.dlg = new scil.Dialog("Upload File", div);
+//    }
+//};﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // JSDraw.Lite
 // Copyright (C) 2018 Scilligence Corporation
@@ -27439,6 +27711,11 @@ scil.Tabs = scil.extend(scil._base, {
         }
     },
 
+    getLastTab: function () {
+        var list = this.vertical ? this.tr.childNodes : this.tabcontainer.childNodes;
+        return list[list.length - 1];
+    },
+
     resizeClientarea: function (width, height) {
         var list = this.vertical ? this.tr.childNodes : this.tabcontainer.childNodes;
         for (var i = 0; i < list.length; ++i) {
@@ -27466,6 +27743,9 @@ scil.Tabs = scil.extend(scil._base, {
     },
 
     addTab: function (options, key) {
+        if (key == null && options.key != null)
+            key = options.key;
+
         if (this.vertical) {
             if (this.tr.childNodes.length > 0)
                 scil.Utils.createElement(this.tr, "td", "&nbsp;");
@@ -27478,6 +27758,7 @@ scil.Tabs = scil.extend(scil._base, {
         var me = this;
         var caption = options.caption;
         var icon = options.icon;
+        var title = options.tooltip;
         var padding = this.options.tabpadding == null ? "5px 10px 1px 10px" : this.options.tabpadding;
         var tr = this.vertical ? this.tr : scil.Utils.createElement(this.tabcontainer, "tr");
         var style = { border: "solid 1px #ddd", padding: padding, backgroundColor: "#eee" };
@@ -27513,13 +27794,13 @@ scil.Tabs = scil.extend(scil._base, {
         switch (this.options.tablocation) {
             case "left":
             case "right":
-                td._label = scil.Utils.createElement(scil.Utils.createElement(tbody2, "tr"), "td", s, null, null, function (e) { me.showTab(td); });
+                td._label = scil.Utils.createElement(scil.Utils.createElement(tbody2, "tr"), "td", s, null, { title: title }, function (e) { me.showTab(td); });
                 td2 = scil.Utils.createElement(scil.Utils.createElement(tbody2, "tr"), "td");
                 break;
             case "bottom":
             default: // top
                 var tr2 = scil.Utils.createElement(tbody2, "tr");
-                td._label = scil.Utils.createElement(tr2, "td", s, null, null, function (e) { me.showTab(td); });
+                td._label = scil.Utils.createElement(tr2, "td", s, null, { title: title }, function (e) { me.showTab(td); });
                 td2 = scil.Utils.createElement(tr2, "td");
                 break;
         }
@@ -27572,7 +27853,16 @@ scil.Tabs = scil.extend(scil._base, {
 
     closeTab: function (td) {
         var me = this;
-        scil.Utils.confirmYes("Close this tab?", function () { me.removeTab(td); });
+        if (this.options.onclosetab == null) {
+            scil.Utils.confirmYes("Close this tab?", function () { me.removeTab(td); });
+        }
+        else {
+            var r = this.options.onclosetab(td, this);
+            if (r == "cancel")
+                return;
+            else
+                this.removeTab(td);
+        }
     },
 
     currentTabKey: function () {
@@ -27597,18 +27887,21 @@ scil.Tabs = scil.extend(scil._base, {
     removeTab: function (key) {
         var td = typeof (key) == "string" ? this.findTab(key) : key;
         if (td == null)
-            return null;
+            return false;
 
-        if (this.options.onRemoveTab != null)
-            this.options.onRemoveTab(td, this);
+        if (this.options.onRemoveTab != null) {
+            if (this.options.onRemoveTab(td, this) == "cancel")
+                return false;
+        }
 
-        var list = this.allTabsAsArray();
-        var i = scil.Utils.indexOf(list, td);
-
-        if (i > 0)
-            this.showTab(list[i - 1]);
-        else
-            this.showTab(list[i + 1]);
+        if (td == this.currenttab) {
+            var list = this.allTabsAsArray();
+            var i = scil.Utils.indexOf(list, td);
+            if (i > 0)
+                this.showTab(list[i - 1]);
+            else
+                this.showTab(list[i + 1]);
+        }
 
         td.clientarea.parentNode.removeChild(td.clientarea);
         delete td.clientarea;
@@ -27626,6 +27919,8 @@ scil.Tabs = scil.extend(scil._base, {
                 tr0.parentNode.removeChild(tr0);
             tr.parentNode.removeChild(tr);
         }
+
+        return true;
     },
 
     allTabsAsArray: function () {
@@ -27954,7 +28249,8 @@ scil.FieldNumber = scil.extend(scil._base, {
         //this.input.style.textAlign = "right";
 
         var me = this;
-        if (this.options.allowoperator) {
+        var viewonly = this.options.viewonly || this.input.disabled || this.input.readOnly;
+        if (this.options.allowoperator && !viewonly) {
             this.auto = new scil.DropdownInput(input,
                 { items: this.options.items == null ? ["", "≥", "≤", "&lt;", "&gt;", "±"] : this.options.items,
                     onSetValue: function (input, s) { me.onSetOperator(input, s); }
@@ -27962,7 +28258,6 @@ scil.FieldNumber = scil.extend(scil._base, {
         }
 
         var tr;
-        var viewonly = this.options.viewonly || this.input.disabled || this.input.readOnly;
         if (this.options.units != null && !viewonly) {
             var tbody = scil.Utils.createTable(null, 0, 0, { border: "solid 1px #ccc" });
             this.input.parentNode.insertBefore(tbody.parentNode, this.input);
@@ -27979,18 +28274,20 @@ scil.FieldNumber = scil.extend(scil._base, {
         }
 
         var me = this;
-        scil.connect(input, "onchange", function (e) {
-            var s = input.value;
-            if (s != "" && s != null && (me.options.accepts == null || !new RegExp(me.options.accepts).test(s)) && !scil.Utils.isNumber(s, me.options.allowoperator)) {
-                input.value = "";
-                scil.Utils.alert("A number is required!");
-            }
-            else {
-                if (me.unit != null)
-                    s += me.unit.value;
-                me.setValue(s);
-            }
-        });
+        if (!viewonly) {
+            scil.connect(input, "onchange", function (e) {
+                var s = input.value;
+                if (s != "" && s != null && (me.options.accepts == null || !new RegExp(me.options.accepts).test(s)) && !scil.Utils.isNumber(s, me.options.allowoperator)) {
+                    input.value = "";
+                    scil.Utils.alert("A number is required!");
+                }
+                else {
+                    if (me.unit != null)
+                        s += me.unit.value;
+                    me.setValue(s);
+                }
+            });
+        }
 
         if (!viewonly && this.options.mobiledata != null) {
             var me = this;
@@ -28023,13 +28320,13 @@ scil.FieldNumber = scil.extend(scil._base, {
     },
 
     clear: function () {
-        this.input.value = "";
+        this.setDisplayValue("");
     },
 
     setValue: function (v) {
         v = v == null ? null : (JSDraw2.Table == null ? { value: v} : JSDraw2.Table.splitUnit(v + ""));
         if (v == null) {
-            this.input.value = "";
+            this.setDisplayValue("");
             return;
         }
 
@@ -28042,19 +28339,37 @@ scil.FieldNumber = scil.extend(scil._base, {
         if (v.unit2 == null)
             v.unit2 = this.options.defaultunit;
 
+        // I#13265
+        var value = (v.op == null ? "" : v.op) + v.value;
+        this.setDisplayValue(value);
         if (this.unit != null) {
-            this.input.value = v.value;
             scil.Utils.selectOption(this.unit, v.unit2, true);
         }
         else {
-            this.input.value = v.value + (v.unit2 == null ? "" : v.unit2);
             if (JSDraw2.ColorCoding != null)
                 JSDraw2.ColorCoding.show(this.input, v.value, this.options);
         }
     },
 
+    setDisplayValue: function (v) {
+        if (v == null)
+            v = "";
+
+        if (this.input.tagName == "INPUT")
+            this.input.value = v;
+        else
+            this.input.innerHTML = v;
+    },
+
+    getDisplayValue: function () {
+        if (this.input.tagName == "INPUT")
+            return this.input.value;
+        else
+            return scil.Utils.getInnerText(this.input);
+    },
+
     getValue: function () {
-        var v = scil.Utils.trim(this.input.value);
+        var v = scil.Utils.trim(this.getDisplayValue());
         if (!scil.Utils.isNullOrEmpty(v) && !isNaN(v)) {
             if (this.options.scale > 0)
                 v /= this.options.scale;
@@ -28185,10 +28500,10 @@ scil.Chart = scil.extend(scil._base, {
         if (this.options.series != null)
             this.render();
         else
-            this.loadDataFromUrl(this.options.ajax == null ? null : this.options.ajax.url);
+            this.loadDataFromUrl(this.options.ajax == null ? null : this.options.ajax.url, this.options.ajax.data);
     },
 
-    loadDataFromUrl: function (url) {
+    loadDataFromUrl: function (url, args) {
         if (scil.Utils.isNullOrEmpty(url))
             return false;
 
@@ -28230,7 +28545,7 @@ scil.Chart = scil.extend(scil._base, {
             }
 
             me.render();
-        });
+        }, args);
     },
 
     downloadImage: function () {
@@ -28884,13 +29199,22 @@ scilligence.DropdownButton = scilligence.extend(scilligence._base, {
     },
 
     isVisible: function () {
-        return this.auto != null && this.auto.style.display == "";
+        return this.auto != null && this.auto.style.display != "none";
     },
 
     show: function () {
-        if (this.options.onshowdropdown != null)
-            this.options.onshowdropdown(this);
+        if (this.isVisible())
+            return;
 
+        if (this.options.onshowdropdown != null) {
+            if (this.options.onshowdropdown(this) == "cancel")
+                return;
+        }
+
+        this.show2();
+    },
+
+    show2: function () {
         if (this.auto == null) {
             var me = this;
             var w = this.options.width;
@@ -28898,8 +29222,9 @@ scilligence.DropdownButton = scilligence.extend(scilligence._base, {
                 w = 200;
 
             var pos = scil.Utils.isFixedPosition(this.button) ? "fixed" : "absolute";
-            var tbody = scil.Utils.createTable(document.body, 0, 1, { borderRadius: "2px", border: JSDraw2.Skin.dialog.border, backgroundColor: JSDraw2.Skin.dialog.bkcolor, display: "none", position: pos, width: w });
+            var tbody = scil.Utils.createTable(document.body, 0, 1, { borderRadius: "1px", border: JSDraw2.Skin.dialog.border, backgroundColor: JSDraw2.Skin.dialog.bkcolor, display: "none", position: pos, width: w, boxShadow: JSDraw2.Skin.menu.boxshadow });
             this.auto = tbody.parentNode;
+            scil.Animation.makeExpandable(this.auto, null, "0px");
 
             var div = JsUtils.createElement(JsUtils.createElement(tbody, "tr"), "td", null, { padding: "5px" });
             this.area = scil.Utils.createElement(div, "div", null, { backgroundColor: "#fff" });
@@ -28908,18 +29233,27 @@ scilligence.DropdownButton = scilligence.extend(scilligence._base, {
             dojo.connect(document.body, "onmousedown", function (e) { var src = e.srcElement || e.target; if (src != me.q && !scil.Utils.isChildOf(src, me.auto)) me.clickout(); });
             this.list(this.options.items);
         }
-        this.auto.style.display = "";
+        //this.auto.style.display = "";
         this.position();
+
+        //this.auto.style.display = "none";
+        scil.Animation.expandY(this.auto, this.itemcount * 30);
     },
 
     hide: function () {
-        if (this.auto != null)
-            this.auto.style.display = "none";
+        if (this.isVisible())
+            scil.Animation.expandY(this.auto, 0);
+    },
+
+    resetItems: function (items) {
+        this.options.items = items;
+        this.auto = null;
     },
 
     position: function () {
         var p = scilligence.Utils.getOffset(this.button);
-        var scroll = scilligence.Utils.scrollOffset();
+        var scroll = p.fixedposition ? new JSDraw2.Point(0, 0) : scilligence.Utils.scrollOffset();
+        this.auto.style.position = p.fixedposition ? "fixed" : "absolute";
         var zIndex = scil.Utils.getZindex(this.button) + 1;
         if (scil.Utils.isIE) {
             var s2 = JsUtils.getScrollOffset(this.e);
@@ -28953,12 +29287,15 @@ scilligence.DropdownButton = scilligence.extend(scilligence._base, {
             items = list;
         }
 
+        this.itemcount = 0;
         scil.Utils.removeAll(this.area);
         var me = this;
         for (var i = 0; i < items.length; ++i) {
             var item = items[i];
             if (item == "-" && (i == 0 || items[i - 1] == "-" || i == items.length - 1))
                 continue;
+
+            ++this.itemcount;
             this.createItem(item);
         }
     },
@@ -28976,13 +29313,13 @@ scilligence.DropdownButton = scilligence.extend(scilligence._base, {
         if (item.key == null && label != item.label)
             item.key = item.label;
 
-        var div = scil.Utils.createElement(this.area, 'div', null, { padding: "3px 10px 3px 10px", color: JSDraw2.Skin.menu.color, cursor: "pointer" }, { url: item.url, key: item.key });
+        var div = scil.Utils.createElement(this.area, 'div', null, { padding: "3px 10px 3px 10px", backgroundColor: item.bgcolor, paddingLeft: item.paddingleft == null ? null : item.paddingleft, color: JSDraw2.Skin.menu.color, cursor: "pointer" }, { url: item.url, key: item.key, bgcolor: item.bgcolor, title: item.tooltip || item.title });
 
         var div2 = div;
         if (item.items != null && item.items.length > 0) {
             var tbody = scil.Utils.createTable(div, 0, 0, { width: "100%" });
             var tr = scil.Utils.createElement(tbody, "tr");
-            var div2 = scil.Utils.createElement(tr, "td", null, { textAlign: "left" });
+            div2 = scil.Utils.createElement(tr, "td", null, { textAlign: "left" });
             scil.Utils.createElement(tr, "td", "&#9658;", { paddingLeft: "10px", textAlign: "right", fontSize: "50%" });
         }
 
@@ -29015,13 +29352,16 @@ scilligence.DropdownButton = scilligence.extend(scilligence._base, {
     },
 
     mouseover: function (e) {
-        this.getItem(e).style.backgroundColor = "#ddf";
-        this.getItem(e).style.color = JSDraw2.Skin.menu.highlightcolor;
+        var div = this.getItem(e);
+        div.style.backgroundColor = "#ddf";
+        div.style.color = JSDraw2.Skin.menu.highlightcolor;
     },
 
     mouseout: function (e) {
-        this.getItem(e).style.backgroundColor = "#fff";
-        this.getItem(e).style.color = JSDraw2.Skin.menu.color;
+        var div = this.getItem(e);
+        var bgcolor = div.getAttribute("bgcolor");
+        div.style.backgroundColor = scil.Utils.isNullOrEmpty(bgcolor) ? "#fff" : bgcolor;
+        div.style.color = JSDraw2.Skin.menu.color;
     },
 
     clickout: function (e) {
@@ -29046,6 +29386,320 @@ scilligence.DropdownButton = scilligence.extend(scilligence._base, {
     }
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
+// JSDraw
+// Copyright (C) 2018 Scilligence Corporation
+// http://www.scilligence.com/
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+/**
+* Animation class - Animation
+* @class scilligence.Animation
+* <pre>
+* <b>Example:</b>
+* &lt;div id='div1'&gt;
+* &lt;script type="text/javascript"&gt;
+*     scil.ready(function () {
+*     });
+* &lt;/script&gt;
+* </pre>
+*/
+scil.Animation = {
+    enabled: !scil.Utils.isIE && typeof (anime) != "undefined",
+
+    expandX: function (target, width, onfinish) {
+        this.expandXY(target, width, null, onfinish);
+    },
+
+    expandY: function (target, height, onfinish) {
+        this.expandXY(target, null, height, onfinish);
+    },
+
+    makeExpandable: function (target, maxwidth, maxheight) {
+        target.style.overflow = "hidden";
+        if (maxwidth != null)
+            target.style.maxWidth = maxwidth;
+        if (maxheight != null)
+            target.style.maxHeight = maxheight;
+        target.style.display = "block";
+    },
+
+    expandXY: function (target, width, height, onfinish) {
+        var f1 = width != null && scil.Utils.isNullOrEmpty(target.style.maxWidth);
+        var f2 = height != null && scil.Utils.isNullOrEmpty(target.style.maxHeight);
+        if (f1 || f2) {
+            if (f1)
+                target.style.maxWidth = (target.offsetWidth == null ? 0 : target.offsetWidth) + "px";
+            if (f2)
+                target.style.maxHeight = (target.offsetHeight == null ? 0 : target.offsetHeight) + "px";
+
+            var me = this;
+            setTimeout(function () { me._expandxy(target, width, height, onfinish); });
+        }
+        else {
+            this._expandxy(target, width, height, onfinish);
+        }
+    },
+
+    _expandxy: function (target, width, height, onfinish) {
+        var duration = 500;
+
+        var transition = "";
+        if (width != null)
+            transition += (transition == "" ? "" : ",") + "max-width " + (duration / 1000) + "s";
+        if (height != null)
+            transition += (transition == "" ? "" : ",") + "max-height " + (duration / 1000) + "s";
+
+        target.style.WebkitTransition = transition;
+        target.style.transition = transition;
+        this.makeExpandable(target, width == null ? null : width + "px", height == null ? null : height + "px");
+
+        setTimeout(function () {
+            if (width === 0 || height === 0) {
+                target.style.display = "none";
+            }
+            else {
+                if (width != null) {
+                    if (target.offsetWidth >= width) {
+                        target.style.maxWidth = (width + 1000) + "px";
+                        target.style.display = "visible";
+                    }
+                    target.style.maxWidth = target.offsetWidth + "px";
+                }
+                if (height != null) {
+                    if (target.offsetHeight >= height) {
+                        target.style.maxHeight = (height + 1000) + "px";
+                        target.style.display = "visible";
+                    }
+                    target.style.maxHeight = target.offsetHeight + "px";
+                }
+            }
+            if (onfinish != null)
+                onfinish();
+        }, duration);
+    },
+
+    flyin: function (flyer) {
+        var d = this.beginfly(flyer);
+        this.run(flyer.div, {
+            translateX: [{ value: d.dx, duration: 1000 }],
+            translateY: [{ value: d.dy, duration: 1000 }],
+            scale: [{ value: 0.3, duration: 1500 }],
+            opacity: [{ value: 0.3, duration: 1500 }],
+            easing: 'easeInOutQuart'
+        }, null, function () { flyer.div.style.display = "none"; });
+    },
+
+    flyback: function (flyer) {
+        var d = this.beginfly(flyer);
+        this.run(flyer.div, {
+            translateX: [{ value: d.dx, duration: 500 }],
+            translateY: [{ value: d.dy, duration: 500 }],
+            scale: [{ value: 0.3, duration: 500 }],
+            easing: 'easeInOutQuart',
+            direction: 'alternate'
+        }, null, function () { flyer.div.style.display = "none"; });
+    },
+
+    beginfly: function (flyer) {
+        var p = scil.Utils.getOffset(flyer.src).offset(flyer.src.offsetWidth / 2, flyer.src.offsetHeight / 2);
+        var p2 = scil.Utils.getOffset(flyer.dest);
+        switch (flyer.destalign.align) {
+            case "left":
+                p2.offset(0, flyer.dest.offsetHeight / 2);
+                break;
+            case "right":
+                p2.offset(flyer.dest.offsetWidth, flyer.dest.offsetHeight / 2);
+                break;
+            case "top":
+                p2.offset(flyer.dest.offsetWidth / 2, 0);
+                break;
+            case "bottom":
+                p2.offset(flyer.dest.offsetWidth / 2, flyer.dest.offsetHeight);
+                break;
+            default:
+                p2.offset(flyer.dest.offsetWidth / 2, flyer.dest.offsetHeight / 2);
+                break;
+        }
+        p2.offset(flyer.destalign.dx == null ? 0 : flyer.destalign.dx, flyer.destalign.dy == null ? 0 : flyer.destalign.dy);
+
+        if (!flyer.useimg)
+            scil.apply(flyer.div.style, { width: flyer.src.offsetWidth + "px", height: flyer.src.offsetHeight + "px" });
+        scil.apply(flyer.div.style, { display: "", transform: "", left: (p.x - flyer.imgwidth / 2) + "px", top: (p.y - flyer.imgheight / 2) + "px" });
+        return { dx: p2.x - p.x, dy: p2.y - p.y };
+    },
+
+    destoryflyer: function (flyer) {
+        if (flyer.div != null) {
+            flyer.div.parentNode.removeChild(flyer.div);
+            flyer.div = null;
+        }
+    },
+
+    makeflyer: function (src, dest, img, imgwidth, imgheight, destalign) {
+        if (typeof (src) == "string")
+            src = scil.byId(src);
+        if (typeof (dest) == "string")
+            dest = scil.byId(dest);
+
+        var div = null;
+        if (typeof (img) == "string")
+            div = scil.Utils.createElement(document.body, "img", null, { position: "absolute", zIndex: 1000000, display: "none" }, { src: img });
+        else
+            div = img;
+
+        var useimg = div != null;
+        if (!useimg) {
+            var opacity = 75;
+            div = scil.Utils.createElement(document.body, "div", null, { position: "absolute", border: "solid 1px blue", background: "yellow", opacity: opacity / 100.0, filter: "alpha(opacity=" + opacity + ")", zIndex: 1000000, display: "none" });
+        }
+
+        if (imgwidth == null)
+            imgwidth = 50;
+        if (imgheight == null)
+            imgheight = 50;
+
+        return { div: div, useimg: useimg, src: src, dest: dest, imgwidth: imgwidth, imgheight: imgheight, destalign: destalign == null ? {} : destalign };
+    },
+
+    shake: function (target, onfinish) {
+        if (!this.enabled) {
+            if (onfinish != null)
+                onfinish();
+            return;
+        }
+
+        anime.timeline().add({
+            targets: target,
+            translateX: 30,
+            duration: 50,
+            easing: 'easeInOutQuart'
+        }).add({
+            targets: target,
+            translateX: -30,
+            duration: 50,
+            easing: 'easeInOutQuart'
+        }).add({
+            targets: target,
+            translateX: 30,
+            duration: 50,
+            easing: 'easeInOutQuart'
+        }).add({
+            targets: target,
+            translateX: 0,
+            duration: 50,
+            easing: 'easeInOutQuart',
+            complete: function () { if (onfinish != null) onfinish(); }
+        });
+    },
+
+    translateX: function (target, dx, duration, onfinish) {
+        if (dx == null)
+            dx = 500;
+        if (duration == null)
+            duration = 1000;
+
+        var me = this;
+        var old = { mode: target.style.position, left: target.style.left, top: target.style.top, transform: "" };
+        var position = old.mode;
+        if (scil.Utils.isNullOrEmpty(position))
+            position = "relative";
+        this.run(target, { translateX: [{ value: dx, duration: duration }] }, { mode: position, dx: dx }, function () { me._setposition(target, old); if (onfinish != null) onfinish(); });
+    },
+
+    translateY: function (target, dy, duration, onfinish) {
+        if (dy == null)
+            dy = 500;
+        if (duration == null)
+            duration = 1000;
+
+        var me = this;
+        var old = { mode: target.style.position, left: target.style.left, top: target.style.top, transform: "" };
+        var position = old.mode;
+        if (scil.Utils.isNullOrEmpty(position))
+            position = "relative";
+        this.run(target, { translateY: [{ value: dy, duration: duration }] }, { mode: position, dy: dy }, function () { me._setposition(target, old); if (onfinish != null) onfinish(); });
+    },
+
+    zoomin: function (target, duration, onfinish) {
+        if (duration == null)
+            duration = 1000;
+
+        var me = this;
+        var old = { mode: "scale", transform: "" };
+        this.run(target, { scale: [{ value: 1, duration: duration, easing: 'easeInOutQuart' }] }, { mode: "scale", scale: 0 }, function () { me._setposition(target, old); if (onfinish != null) onfinish(); });
+    },
+
+    zoomout: function (target, duration, onfinish) {
+        if (duration == null)
+            duration = 500;
+
+        var me = this;
+        var old = { mode: "scale", transform: "" };
+        this.run(target, { scale: [{ value: 0, duration: duration, easing: 'easeInOutQuart' }] }, { mode: "scale", scale: 1 }, function () { me._setposition(target, old); if (onfinish != null) onfinish(); });
+    },
+
+    run: function (target, args, pos, oncomplete) {
+        if (!this.enabled) {
+            if (oncomplete != null)
+                oncomplete();
+            return;
+        }
+
+        var x = null;
+        var y = null;
+        if (pos != null) {
+            if (pos.mode == "scale") {
+                if (pos.scale != null)
+                    this._setposition(target, { mode: pos.mode, transform: "scale(" + pos.scale + ")" });
+            }
+            else {
+                if (pos.dx != null)
+                    x = scil.Utils.parsePixel(target.style.left, 0);
+                if (pos.dy != null)
+                    y = scil.Utils.parsePixel(target.style.top, 0);
+                this._setposition(target, { mode: pos.mode, left: x == null ? null : (x - pos.dx) + "px", top: y == null ? null : (y - pos.dy) + "px", transform: "" });
+            }
+        }
+
+        var me = this;
+        if (args.length > 0) {
+            var timeline = anime.timeline();
+            for (var i = 0; i < args.length; ++i) {
+                args[i].targets = target;
+                if (i == args.length - 1 && oncomplete != null)
+                    args[i].complete = oncomplete;
+                timeline.add(args[i]);
+            }
+        }
+        else {
+            args.targets = target;
+            if (oncomplete)
+                args.complete = oncomplete;
+            anime(args);
+        }
+    },
+
+    _setposition: function (e, pos) {
+        if (pos.mode != "scale") {
+            if (pos.mode == "relative")
+                e.style.position = "relative";
+            else if (pos.mode == "absolute")
+                e.style.position = "absolute";
+            else
+                e.style.position = pos.mode == null ? "" : pos.mode;
+
+            if (pos.left != null)
+                e.style.left = pos.left;
+            if (pos.top != null)
+                e.style.top = pos.top;
+        }
+
+        if (pos.transform != null)
+            e.style.transform = pos.transform;
+    }
+};﻿//////////////////////////////////////////////////////////////////////////////////
+//
 // JSDraw.Lite
 // Copyright (C) 2018 Scilligence Corporation
 // http://www.scilligence.com/
@@ -29060,6 +29714,49 @@ scil.App = {
         if (wrapasurl)
             s = "url(" + s + ")";
         return s;
+    }
+};﻿//////////////////////////////////////////////////////////////////////////////////
+//
+// JSDraw.Lite
+// Copyright (C) 2018 Scilligence Corporation
+// http://www.scilligence.com/
+//
+// (Released under LGPL 3.0: https://opensource.org/licenses/LGPL-3.0)
+//
+//////////////////////////////////////////////////////////////////////////////////
+
+/**
+* FileUploader class - FileUploader Tool
+* @class scilligence.FileUploader
+* <pre>
+* <b>Example:</b>
+*        var fields = {
+*            category: { label: "Category" },
+*            sheetindex: { label: "Sheet #", type: "select", items: [1, 2, 3, 4, 5] },
+*            headerlines: { label: "Header Lines", type: "select", items: [1, 2] }
+*        };
+*
+*        scil.FileUploader.upload({ caption: "Upload Excel", fields: fields, url: "ajax.ashx?cmd=my.cmd", callback: function (ret) { ... }})
+* </pre>
+*/
+scil.FileUploader = {
+    upload: function (args) {
+        if (args.dlg == null) {
+            var fields = { file: { label: "File", type: "rawfile" } };
+            scil.apply(fields, args.fields);
+
+            var me = this;
+            var caption = args.caption == null ? "Upload File" : args.caption;
+            var buttonlabel = args.buttonlabel == null ? "Upload" : args.buttonlabel;
+            args.dlg = scil.Form.createDlgForm(caption, fields, { label: buttonlabel, onclick: function (e) { e.preventDefault(); scil.FileUploader.upload2(args); } }, { usepostform: true });
+        }
+
+        args.dlg.show();
+    },
+
+    upload2: function (args) {
+        var me = this;
+        args.dlg.form.post(args.url, args.data, function (ret) { args.dlg.hide(); args.callback(ret, args); });
     }
 };﻿//////////////////////////////////////////////////////////////////////////////////
 //
@@ -29142,7 +29839,7 @@ scil.Page = scil.extend(scil._base, {
         this.url = scil.Page.ajaxurl == null ? "ajax.ashx?cmd=" : scil.Page.ajaxurl;
         this.explorer = new scil.Page.Explorer(parent, args);
 
-        if (tree != null && tree.root != null && tree.root.children != null) {
+        if (tree != null && tree.root != null && tree.root.children != null && tree.translate) {
             for (var i = 0; i < tree.root.children.length; ++i)
                 tree.root.children[i].name = scil.Lang.res(tree.root.children[i].name);
         }
@@ -29150,7 +29847,7 @@ scil.Page = scil.extend(scil._base, {
         this.tree = null;
         if (tree != null) {
             // var div = scil.Utils.createElement(this.explorer.left, "div", null, { width: tree.width > 0 ? tree.width : 240 });
-            if (tree.type == "table")
+            if (tree.type == "table" || tree.type == "block" || tree.type == "column")
                 this.table = new scil.Page.Table(this, tree, this.explorer.left);
             else if (tree.type == "form")
                 this.form = new scil.Page.Form(this, tree, this.explorer.left);
@@ -29221,9 +29918,11 @@ scil.apply(scil.Page, {
             form = new scil.Page.Form(page, options, parent);
         else if (options.type == "custom")
             form = new scil.Page.Custom(page, options, parent);
+        else if (options.type == "gantt")
+            form = new scil.Page.Gantt(page, options, parent);
         else if (options.type == "calendar")
             form = new scil.Page.Calendar(page, options, parent);
-        else
+        else // table or block
             form = new scil.Page.Table(page, options, parent);
 
         if (listento != null)
@@ -29254,6 +29953,20 @@ scil.apply(scil.Page, {
 * Page.Custom class - Page.Custom Control
 * @class scilligence.Page.Custom
 * <pre>
+* <b>Constructor Parameters:</b>
+*    - caption: {string}
+*    - expandable: {bool}
+*    - expanded: {bool}
+*    - buttons: {array}
+*    - marginBottom: {int}
+*    - marginTop: {int}
+*    - norefresh: {bool}
+*    - visible: {bool}
+*    - onexpandform: function(f)
+*    - oncreate: function(parent, options)
+*    - onrefresh: function(form, args, this)
+*    - onclear: function()
+*
 * <b>Example:</b>
 *        var tabs = this.page.addTabs();
 *        scil.pmf.Company.allForms(this, tabs, this.parenttable, true);
@@ -29292,7 +30005,7 @@ scil.Page.Custom = scil.extend(scil._base, {
         if (this.options.buttons != null)
             buttons = buttons.concat(this.options.buttons);
 
-        this.form = new scil.Page.ExplorerForm(parent, { expandable: options.expandable, caption: options.caption, visible: options.visible, buttons: buttons, marginBottom: options.marginBottom, expanded: this.options.expanded, onexpand: this.options.onexpand });
+        this.form = new scil.Page.ExplorerForm(parent, scil.Page.ExplorerForm.cloneArgs(this.options, { buttons: buttons }));
         this.form.host = this;
         if (this.options.oncreate != null)
             this.options.oncreate(this.form.div, this.options);
@@ -29403,8 +30116,9 @@ scil.Page.ExplorerForm = scil.extend(scil._base, {
 
         if (typeof (parent) == "string")
             parent = scil.byId(parent);
+        this.parent = parent;
 
-        var tbody = scil.Utils.createTable(parent, 0, 0, { width: "100%", background: "#fff" });
+        var tbody = scil.Utils.createTable(this.parent, 0, 0, { width: "100%", background: "#fff" });
         this.dom = this.root = tbody.parentNode;
         if (this.options.visible == false)
             this.root.style.display = "none";
@@ -29414,7 +30128,10 @@ scil.Page.ExplorerForm = scil.extend(scil._base, {
             this.title = null;
         }
         else {
-            this.title = scil.Utils.createElement(scil.Utils.createElement(tbody, "tr"), "td", scil.Lang.res(options.caption), scil.Page.ExplorerForm.kHeaderStyle);
+            var s = scil.Lang.res(options.caption);
+            if (options.icon != null)
+                s = "<img src='" + options.icon + "'>" + s;
+            this.title = scil.Utils.createElement(scil.Utils.createElement(tbody, "tr"), "td", s, scil.Page.ExplorerForm.kHeaderStyle);
         }
         this.toolbar = scil.Utils.createElement(scil.Utils.createElement(tbody, "tr"), "td", null, scil.Page.ExplorerForm.kToolbarStyle);
         if (options.toolbarvisible == false)
@@ -29425,15 +30142,15 @@ scil.Page.ExplorerForm = scil.extend(scil._base, {
         this.div = scil.Utils.createElement(this.main, "div");
         this.table = tbody.parentNode;
 
-        scil.Form.createToolbarButtons(this.toolbar, options.buttons, options.padding);
+        this.recreateToolbar(options.buttons);
 
         if (this.title != null && options.expandable != false) {
             var me = this;
             dojo.connect(this.title, "onclick", function () {
                 var f = !me.isExpanded();
                 me.expand(f);
-                if (me.options.onexpand != null)
-                    me.options.onexpand(f);
+                if (me.options.onexpandform != null)
+                    me.options.onexpandform(f);
             });
 
             if (options.expanded == false)
@@ -29443,6 +30160,11 @@ scil.Page.ExplorerForm = scil.extend(scil._base, {
         if (this.options.marginTop != null)
             this.table.style.marginTop = this.options.marginTop;
         this.table.style.marginBottom = this.options.marginBottom == null ? "25px" : this.options.marginBottom;
+    },
+
+    recreateToolbar: function (buttons) {
+        scil.Utils.removeAll(this.toolbar);
+        scil.Form.createToolbarButtons(this.toolbar, buttons, this.options.padding);
     },
 
     isVisible: function () {
@@ -29466,21 +30188,47 @@ scil.Page.ExplorerForm = scil.extend(scil._base, {
         this.expand(false);
     },
 
+    expanded: true,
+    expandedheight: null,
+    expandedwidth: null,
     expand: function (f) {
         if (f == null)
             f = true;
-        this.toolbar.style.display = f ? "" : "none";
-        this.main.style.display = f ? "" : "none";
+        if (this.expanded == f)
+            return;
+
+        var dom = this.options.collapsedwidth > 0 ? this.parent : this.dom;
+       if (this.expanded) {
+            this.expandedheight = dom.offsetHeight;
+            this.expandedwidth = dom.offsetWidth;
+        }
+
+        var me = this;
+        if (this.options.collapsedwidth > 0)
+            scil.Animation.expandXY(dom, f ? this.expandedwidth : this.options.collapsedwidth, f ? this.expandedheight : this.title.offsetHeight, function () { me.onexpanded(f); });
+        else
+            scil.Animation.expandY(dom, f ? this.expandedheight : this.title.offsetHeight, function () { me.onexpanded(f); });
+        this.expanded = f;
+    },
+
+    onexpanded: function (f) {
+        if (f) {
+            var dom = this.options.collapsedwidth > 0 ? this.parent : this.dom;
+
+            dom.style.maxHeight = "";
+            dom.style.maxWidth = "";
+
+            if (this.host != null && this.host.refresh != null && this.host.refreshneeded)
+                this.host.refresh();
+        }
+
         this.title.style.backgroundImage = scil.App.imgSmall(f ? "expand.png" : "collapse.png", true);
         this.title.style.backgroundRepeat = "no-repeat";
         this.title.style.backgroundPosition = "left center";
-
-        if (this.host != null && this.host.refresh != null && this.host.refreshneeded)
-            this.host.refresh();
     },
 
     isExpanded: function () {
-        return this.main.style.display == "";
+        return this.expanded;
     }
 });
 
@@ -29488,7 +30236,24 @@ scil.Page.ExplorerForm = scil.extend(scil._base, {
 scil.apply(scil.Page.ExplorerForm, {
     kHeaderStyle: { background: "#88f", color: "white", padding: "3px 10px 3px 16px", whiteSpace: "nowrap", borderTopLeftRadius: "5px", borderTopRightRadius: "5px" },
     kToolbarStyle: { background: "#f5f5f5", border: "solid 1px #f5f5f5", padding: "0 5px 0 5px" },
-    kAreaStyle: { border: "solid 1px #f5f5f5", padding: "5px" }
+    kAreaStyle: { border: "solid 1px #f5f5f5", padding: "5px" },
+
+    cloneArgs: function (options, extra) {
+        var ret = {
+            toolbarvisible: options.toolbarvisible,
+            expandable: options.expandable,
+            caption: options.caption,
+            visible: options.visible,
+            marginTop: options.marginTop,
+            marginBottom: options.marginBottom,
+            expanded: options.expanded,
+            onexpand: options.onexpand
+        };
+
+        if (extra != null)
+            scil.apply(ret, extra);
+        return ret;
+    }
 });﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Scilligence JSDraw
@@ -29501,6 +30266,30 @@ scil.apply(scil.Page.ExplorerForm, {
 /**
 * Page.Form class - Page.Form Control
 * @class scilligence.Page.Form
+* <pre>
+* <b>Constructor Parameters:</b>
+*    - alternativeforms:
+*    - buttons: {array}
+*    - caption: {string}
+*    - expandable: {bool}
+*    - editable: {bool}
+*    - expanded: {bool}
+*    - fields: {dict}
+*    - hidelabel: {bool}
+*    - marginBottom:  {int}
+*    - marginTop: {int}
+*    - norefresh: {bool}
+*    - savedoc: {bool}
+*    - viewonly: {bool}
+*    - visible: {bool}
+*    - onformchange: function(field, form, args), form field data changed event
+*    - onexpandform: function(f)
+*    - onbeforerefresh: function(params, edit)
+*    - onsetdata: function(form, ret)
+*    - onbeforesave: function(data, args, form), return false to cancel following operations
+*    - onaftersave: function(ret, this)
+*
+* </pre>
 */
 scil.Page.Form = scil.extend(scil._base, {
     constructor: function (page, options, parent) {
@@ -29515,11 +30304,13 @@ scil.Page.Form = scil.extend(scil._base, {
             buttons.push({ src: scil.App.imgSmall("refresh.png"), title: "Refresh", onclick: function () { me.refresh(); } });
         if (this.options.buttons != null)
             buttons = buttons.concat(this.options.buttons);
+        if (options.editable)
+            buttons.push({ src: scil.App.imgSmall("edit.png"), title: "Edit", onclick: function () { me.edit(); } });
 
         if (options.viewonly == null)
             options.viewonly = true;
 
-        this.form = new scil.Page.ExplorerForm(parent, { expandable: options.expandable, caption: options.caption, visible: options.visible, buttons: buttons, marginBottom: options.marginBottom, expanded: this.options.expanded, onexpand: this.options.onexpand });
+        this.form = new scil.Page.ExplorerForm(parent, scil.Page.ExplorerForm.cloneArgs(this.options, { buttons: buttons }));
         this.form.host = this;
         this.table = new scil.Form({ alternativeforms: this.options.alternativeforms, viewonly: options.viewonly, onchange: this.options.onformchange });
         this.table.render(this.form.div, this.options.fields, { immediately: true, hidelabel: options.hidelabel });
@@ -29545,26 +30336,35 @@ scil.Page.Form = scil.extend(scil._base, {
         if (scil.Utils.isDictEmpty(this.args))
             return;
 
+        this.load(this.table, false);
+    },
+
+    load: function (form, edit) {
+        form.setData({});
+
         var me = this;
         this.refreshneeded = false;
         var params = this.args;
         if (params == null)
             params = {};
         if (me.options.onbeforerefresh != null)
-            me.options.onbeforerefresh(params);
+            me.options.onbeforerefresh(params, edit);
 
         this.page.receiverClear(this);
 
         scil.Utils.ajax(this.page.url + this.options.object + ".load", function (ret) {
+            if (ret == null || ret == "")
+                ret = params;
+
             if (me.options.onsetdata != null) {
-                me.options.onsetdata(me.table, ret);
+                me.options.onsetdata(form, ret);
             }
             else if (me.options.savedoc && ret.doc != null && ret.doc != "") {
-                me.table.setXml(ret.doc);
-                me.table.setData(ret, true);
+                form.setXml(ret.doc);
+                form.setData(ret, true);
             }
             else {
-                me.table.setData(ret);
+                form.setData(ret);
             }
         }, params);
     },
@@ -29572,6 +30372,37 @@ scil.Page.Form = scil.extend(scil._base, {
     clear: function () {
         this.table.setData({});
         this.page.receiverClear(this);
+    },
+
+    edit: function () {
+        var me = this;
+        if (this.dlg == null)
+            this.dlg = scil.Form.createDlgForm(this.options.caption, this.options.fields, { label: "Save", onclick: function () { me.save(); } });
+        this.dlg.show();
+        this.load(this.dlg.form, true);
+    },
+
+    save: function () {
+        if (this.dlg.form.checkRequiredFields() > 0) {
+            scil.Utils.alert("Some required field(s) are blank");
+            return;
+        }
+
+        var me = this;
+        var data = this.dlg.form.getData();
+        if (this.options.savedoc)
+            data.doc = this.dlg.form.getXml();
+        if (this.options.onbeforesave) {
+            if (this.options.onbeforesave(data, this.args, this.dlg.form) == false)
+                return false;
+        }
+
+        scil.Utils.ajax(this.page.url + this.options.object + ".save", function (ret) {
+            me.dlg.hide();
+            me.refresh();
+            if (me.options.onaftersave)
+                me.options.onaftersave(ret, me);
+        }, data, { showprogress: true });
     }
 });
 ﻿﻿//////////////////////////////////////////////////////////////////////////////////
@@ -29649,9 +30480,50 @@ scil.Page.Tab = scil.extend(scil._base, {
 /**
 * Page.Table class - Page.Table Control
 * @class scilligence.Page.Table
+* <pre>
+* <b>Constructor Parameters:</b>
+*    - allowcopy: {bool}, show copy toolbar button
+*    - buttons: {array}
+*    - caption: {string}
+*    - candelete: {bool}
+*    - canadd: {bool}
+*    - canedit: {bool}
+*    - columnhidable: {bool}
+*    - columns: {dict}
+*    - defaultvalues: {dict}, editing form default values
+*    - display: {string}
+*    - displays: {dict}
+*    - expandable: {bool}
+*    - expanded: {bool}
+*    - fields: {dict}, editing form fields
+*    - formcaption: {string}
+*    - key: {string}, ajax parameter key
+*    - marginTop: {int}
+*    - marginBottom: {int}
+*    - name: {string}, ajax parameter name
+*    - norefresh: {bool}
+*    - object: {string}, ajax cmd namespace
+*    - savedoc: editing form saved as xml doc for custom fields
+*    - toolbarvisible: {bool}
+*    - usetabs: {bool}, use tabbed form for editing
+*    - visible: {bool}
+*    - onexpandform: function(f)
+*    - oncreatetable: function(this)
+*    - onselectrow: function(tr, args)
+*    - onloadpage: function(args, page, this)
+*    - onbeforerefresh: function(params, selectfirstrow), return "cancel" to ignore refresh()
+*    - onbeforelisting: function(ret, this)
+*    - onrefreshed: function(this)
+*    - onAddNew: function(args), return false to cancel following operations
+*    - onshowform: function(dlg, args)
+*    - onloaddata: function(data, args, dlg)
+*    - onEdit: function(data), return false to cancel following operations
+*    - onbeforesave: function(data, args, form), return false to cancel following operations
+*    - onaftersave: function(ret, this)
+* </pre>
 */
 scil.Page.Table = scil.extend(scil._base, {
-    constructor: function (page, options, parent) {
+    constructor: function(page, options, parent) {
         var me = this;
         this.refreshneeded = true;
         this.page = page;
@@ -29660,30 +30532,35 @@ scil.Page.Table = scil.extend(scil._base, {
 
         var buttons = [];
         if (!options.norefresh)
-            buttons.push({ src: scil.App.imgSmall("refresh.png"), title: "Refresh", onclick: function () { me.refresh(); } });
+            buttons.push({ src: scil.App.imgSmall("refresh.png"), title: "Refresh", onclick: function() { me.refresh(); } });
         if (this.options.fields != null) {
             buttons.push("-");
             if (this.options.canadd != false)
-                buttons.push({ src: scil.App.imgSmall("add.png"), title: "New", onclick: function () { me.add(); } });
+                buttons.push({ src: scil.App.imgSmall("add.png"), title: "New", onclick: function() { me.add(); } });
             if (this.options.canedit != false)
-                buttons.push({ src: scil.App.imgSmall("edit.png"), title: "Edit", onclick: function () { me.edit(); } });
+                buttons.push({ src: scil.App.imgSmall("edit.png"), title: "Edit", onclick: function() { me.edit(); } });
             if (this.options.allowcopy)
-                buttons.push({ src: scil.App.imgSmall("copy.png"), title: "Copy", onclick: function () { me.edit(null, true); } });
+                buttons.push({ src: scil.App.imgSmall("copy.png"), title: "Copy", onclick: function() { me.edit(null, true); } });
         }
         if (this.options.buttons != null)
             buttons = buttons.concat(this.options.buttons);
 
         if (this.options.columnhidable) {
             buttons.push("-");
-            buttons.push({ src: scil.App.imgSmall("columns.png"), title: "Show/Hide Columns", onclick: function () { me.table.showHideColumns(); } });
+            buttons.push({ src: scil.App.imgSmall("columns.png"), title: "Show/Hide Columns", onclick: function() { me.table.showHideColumns(); } });
         }
 
-        this.form = new scil.Page.ExplorerForm(parent, { expandable: options.expandable, caption: options.caption, visible: options.visible, marginBottom: options.marginBottom, buttons: buttons, expanded: this.options.expanded, onexpand: this.options.onexpand });
+        this.form = new scil.Page.ExplorerForm(parent, scil.Page.ExplorerForm.cloneArgs(this.options, { buttons: buttons }));
         this.form.host = this;
+        this.form.main.style.padding = "0";
         this.pages = scil.Utils.createElement(this.form.div, "div");
 
         this.tablediv = scil.Utils.createElement(this.form.div, "div");
+        if (this.options.display != null)
+            this.switchView(this.options.display);
         this.recreateTable();
+
+        this.msg = scil.Utils.createElement(this.form.div, "div");
     },
 
     addSubform: function (options, margin) {
@@ -29696,14 +30573,46 @@ scil.Page.Table = scil.extend(scil._base, {
         scil.Utils.removeAll(this.tablediv);
 
         var me = this;
-        this.table = new scil.Table(true, null, { onAddRow: this.options.onAddRow, selectrow: true, onselectrow: function (tr) { me.selectrow(tr); }, rowcheck: this.options.rowcheck, grouping: this.options.grouping, grouplinestyle: this.options.grouplinestyle, hidecolumncookiekey: this.options.hidecolumncookiekey });
-        this.table.render(this.tablediv, this.options.columns);
-        this.table.tbody.parentNode.style.width = "100%";
+        var args = scil.clone(this.options);
+        args.selectrow = true;
+        args.onselectrow = function (tr) { me.selectrow(tr); };
 
+        if (this.options.type == "block") {
+            this.table = new scil.CardView(args);
+            this.table.render(this.tablediv, this.options.columns);
+        }
+        else if (this.options.type == "column") {
+            this.table = new scil.CardView(args);
+            this.table.render(this.tablediv, this.options.columns);
+        }
+        else {
+            this.table = new scil.Table(true, null, args);
+            this.table.render(this.tablediv, this.options.columns);
+            this.table.tbody.parentNode.style.width = "100%";
+        }
+
+        this.recreateneeded = false;
         if (this.options.oncreatetable != null)
             this.options.oncreatetable(this);
     },
 
+    switchView: function(display) {
+        if (display == this.display)
+            return false;
+
+        var args = this.options.displays[display];
+        if (args == null)
+            return false;
+
+        if (this.options.rowcheck && this.table != null)
+            this.selectedkeys = this.table.getCheckedKeys();
+
+        this.display = display;
+        scil.apply(this.options, args);
+        this.setRecreate();
+        return true;
+    },
+    
     selectFirstRow: function () {
         this.table.selectFirstRow();
     },
@@ -29718,6 +30627,7 @@ scil.Page.Table = scil.extend(scil._base, {
 
     clear: function () {
         scil.Utils.removeAll(this.pages);
+        scil.Utils.removeAll(this.msg);
         this.table.setData({});
         this.page.receiverClear(this);
     },
@@ -29747,12 +30657,26 @@ scil.Page.Table = scil.extend(scil._base, {
         this.refresh(null, null, null, page);
     },
 
+    setRecreate: function () {
+        this.recreateneeded = true;
+    },
+
     list: function (ret) {
+        if (this.recreateneeded)
+            this.recreateTable();
+
         var me = this;
         if (ret == null)
             ret = {};
-        this.table.setData(ret.rows == null ? ret : ret.rows);
+
+        var list = ret.rows == null ? ret : ret.rows;
+        this.table.setData(list);
+
         scil.Table.listPages(this.pages, ret.page, ret.pages, function (page) { me.loadPage(page); });
+        if (list == null || list.length == 0)
+            this.msg.innerHTML = "<div style='color:red;padding:5px;'>" + scil.Lang.res("No Records Found") + "</div>";
+        else
+            scil.Utils.removeAll(this.msg);
     },
 
     refresh: function (from, args, selectfirstrow, page) {
@@ -29770,33 +30694,42 @@ scil.Page.Table = scil.extend(scil._base, {
         this.page.receiverClear(this);
         this.refreshneeded = false;
 
-        var me = this;
         var params = this.args;
         if (params == null)
             params = {};
-        if (me.options.onbeforerefresh != null)
-            me.options.onbeforerefresh(params);
+        if (this.options.onbeforerefresh == null || this.options.onbeforerefresh(params, selectfirstrow) != "cancel")
+            this.refresh2(params, selectfirstrow);
+    },
 
+    refresh2: function (params, selectfirstrow) {
+        var me = this;
         var fun = this.options.jsonp ? scil.Utils.jsonp : scil.Utils.ajax;
-        fun(this.page.url + this.options.object + ".list", function (ret) {
-            if (me.options.onbeforelisting != null)
-                me.options.onbeforelisting(ret, me);
+        fun(this.page.url + this.options.object + ".list", function (ret) { me.refresh3(ret, selectfirstrow); }, params);
+    },
 
-            if (selectfirstrow) {
-                me.list(ret);
-                me.table.selectFirstRow();
-            }
-            else {
-                var key = me.table.getCurrentKey();
-                me.list(ret);
-                if (key != null)
-                    me.table.selectRow(key);
-            }
-            //if (ret.length == 0)
-            //    scil.Utils.alert("No records found.  It might because you don't have access to it.");
-            if (me.options.onrefreshed != null)
-                me.options.onrefreshed(me);
-        }, params);
+    refresh3: function (ret, selectfirstrow) {
+        if (this.options.onbeforelisting != null)
+            this.options.onbeforelisting(ret, this);
+
+        if (selectfirstrow) {
+            this.list(ret);
+            this.table.selectFirstRow();
+        }
+        else {
+            var key = this.table.getCurrentKey();
+            this.list(ret);
+            if (key != null)
+                this.table.selectRow(key);
+        }
+        //if (ret.length == 0)
+        //    scil.Utils.alert("No records found.  It might because you don't have access to it.");
+        if (this.options.onrefreshed != null)
+            this.options.onrefreshed(this);
+
+        if (this.selectedkeys != null) {
+            this.table.checkRows(this.selectedkeys);
+            this.selectedkeys = null; // use only once
+        }
     },
 
     add: function (values) {
@@ -29813,7 +30746,7 @@ scil.Page.Table = scil.extend(scil._base, {
             this.dlg.form.tabs.showTab(0);
 
         if (this.options.onshowform != null)
-            this.options.onshowform(this.dlg, this.args);
+            this.options.onshowform(this.dlg, this.args, action);
         var data = values != null ? values : (this.options.defaultvalues == null ? {} : this.options.defaultvalues);
         this.applyArgs(data);
         if (this.options.key != null)
@@ -29959,10 +30892,15 @@ scil.Page.Table = scil.extend(scil._base, {
 
         var me = this;
         var buttons = [{ src: scil.App.imgSmall("submit.png"), label: "Save", key: "save", onclick: function () { me.save(); } }];
-        if (this.options.allowcopy)
+        if (this.options.allowcopy) {
+            buttons.push(" ");
             buttons.push({ src: scil.App.imgSmall("copy.png"), label: "Copy", key: "copy", onclick: function () { me.save(); } });
-        if (this.options.candelete != false)
+        }
+        if (this.options.candelete != false) {
+            buttons.push(" ");
             buttons.push({ src: scil.App.imgSmall("del.png"), label: "Delete", key: "delete", onclick: function () { me.del(); } });
+        }
+        buttons.push(" ");
         buttons.push({ src: scil.App.imgSmall("cancel.png"), label: "Cancel", key: "cancel", onclick: function () { me.cancel(); } });
         if (this.options.editbuttons != null) {
             if (this.options.editbuttons.length == null)
@@ -29976,10 +30914,14 @@ scil.Page.Table = scil.extend(scil._base, {
         }
         else {
             this.dlg = scil.Form.createDlgForm(this.options.formcaption, this.options.fields, buttons,
-            { alternativeforms: this.options.alternativeforms, hidelabel: this.options.hidelabel, oncreated: this.options.oncreateform, onchange: this.options.onformdatachange });
+                { alternativeforms: this.options.alternativeforms, hidelabel: this.options.hidelabel, oncreated: this.options.oncreateform, onchange: this.options.onformdatachange });
         }
     }
 });
+
+
+
+
 ﻿//////////////////////////////////////////////////////////////////////////////////
 //
 // Scilligence JSDraw
@@ -29993,16 +30935,33 @@ scil.Page.Table = scil.extend(scil._base, {
 * Page.Tree class - Page.Tree Control
 * @class scilligence.Page.Tree
 * <pre>
-* <b>Example:</b>
-*    &lt;div id='parent'&gt;&lt;/div&gt;
-*    &lt;script type="text/javascript"&gt;
-*        scil.ready(function () {
-*            var root = { name: "Root", icon: "", expanded: true, children: [{ name: "Child", icon: "", leaf: true }, { name: "Child 2", icon: "", leaf: false } ] };
-*            var tree = new scil.Tree(scil.byId("parent"));
-*            tree.clear();
-*            tree.add(null, root);
-*        });
-*    &lt;/script&gt;
+* <b>Constructor Parameters:</b>
+*    - buttons: {array}
+*    - caption: {string}
+*    - defaultvalues: {dict}, editing form default values
+*    - expandable: {bool}
+*    - expanded: {bool}
+*    - fields: {dict}, editing form fields
+*    - formcaption: {string}
+*    - key: {string}, ajax parameter key
+*    - marginTop: {int}
+*    - marginBottom: {int}
+*    - name: {string}, ajax parameter name
+*    - object: {string}, ajax cmd namespace
+*    - root: {dict}
+*    - startrefresh: {bool}, default to true
+*    - toolbarvisible: {bool}
+*    - visible: {bool}
+*    - onrender: function(parent, args)
+*    - onexpand: function(node, f)
+*    - onexpandform: function(f)
+*    - onselectitem: function(node)
+*    - onBuildArgs: function(node), return dict
+*    - onshowform: function(dlg)
+*    - onloaddata: function(ret)
+*    - onbeforesave: function(data, sel)
+*    - onSaved: function(this, data)
+*    - oncreateform: function(form)
 * </pre>
 */
 scil.Page.Tree = scil.extend(scil._base, {
@@ -30023,9 +30982,9 @@ scil.Page.Tree = scil.extend(scil._base, {
         }
         if (this.options.buttons != null)
             buttons = buttons.concat(this.options.buttons);
-        var args = this.options.object == null ? null : { url: this.page.url + this.options.object + ".tree", icongap: "3px", onAddItem: this.options.onAddItem };
 
-        this.form = new scil.Page.ExplorerForm(parent, { toolbarvisible: options.toolbarvisible, expandable: options.expandable, caption: options.caption, visible: options.visible, marginTop: options.marginTop, marginBottom: options.marginBottom, buttons: buttons, expanded: this.options.expanded, onexpand: this.options.onexpand });
+        var args = this.options.object == null ? null : { dropdown: this.options.dropdown, url: this.page.url + this.options.object + ".tree", icongap: "3px", onAddItem: this.options.onAddItem };
+        this.form = new scil.Page.ExplorerForm(parent, scil.Page.ExplorerForm.cloneArgs(options, { buttons: buttons, collapsedwidth: 20 }));
         this.form.host = this;
         if (this.options.onrender != null) {
             this.options.onrender(this.form.div, args);
@@ -30062,11 +31021,8 @@ scil.Page.Tree = scil.extend(scil._base, {
             args = this.options.onBuildArgs(node);
         }
         else {
-            if (node != null && node.item != null && node.item[this.options.key] != null) {
-                args[this.options.key] = node.item[this.options.key];
-                if (this.options.name != null)
-                    args[this.options.name] = node.item.name;
-            }
+            if (node != null && node.item != null && node.item[this.options.key] != null)
+                args = scil.clone(node.item);
         }
 
         this.page.receiverRefresh(this, args);
