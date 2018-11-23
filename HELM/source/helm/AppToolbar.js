@@ -35,7 +35,7 @@ org.helm.webeditor.AppToolbar = scil.extend(scil._base, {
         var tbody = scil.Utils.createTable(this.div, null, null, { width: "100%" });
         var tr = scil.Utils.createElement(tbody, "tr");
 
-        scil.Utils.createElement(tr, "td", org.helm.webeditor.AppToolbar.Resources.img("helm20.png"), { width: "30%" });
+        scil.Utils.createElement(tr, "td", "<h2>" + scil.helm.kVersion + "</h2>", { width: "30%" });
         var td = scil.Utils.createElement(tr, "td", null, { width: "40%", textAlign: "center" });
         scil.Utils.createElement(tr, "td", null, { width: "30%" });
 
