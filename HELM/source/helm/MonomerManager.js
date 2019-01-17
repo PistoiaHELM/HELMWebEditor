@@ -245,6 +245,7 @@ org.helm.webeditor.MonomerManager = scil.extend(scil._base, {
 
 scil.apply(org.helm.webeditor.MonomerManager, {
     caps: ["", "H", "OH", "X"],
+    capsmiles: { "H": "[H]", "OH": "O", "X": "[X]" },
     kFilters: ["status", "polymertype", "monomertype", "status", "symbol", "name", "countperpage"],
 
     showVersions: function (id) {

@@ -215,8 +215,11 @@ org.helm.webeditor.Adapter = {
 
         var rgroups = [];
         for (var i = 1; i < 5; ++i) {
-            if (ret["r" + i] != null)
-                rgroups.push({ label: "R" + i, capGroupName: ret["r" + i] })
+            if (ret["r" + i] != null) {
+                var cap = ret["r" + i];
+                var smiles = "[*:" + i + "]" + org.helm.webeditor.MonomerManager.capsmiles[cap];
+                rgroups.push({ alternateId: "R" + i + "-" + ret["r" + i], label: "R" + i, capGroupName: cap, capGroupSMILES: smiles });
+            }
         }
         ret.rgroups = rgroups;
     },
