@@ -29,7 +29,7 @@
 
 /**
 @project HELM Web Editor
-@version 1.1.1
+@version 1.1.2
 @description HELM Web Editor built on JSDraw.Lite
 */
 
@@ -50,7 +50,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "1.1.1.2018-05-01",
+    kVersion: "1.1.2",
     atomscale: 2,
     bondscale: 1.6,
     allowHeadToHeadConnection: true,
@@ -8576,7 +8576,7 @@ org.helm.webeditor.AppToolbar = scil.extend(scil._base, {
         var tbody = scil.Utils.createTable(this.div, null, null, { width: "100%" });
         var tr = scil.Utils.createElement(tbody, "tr");
 
-        scil.Utils.createElement(tr, "td", org.helm.webeditor.AppToolbar.Resources.img("helm20.png"), { width: "30%" });
+        scil.Utils.createElement(tr, "td", "<h2>" + scil.helm.kVersion + "</h2>", { width: "30%" });
         var td = scil.Utils.createElement(tr, "td", null, { width: "40%", textAlign: "center" });
         scil.Utils.createElement(tr, "td", null, { width: "30%" });
 
@@ -8872,6 +8872,7 @@ org.helm.webeditor.MonomerManager = scil.extend(scil._base, {
 
 scil.apply(org.helm.webeditor.MonomerManager, {
     caps: ["", "H", "OH", "X"],
+    capsmiles: { "H": "[H]", "OH": "O", "X": "[X]" },
     kFilters: ["status", "polymertype", "monomertype", "status", "symbol", "name", "countperpage"],
 
     showVersions: function (id) {
@@ -9641,8 +9642,11 @@ org.helm.webeditor.Adapter = {
 
         var rgroups = [];
         for (var i = 1; i < 5; ++i) {
-            if (ret["r" + i] != null)
-                rgroups.push({ label: "R" + i, capGroupName: ret["r" + i] })
+            if (ret["r" + i] != null) {
+                var cap = ret["r" + i];
+                var smiles = "[*:" + i + "]" + org.helm.webeditor.MonomerManager.capsmiles[cap];
+                rgroups.push({ alternateId: "R" + i + "-" + ret["r" + i], label: "R" + i, capGroupName: cap, capGroupSMILES: smiles });
+            }
         }
         ret.rgroups = rgroups;
     },
