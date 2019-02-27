@@ -1,20 +1,20 @@
 ﻿/*******************************************************************************
 * Copyright (C)2018, The Pistoia Alliance
 *  Version 1.1.0.2018--03-13
-* 
+*
 * Created by Scilligence, built on JSDraw.Lite
-* 
+*
 * Permission is hereby granted, free of charge, to any person obtaining
 * a copy of this software and associated documentation files (the
 * "Software"), to deal in the Software without restriction, including
 * without limitation the rights to use, copy, modify, merge, publish,
 * distribute, sublicense, and/or sell copies of the Software, and to
-* permit persons to whom the Software is furnished to do so, subject to the 
+* permit persons to whom the Software is furnished to do so, subject to the
 * following conditions:
-* 
+*
 * The above copyright notice and this permission notice shall be
 * included in all copies or substantial portions of the Software.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -25,11 +25,11 @@
 *******************************************************************************/
 
 // https://github.com/PistoiaHELM/HELMEditor/blob/master/resources/conf/DefaultMonomerCategorizationTemplate.xml
-// 
+//
 
 /**
 @project HELM Web Editor
-@version 1.1.2
+@version 1.1.3
 @description HELM Web Editor built on JSDraw.Lite
 */
 
@@ -50,7 +50,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "1.1.2",
+    kVersion: "1.1.3",
     atomscale: 2,
     bondscale: 1.6,
     allowHeadToHeadConnection: true,

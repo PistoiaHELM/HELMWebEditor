@@ -44,7 +44,7 @@ helm_config = {
     sequenceviewonly: false,
     mexfavoritefirst: true,
     mexfilter: true,
-    url: "/HELM2MonomerService/webService/service/library",
+    url: "/HELM2MonomerService/rest",
     calculatorurl: null, // web service to calculate structure properties
     cleanupurl: null,
     monomercleanupurl: "/WebService/service/Conversion/Molfile", // web service to clean up structures
