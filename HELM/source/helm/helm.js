@@ -29,7 +29,7 @@
 
 /**
 @project HELM Web Editor
-@version 1.1.3
+@version 1.1.4
 @description HELM Web Editor built on JSDraw.Lite
 */
 
@@ -50,7 +50,7 @@ if (org.helm == null)
     org.helm = {};
 
 org.helm.webeditor = {
-    kVersion: "1.1.3",
+    kVersion: "1.1.4",
     atomscale: 2,
     bondscale: 1.6,
     allowHeadToHeadConnection: true,
