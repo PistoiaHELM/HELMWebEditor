@@ -9,15 +9,15 @@ For general information and user guides, please visit the HELM [wiki page](https
 #### 1.1. Install HELM2MonomerService ( HELM2MonomerService.war ) ####
 
 - Download the [war file](https://oss.sonatype.org/#nexus-search;quick~helm2-monomerservice) 
-- Copy the war file into this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
+- Copy the war file into this folder on Tomcat server: $TomcatHome$\webapps\
 
 #### 1.2 Install HELM2WebService ( WebService.war ) ####
 - Download the [war file](https://oss.sonatype.org/#nexus-search;quick~helm2-webservice) 
-- Copy the war file int0 this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
+- Copy the war file int0 this folder on Tomcat server: $TomcatHome$\webapps\
 
 #### 1.3 Install HELMWebEditor ( hwe-1.1.0.zip ) ####
 - Download the [zip file](https://github.com/PistoiaHELM/HELMWebEditor/releases/)
-- Unzip it and copy the *hwe* folder to this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\HELM2MonomerService\
+- Unzip it and copy the *hwe* folder to this folder on Tomcat server: $TomcatHome$\webapps\HELM2MonomerService\
 
 **Verification**:
 There will be two folders in this folder `C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\` : HELM2MonomerService and WebService
