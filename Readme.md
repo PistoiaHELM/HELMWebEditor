@@ -8,7 +8,7 @@ For general information and user guides, please visit the HELM [wiki page](https
 ### 1 Install on Tomcat ###
 #### 1.1. Install HELM2MonomerService ( HELM2MonomerService.war ) ####
 
-- Download the [war file](https://oss.sonatype.org/#nexus-search;quick~helmmonomerservice) 
+- Download the [war file](https://oss.sonatype.org/#nexus-search;quick~helm2-monomerservice) 
 - Copy the war file into this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
 
 #### 1.2 Install HELM2WebService ( WebService.war ) ####
@@ -16,7 +16,7 @@ For general information and user guides, please visit the HELM [wiki page](https
 - Copy the war file int0 this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\
 
 #### 1.3 Install HELMWebEditor ( hwe-1.1.0.zip ) ####
-- Download the [zip file](https://github.com/PistoiaHELM/HELMWebEditor/releases/download/1.1.0/hwe-1.1.0.zip)
+- Download the [zip file](https://github.com/PistoiaHELM/HELMWebEditor/releases/)
 - Unzip it and copy the *hwe* folder to this folder on Tomcat server: C:\Program Files\Apache Software Foundation\Tomcat 9.0\webapps\HELM2MonomerService\
 
 **Verification**:
@@ -25,6 +25,8 @@ There will be two folders in this folder `C:\Program Files\Apache Software Found
 - Run HELM Web Editor by loading this url from the browser: `http://SERVER/HELM2MonomerService/hwe/` 
 
 ### 2. Install on IIS ###
+**Please note that the IIS package is out of date. We recommend using the TomCat instructions above which will give you the latest version.** 
+
 - Download the [zip file](https://github.com/PistoiaHELM/HELMWebEditor/releases)
 - Unzip it and copy the *hwe* folder to this folder on IIS Server: `C:\inetpub\wwwroot\`
 - Run HELM Web Editor
@@ -42,7 +44,7 @@ There is a _merge.helm.bat, a Windows batch file, which can be used to merge all
 ## How to Access the Demo Version ##
 
 A demo version is available at: 
-[http://webeditor.openhelm.org/hwe/examples/App.htm](http://webeditor.openhelm.org/hwe/examples/App.htm)
+[http://webeditor.openhelm.org/](http://webeditor.openhelm.org/)
   
 **Health warning:**  
 The monomers provided may change over time as we do not regulate public use of the monomer manager. The demo version is only available to give interested parties a quick way to try out the functionality and should not be used for serious purposes. 
@@ -62,7 +64,7 @@ The default URL calls the HELMMonomerService which is a RESTful web service that
 
 ### How to show HELM molecules in view-only mode ###
 
-Technically you need only the Canvas for viewonly mode to display HELM structure. The Canvas is JSDraw. So you need to do the following:
+Technically you need only the Canvas for view-only mode to display HELM structure. The Canvas is JSDraw. So you need to do the following:
 
 - Load Monomer Library using <script type=’text/javascipt’ src=’….’></script>
 - Create a DIV as placeholder
