@@ -1,7 +1,7 @@
 # HELM Web Editor #
 HELM Web Editor (HWE) is a tool to draw, display and edit HELM molecules, which is built in Javascript.
 
-For general information and user guides, please visit the HELM [wiki page](https://pistoiaalliance.atlassian.net/wiki/spaces/PUB/pages/35028994/HELM+Web-editor)
+For general information and user guides, please visit the HELM [wiki page](http://www.wiki.openhelm.org)
 
 ## How to Install ##
 
